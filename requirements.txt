@@ -2,3 +2,4 @@ black
 cloudpickle
 hydra-core
 omegaconf==2.1.0
+pybind11
