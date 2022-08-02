@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from .arguments import default_argument_parser
-from .config import configurable, try_get_key, get_config
+from .config import configurable, get_config, try_get_key
 from .instantiate import instantiate
 from .lazy import LazyCall, LazyConfig
 

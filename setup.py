@@ -17,31 +17,25 @@
 # Modified from https://github.com/facebookresearch/detectron2/blob/main/setup.py
 # ------------------------------------------------------------------------------------------------
 
-import os
 import glob
+import os
 
 import torch
-
-from torch.utils.cpp_extension import CUDA_HOME
-from torch.utils.cpp_extension import CppExtension
-from torch.utils.cpp_extension import CUDAExtension
-
-from setuptools import find_packages
-from setuptools import setup
+from setuptools import find_packages, setup
+from torch.utils.cpp_extension import CUDA_HOME, CppExtension, CUDAExtension
 
 requirements = ["torch", "torchvision"]
 
 torch_ver = [int(x) for x in torch.__version__.split(".")[:2]]
 
+
 def get_extensions():
     this_dir = os.path.dirname(os.path.abspath(__file__))
-    extensions_dir = os.path.join(this_dir, "idet", "layers", "csrc")
+    extensions_dir = os.path.join(this_dir, "ideadet", "layers", "csrc")
 
     main_source = os.path.join(extensions_dir, "vision.cpp")
     sources = glob.glob(os.path.join(extensions_dir, "**", "**", "*.cpp"))
     source_cuda = glob.glob(os.path.join(extensions_dir, "**", "**", "*.cu"))
-    import pdb
-    pdb.set_trace()
 
     sources = [main_source] + sources
 
@@ -61,7 +55,7 @@ def get_extensions():
             "-D__CUDA_NO_HALF2_OPERATORS__",
         ]
     else:
-        raise NotImplementedError('Cuda is not availabel')
+        raise NotImplementedError("Cuda is not availabel")
 
     sources = [os.path.join(extensions_dir, s) for s in sources]
     include_dirs = [extensions_dir]
@@ -78,13 +72,19 @@ def get_extensions():
 
     return ext_modules
 
+
 setup(
     name="IdeaDet",
     version="0.1.0",
     author="International Digital Economy Academy",
     url="https://github.com/rentainhe/IdeaDet",
     description="IDEA open source toolbox for visual recognition tasks",
-    packages=find_packages(exclude=("configs", "tests",)),
+    packages=find_packages(
+        exclude=(
+            "configs",
+            "tests",
+        )
+    ),
     ext_modules=get_extensions(),
     cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
 )
