@@ -1,6 +1,7 @@
 #!/bin/bash -e
+# Copyright (c) Facebook, Inc. and its affiliates.
 
-# cd to libai project root
+# cd to ideadet project root
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 {
@@ -11,8 +12,8 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 }
 
 ISORT_VERSION=$(isort --version-number)
-if [[ "$ISORT_VERSION" != 5.10.1 ]]; then
-  echo "Linter requires isort==5.10.1 !"
+if [[ "$ISORT_VERSION" != 4.3* ]]; then
+  echo "Linter requires isort==4.3.21 !"
   exit 1
 fi
 
@@ -22,17 +23,18 @@ echo "Running autoflake ..."
 autoflake --remove-unused-variables --in-place --recursive .
 
 echo "Running isort ..."
-isort . --atomic
+isort -y -sp . --atomic
 
 echo "Running black ..."
 black -l 100 .
 
 echo "Running flake8 ..."
-if [ -x "$(command -v flake8-3)" ]; then
-  flake8-3 .
+if [ -x "$(command -v flake8)" ]; then
+  flake8 .
 else
   python3 -m flake8 .
-fipip
+fi
+
 
 echo "Running clang-format ..."
 find . -regex ".*\.\(cpp\|c\|cc\|cu\|cxx\|h\|hh\|hpp\|hxx\|tcc\|mm\|m\)" -print0 | xargs -0 clang-format -i

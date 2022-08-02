@@ -19,15 +19,14 @@ import importlib
 import inspect
 import logging
 import os
-import pydoc
 import uuid
 from collections import abc
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import is_dataclass
 from typing import Any, List, Tuple, Union
-
 import cloudpickle
+import pydoc
 import yaml
 from omegaconf import DictConfig, ListConfig, OmegaConf
 

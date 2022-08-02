@@ -18,7 +18,6 @@ import logging
 from collections import abc
 from enum import Enum
 from typing import Any, Callable, Dict, List, Union
-
 from hydra.errors import InstantiationException
 from omegaconf import OmegaConf
 

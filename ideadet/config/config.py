@@ -16,7 +16,6 @@
 import functools
 import inspect
 import os
-
 import pkg_resources
 from omegaconf import OmegaConf
 
