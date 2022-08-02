@@ -75,10 +75,10 @@ def get_extensions():
 
 
 setup(
-    name="IdeaDet",
+    name="IDEADet",
     version="0.1.0",
     author="International Digital Economy Academy",
-    url="https://github.com/rentainhe/IdeaDet",
+    url="https://github.com/rentainhe/IDEADet",
     description="IDEA open source toolbox for visual recognition tasks",
     packages=find_packages(
         exclude=(
