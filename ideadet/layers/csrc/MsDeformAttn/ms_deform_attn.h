@@ -10,12 +10,13 @@
 
 #pragma once
 
-#include "cpu/ms_deform_attn_cpu.h"
+#include "ms_deform_attn_cpu.h"
 
 #ifdef WITH_CUDA
-#include "cuda/ms_deform_attn_cuda.h"
+#include "ms_deform_attn_cuda.h"
 #endif
 
+namespace ideadet {
 
 at::Tensor
 ms_deform_attn_forward(
@@ -60,3 +61,4 @@ ms_deform_attn_backward(
     AT_ERROR("Not implemented on the CPU");
 }
 
+} // namespace ideadet

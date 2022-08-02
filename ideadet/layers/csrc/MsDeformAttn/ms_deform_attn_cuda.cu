@@ -16,6 +16,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+namespace ideadet {
 
 at::Tensor ms_deform_attn_cuda_forward(
     const at::Tensor &value, 
@@ -151,3 +152,5 @@ std::vector<at::Tensor> ms_deform_attn_cuda_backward(
         grad_value, grad_sampling_loc, grad_attn_weight
     };
 }
+
+} // namespace ideadet

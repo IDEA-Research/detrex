@@ -11,6 +11,8 @@
 #pragma once
 #include <torch/extension.h>
 
+namespace ideadet {
+
 at::Tensor ms_deform_attn_cuda_forward(
     const at::Tensor &value, 
     const at::Tensor &spatial_shapes,
@@ -28,3 +30,4 @@ std::vector<at::Tensor> ms_deform_attn_cuda_backward(
     const at::Tensor &grad_output,
     const int im2col_step);
 
+} // namespace ideadet

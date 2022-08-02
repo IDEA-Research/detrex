@@ -33,8 +33,10 @@ def get_extensions():
     extensions_dir = os.path.join(this_dir, "ideadet", "layers", "csrc")
 
     main_source = os.path.join(extensions_dir, "vision.cpp")
-    sources = glob.glob(os.path.join(extensions_dir, "**", "**", "*.cpp"))
-    source_cuda = glob.glob(os.path.join(extensions_dir, "**", "**", "*.cu"))
+    sources = glob.glob(os.path.join(extensions_dir, "**", "*.cpp"))
+    source_cuda = glob.glob(os.path.join(extensions_dir, "**", "*.cu")) + glob.glob(
+        os.path.join(extensions_dir, "*.cu")
+    )
 
     sources = [main_source] + sources
 

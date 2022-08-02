@@ -1,7 +1,7 @@
 #include <cuda_runtime_api.h>
 
-namespace idet {
+namespace ideadet {
 int get_cudart_version() {
   return CUDART_VERSION;
 }
-} // namespace idet
+} // namespace ideadet
