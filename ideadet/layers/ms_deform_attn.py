@@ -1,3 +1,23 @@
+# coding=utf-8
+# Copyright 2022 The IDEACVR Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------------------------------
+# Modified from:
+# https://github.com/fundamentalvision/Deformable-DETR/blob/main/models/ops/functions/ms_deform_attn_func.py
+# https://github.com/fundamentalvision/Deformable-DETR/blob/main/models/ops/modules/ms_deform_attn.py
+# ------------------------------------------------------------------------------------------------
+
 import math
 import warnings
 import torch
@@ -8,6 +28,13 @@ from torch.autograd.function import once_differentiable
 from torch.nn.init import constant_, xavier_uniform_
 
 from ideadet import _C
+
+
+# helpers
+def _is_power_of_2(n):
+    if (not isinstance(n, int)) or (n < 0):
+        raise ValueError("invalid input for _is_power_of_2: {} (type: {})".format(n, type(n)))
+    return (n & (n - 1) == 0) and n != 0
 
 
 class MSDeformAttnFunction(Function):
@@ -62,60 +89,29 @@ class MSDeformAttnFunction(Function):
         return grad_value, None, None, grad_sampling_loc, grad_attn_weight, None
 
 
-def ms_deform_attn_core_pytorch(value, value_spatial_shapes, sampling_locations, attention_weights):
-    # for debug and test only,
-    # need to use cuda version instead
-    N_, S_, M_, D_ = value.shape
-    _, Lq_, M_, L_, P_, _ = sampling_locations.shape
-    value_list = value.split([H_ * W_ for H_, W_ in value_spatial_shapes], dim=1)
-    sampling_grids = 2 * sampling_locations - 1
-    sampling_value_list = []
-    for lid_, (H_, W_) in enumerate(value_spatial_shapes):
-        # N_, H_*W_, M_, D_ -> N_, H_*W_, M_*D_ -> N_, M_*D_, H_*W_ -> N_*M_, D_, H_, W_
-        value_l_ = value_list[lid_].flatten(2).transpose(1, 2).reshape(N_ * M_, D_, H_, W_)
-        # N_, Lq_, M_, P_, 2 -> N_, M_, Lq_, P_, 2 -> N_*M_, Lq_, P_, 2
-        sampling_grid_l_ = sampling_grids[:, :, :, lid_].transpose(1, 2).flatten(0, 1)
-        # N_*M_, D_, Lq_, P_
-        sampling_value_l_ = F.grid_sample(
-            value_l_, sampling_grid_l_, mode="bilinear", padding_mode="zeros", align_corners=False
-        )
-        sampling_value_list.append(sampling_value_l_)
-    # (N_, Lq_, M_, L_, P_) -> (N_, M_, Lq_, L_, P_) -> (N_, M_, 1, Lq_, L_*P_)
-    attention_weights = attention_weights.transpose(1, 2).reshape(N_ * M_, 1, Lq_, L_ * P_)
-    output = (
-        (torch.stack(sampling_value_list, dim=-2).flatten(-2) * attention_weights)
-        .sum(-1)
-        .view(N_, M_ * D_, Lq_)
-    )
-    return output.transpose(1, 2).contiguous()
-
-
-def _is_power_of_2(n):
-    if (not isinstance(n, int)) or (n < 0):
-        raise ValueError("invalid input for _is_power_of_2: {} (type: {})".format(n, type(n)))
-    return (n & (n - 1) == 0) and n != 0
-
-
 class MSDeformAttn(nn.Module):
     def __init__(self, d_model=256, n_levels=4, n_heads=8, n_points=4):
-        """
-        Multi-Scale Deformable Attention Module
-        :param d_model      hidden dimension
-        :param n_levels     number of feature levels
-        :param n_heads      number of attention heads
-        :param n_points     number of sampling points per attention head per feature level
+        """Multi-Scale Deformable Attention Module
+
+        Args:
+            d_model: size of hidden state.
+            n_levels: number of feature levels.
+            n_heads: number of attention heads.
+            n_points: number of sampling points per attention head per feature level.
         """
         super().__init__()
         if d_model % n_heads != 0:
             raise ValueError(
                 "d_model must be divisible by n_heads, but got {} and {}".format(d_model, n_heads)
             )
-        _d_per_head = d_model // n_heads
-        # you'd better set _d_per_head to a power of 2 which is more efficient in our CUDA implementation
-        if not _is_power_of_2(_d_per_head):
+        head_dim = d_model // n_heads
+
+        if not _is_power_of_2(head_dim):
             warnings.warn(
-                "You'd better set d_model in MSDeformAttn to make the dimension of each attention head a power of 2 "
-                "which is more efficient in our CUDA implementation."
+                """
+                You'd better set d_model in MSDeformAttn to make sure that
+                each dim of the attention head a power of 2, which is more efficient.
+                """
             )
 
         self.im2col_step = 64
