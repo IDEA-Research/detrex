@@ -22,7 +22,7 @@ from typing import Any, Callable, Dict, List, Union
 from hydra.errors import InstantiationException
 from omegaconf import OmegaConf
 
-from idet.config.lazy import _convert_target_to_string, locate
+from ideadet.config.lazy import _convert_target_to_string, locate
 
 logger = logging.getLogger(__name__)
 

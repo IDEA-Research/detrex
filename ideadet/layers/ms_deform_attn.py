@@ -9,7 +9,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
 
-from idet import _C
+from ideadet import _C
 
 
 class MSDeformAttnFunction(Function):

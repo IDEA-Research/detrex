@@ -38,10 +38,10 @@ def get_extensions():
     extensions_dir = os.path.join(this_dir, "idet", "layers", "csrc")
 
     main_source = os.path.join(extensions_dir, "vision.cpp")
-    sources = glob.glob(os.path.join(extensions_dir, "**", "*.cpp"))
-    source_cuda = glob.glob(os.path.join(extensions_dir, "**", "*.cu")) + glob.glob(
-        os.path.join(extensions_dir, "*.cu")
-    )
+    sources = glob.glob(os.path.join(extensions_dir, "**", "**", "*.cpp"))
+    source_cuda = glob.glob(os.path.join(extensions_dir, "**", "**", "*.cu"))
+    import pdb
+    pdb.set_trace()
 
     sources = [main_source] + sources
 
@@ -50,7 +50,7 @@ def get_extensions():
     extra_compile_args = {"cxx": []}
     define_macros = []
 
-    if (torch.cuda.is_available() and CUDA_HOME is not None) or os.getenv("FORCE_CUDA", "0") == "1":
+    if torch.cuda.is_available() and CUDA_HOME is not None:
         extension = CUDAExtension
         sources += source_cuda
         define_macros += [("WITH_CUDA", None)]
@@ -60,20 +60,15 @@ def get_extensions():
             "-D__CUDA_NO_HALF_CONVERSIONS__",
             "-D__CUDA_NO_HALF2_OPERATORS__",
         ]
-
-        if torch_ver < [1, 7]:
-            # supported by https://github.com/pytorch/pytorch/pull/43931
-            CC = os.environ.get("CC", None)
-            if CC is not None:
-                extra_compile_args["nvcc"].append("-ccbin={}".format(CC))
+    else:
+        raise NotImplementedError('Cuda is not availabel')
 
     sources = [os.path.join(extensions_dir, s) for s in sources]
-
     include_dirs = [extensions_dir]
 
     ext_modules = [
         extension(
-            "idet._C",
+            "ideadet._C",
             sources,
             include_dirs=include_dirs,
             define_macros=define_macros,
