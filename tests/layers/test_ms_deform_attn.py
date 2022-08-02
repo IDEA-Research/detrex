@@ -21,7 +21,6 @@ from torch.autograd import gradcheck
 
 from ideadet.layers.ms_deform_attn import MSDeformAttnFunction
 
-
 N, M, D = 1, 2, 2
 Lq, L, P = 2, 2, 2
 shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).cuda()
@@ -30,7 +29,9 @@ S = sum([(H * W).item() for H, W in shapes])
 
 
 class TestMsDeformAttn(unittest.TestCase):
-    def ms_deform_attn_core_pytorch(self, value, value_spatial_shapes, sampling_locations, attention_weights):
+    def ms_deform_attn_core_pytorch(
+        self, value, value_spatial_shapes, sampling_locations, attention_weights
+    ):
         # for debug and test only,
         # need to use cuda version instead
         N_, S_, M_, D_ = value.shape
@@ -45,7 +46,11 @@ class TestMsDeformAttn(unittest.TestCase):
             sampling_grid_l_ = sampling_grids[:, :, :, lid_].transpose(1, 2).flatten(0, 1)
             # N_*M_, D_, Lq_, P_
             sampling_value_l_ = F.grid_sample(
-                value_l_, sampling_grid_l_, mode="bilinear", padding_mode="zeros", align_corners=False
+                value_l_,
+                sampling_grid_l_,
+                mode="bilinear",
+                padding_mode="zeros",
+                align_corners=False,
             )
             sampling_value_list.append(sampling_value_l_)
         # (N_, Lq_, M_, L_, P_) -> (N_, M_, Lq_, L_, P_) -> (N_, M_, 1, Lq_, L_*P_)
@@ -56,6 +61,34 @@ class TestMsDeformAttn(unittest.TestCase):
             .view(N_, M_ * D_, Lq_)
         )
         return output.transpose(1, 2).contiguous()
+
+    def check_gradient_numerical(
+        self, channels=4, grad_value=True, grad_sampling_loc=True, grad_attn_weight=True
+    ):
+        value = torch.rand(N, S, M, channels).cuda() * 0.01
+        sampling_locations = torch.rand(N, Lq, M, L, P, 2).cuda()
+        attention_weights = torch.rand(N, Lq, M, L, P).cuda() + 1e-5
+        attention_weights /= attention_weights.sum(-1, keepdim=True).sum(-2, keepdim=True)
+        im2col_step = 2
+        func = MSDeformAttnFunction.apply
+
+        value.requires_grad = grad_value
+        sampling_locations.requires_grad = grad_sampling_loc
+        attention_weights.requires_grad = grad_attn_weight
+
+        gradok = gradcheck(
+            func,
+            (
+                value.double(),
+                shapes,
+                level_start_index,
+                sampling_locations.double(),
+                attention_weights.double(),
+                im2col_step,
+            ),
+        )
+
+        return gradok
 
     @torch.no_grad()
     def test_forward_equal_with_pytorch_double(self):
@@ -85,3 +118,6 @@ class TestMsDeformAttn(unittest.TestCase):
         )
         self.assertTrue(torch.allclose(output_cuda, output_pytorch))
 
+    def test_gradient_numerical(self):
+        for channels in [30, 32, 64, 71, 1025]:
+            self.assertTrue(self.check_gradient_numerical(channels, True, True, True))
