@@ -85,6 +85,3 @@ class TestMsDeformAttn(unittest.TestCase):
         )
         self.assertTrue(torch.allclose(output_cuda, output_pytorch))
 
-
-if __name__ == "__main__":
-    unittest.main()
