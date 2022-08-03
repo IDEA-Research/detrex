@@ -33,6 +33,7 @@ from torch.nn.init import constant_, xavier_uniform_
 
 from ideadet import _C
 
+
 # helpers
 def _is_power_of_2(n):
     if (not isinstance(n, int)) or (n < 0):
