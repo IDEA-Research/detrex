@@ -25,7 +25,6 @@ from functools import partial
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from black import out
 from timm.models.layers import DropPath, trunc_normal_
 
 from ideadet.layers import LayerNorm
