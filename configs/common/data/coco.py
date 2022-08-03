@@ -44,6 +44,6 @@ dataloader.test = LazyCall(build_detection_test_loader)(
     num_workers=4,
 )
 
-dataloader.evaluator = L(COCOEvaluator)(
+dataloader.evaluator = LazyCall(COCOEvaluator)(
     dataset_name="${..test.dataset.names}",
 )
