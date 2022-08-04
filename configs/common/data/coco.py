@@ -8,8 +8,7 @@ from detectron2.data import (
     get_detection_dataset_dicts,
 )
 from detectron2.evaluation import COCOEvaluator
-
-from ideadet.config import LazyCall
+from detectron2.config import LazyCall as L
 
 dataloader = OmegaConf.create()
 
@@ -25,8 +24,8 @@ dataloader.train = LazyCall(build_detection_train_loader)(
             ),
             LazyCall(T.RandomFlip)(horizontal=True),
         ],
-        image_format="BGR",
-        use_instance_mask=True,
+        image_format="RGB",
+        use_instance_mask=False,
     ),
     total_batch_size=16,
     num_workers=4,
