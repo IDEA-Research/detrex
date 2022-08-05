@@ -5,14 +5,12 @@ Misc functions, including distributed helpers.
 Mostly copy-paste from torchvision references.
 """
 import colorsys
-import datetime
 import json
 import numpy as np
 import os
 import pickle
 import subprocess
-import time
-from collections import OrderedDict, defaultdict, deque
+from collections import OrderedDict
 from typing import List, Optional
 import torch
 import torch.distributed as dist
