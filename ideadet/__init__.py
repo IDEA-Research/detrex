@@ -16,3 +16,4 @@
 from ideadet import layers
 from ideadet import modeling
 from ideadet import utils
+from ideadet import data
