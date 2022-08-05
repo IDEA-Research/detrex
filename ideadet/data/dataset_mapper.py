@@ -44,7 +44,9 @@ class DetrDatasetMapper:
     4. Prepare image and annotation to Tensors
     """
 
-    def __init__(self, augmentation, augmentation_with_crop, is_train=True, mask_on=False, img_format="RGB"):
+    def __init__(
+        self, augmentation, augmentation_with_crop, is_train=True, mask_on=False, img_format="RGB"
+    ):
         self.mask_on = mask_on
         self.augmentation = augmentation
         self.augmentation_with_crop = augmentation_with_crop
@@ -75,9 +77,7 @@ class DetrDatasetMapper:
             if np.random.rand() > 0.5:
                 image, transforms = T.apply_transform_gens(self.augmentation, image)
             else:
-                image, transforms = T.apply_transform_gens(
-                    self.augmentation_with_crop, image
-                )
+                image, transforms = T.apply_transform_gens(self.augmentation_with_crop, image)
 
         image_shape = image.shape[:2]  # h, w
 
@@ -126,9 +126,7 @@ class DetrDatasetMapperV2:
         self.mask_on = mask_on
         self.augmentation = augmentation
         logging.getLogger(__name__).info(
-            "Full Augmentation used in training: {}".format(
-                str(self.augmentation)
-            )
+            "Full Augmentation used in training: {}".format(str(self.augmentation))
         )
 
         self.img_format = img_format

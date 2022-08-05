@@ -19,12 +19,12 @@ dataloader.train = L(build_detection_train_loader)(
         augmentation=[
             L(T.RandomFlip)(),
             L(T.ResizeShortestEdge)(
-                    short_edge_length=(480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800),
-                    max_size=1333,
-                    sample_style="choice",
+                short_edge_length=(480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800),
+                max_size=1333,
+                sample_style="choice",
             ),
         ],
-        augmentation_with_crop = [
+        augmentation_with_crop=[
             L(T.RandomFlip)(),
             L(T.ResizeShortestEdge)(
                 short_edge_length=(400, 500, 600),
