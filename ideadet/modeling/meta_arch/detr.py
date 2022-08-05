@@ -19,18 +19,18 @@
 # https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
 # ------------------------------------------------------------------------------------------------
 
-from typing import List
-
 import numpy as np
-
+from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from detectron2.modeling import detector_postprocess
-from detectron2.structures import Boxes, ImageList, Instances
 
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from ideadet.utils.misc import NestedTensor
+
+from detectron2.modeling import detector_postprocess
+from detectron2.structures import Boxes, ImageList, Instances
+
 
 class Joiner(nn.Sequential):
     def __init__(self, backbone, position_embedding):
@@ -49,7 +49,7 @@ class Joiner(nn.Sequential):
 
 
 class MaskedBackbone(nn.Module):
-    """ This is a thin wrapper around D2's backbone to provide padding masking"""
+    """This is a thin wrapper around D2's backbone to provide padding masking"""
 
     def __init__(self, backbone):
         super().__init__()
@@ -85,7 +85,7 @@ class MaskedBackbone(nn.Module):
             masks.append(masks_per_feature_level)
         return masks
 
-    
+
 class DETRDet(nn.Module):
     def __init__(self, detr, criterion, pixel_mean, pixel_std):
         super(DETRDet, self).__init__()
@@ -95,7 +95,7 @@ class DETRDet(nn.Module):
         pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
-    
+
     def forward(self, batched_inputs):
         images = self.preprocess_image(batched_inputs)
         output = self.detr(images)
@@ -116,13 +116,15 @@ class DETRDet(nn.Module):
             mask_pred = None
             results = self.inference(box_cls, box_pred, mask_pred, images.image_sizes)
             processed_results = []
-            for results_per_image, input_per_image, image_size in zip(results, batched_inputs, images.image_sizes):
+            for results_per_image, input_per_image, image_size in zip(
+                results, batched_inputs, images.image_sizes
+            ):
                 height = input_per_image.get("height", image_size[0])
                 width = input_per_image.get("width", image_size[1])
                 r = detector_postprocess(results_per_image, height, width)
                 processed_results.append({"instances": r})
             return processed_results
-    
+
     def inference(self, box_cls, box_pred, mask_pred, image_sizes):
         """
         Arguments:
@@ -142,9 +144,9 @@ class DETRDet(nn.Module):
         # For each box we assign the best class or the second best if the best on is `no_object`.
         scores, labels = F.softmax(box_cls, dim=-1)[:, :, :-1].max(-1)
 
-        for i, (scores_per_image, labels_per_image, box_pred_per_image, image_size) in enumerate(zip(
-            scores, labels, box_pred, image_sizes
-        )):
+        for i, (scores_per_image, labels_per_image, box_pred_per_image, image_size) in enumerate(
+            zip(scores, labels, box_pred, image_sizes)
+        ):
             result = Instances(image_size)
             result.pred_boxes = Boxes(box_cxcywh_to_xyxy(box_pred_per_image))
 
@@ -170,4 +172,3 @@ class DETRDet(nn.Module):
         images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
         images = ImageList.from_tensors(images)
         return images
-        
