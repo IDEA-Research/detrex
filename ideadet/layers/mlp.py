@@ -13,26 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .ms_deform_attn import MSDeformAttn, MSDeformAttnFunction
-from .layer_norm import LayerNorm
-from .box_ops import (
-    box_cxcywh_to_xyxy,
-    box_xyxy_to_cxcywh,
-    box_iou,
-    generalized_box_iou,
-    generalized_box_iou_pairwise,
-    box_iou_pairwise,
-    masks_to_boxes,
-)
-from .transformer import (
-    Transformer,
-    TransformerEncoder,
-    TransformerEncoderLayer,
-    TransformerDecoder,
-    TransformerDecoderLayer,
-)
-from .position_embedding import (
-    PositionEmbeddingLearned,
-    PositionEmbeddingSine,
-)
-from .mlp import MLP
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class MLP(nn.Module):
+    """ Very simple multi-layer perceptron (also called FFN)"""
+
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
+        super().__init__()
+        self.num_layers = num_layers
+        h = [hidden_dim] * (num_layers - 1)
+        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
+
+    def forward(self, x):
+        for i, layer in enumerate(self.layers):
+            x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
+        return x
