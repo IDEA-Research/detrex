@@ -12,8 +12,8 @@ in the config file and implement a new train_net.py to handle them.
 """
 import logging
 
-from detectron2.config import LazyConfig, instantiate
 from detectron2.checkpoint import DetectionCheckpointer
+from detectron2.config import LazyConfig, instantiate
 from detectron2.engine import (
     AMPTrainer,
     SimpleTrainer,
@@ -26,7 +26,6 @@ from detectron2.engine import (
 from detectron2.engine.defaults import create_ddp_model
 from detectron2.evaluation import inference_on_dataset, print_csv_format
 from detectron2.utils import comm
-
 
 logger = logging.getLogger("ideadet")
 
