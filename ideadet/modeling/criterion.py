@@ -33,6 +33,8 @@ from ideadet.utils import (
     nested_tensor_from_tensor_list,
 )
 
+from .losses import dice_loss, sigmoid_focal_loss
+
 
 class SetCriterion(nn.Module):
     """This class computes the loss for DETR.
