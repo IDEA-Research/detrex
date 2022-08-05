@@ -154,7 +154,6 @@ class DETR(nn.Module):
 
 
 class DETRDet(nn.Module):
-    @configurable
     def __init__(self, detr, criterion, pixel_mean, pixel_std):
         super(DETRDet, self).__init__()
         self.detr = detr

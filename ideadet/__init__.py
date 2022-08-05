@@ -13,5 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ideadet import config
 from ideadet import layers
+from ideadet import modeling
+from ideadet import utils
