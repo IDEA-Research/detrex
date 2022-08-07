@@ -55,4 +55,5 @@ model = L(DETRDet)(
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
+    device="cuda",
 )

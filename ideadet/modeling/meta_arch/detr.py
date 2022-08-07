@@ -154,11 +154,11 @@ class DETR(nn.Module):
 
 
 class DETRDet(nn.Module):
-    def __init__(self, detr, criterion, pixel_mean, pixel_std):
+    def __init__(self, detr, criterion, pixel_mean, pixel_std, device, deep_supervision=True):
         super(DETRDet, self).__init__()
         self.detr = detr
         self.criterion = criterion
-        self.device = "cuda"
+        self.device = device
         pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
@@ -169,7 +169,6 @@ class DETRDet(nn.Module):
 
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
-
             targets = self.prepare_targets(gt_instances)
             loss_dict = self.criterion(output, targets)
             weight_dict = self.criterion.weight_dict
@@ -180,8 +179,7 @@ class DETRDet(nn.Module):
         else:
             box_cls = output["pred_logits"]
             box_pred = output["pred_boxes"]
-            mask_pred = None
-            results = self.inference(box_cls, box_pred, mask_pred, images.image_sizes)
+            results = self.inference(box_cls, box_pred, images.image_sizes)
             processed_results = []
             for results_per_image, input_per_image, image_size in zip(
                 results, batched_inputs, images.image_sizes
@@ -192,7 +190,7 @@ class DETRDet(nn.Module):
                 processed_results.append({"instances": r})
             return processed_results
 
-    def inference(self, box_cls, box_pred, mask_pred, image_sizes):
+    def inference(self, box_cls, box_pred, image_sizes):
         """
         Arguments:
             box_cls (Tensor): tensor of shape (batch_size, num_queries, K).
@@ -218,7 +216,6 @@ class DETRDet(nn.Module):
             result.pred_boxes = Boxes(box_cxcywh_to_xyxy(box_pred_per_image))
 
             result.pred_boxes.scale(scale_x=image_size[1], scale_y=image_size[0])
-            result.pred_masks = None
             result.scores = scores_per_image
             result.pred_classes = labels_per_image
             results.append(result)
