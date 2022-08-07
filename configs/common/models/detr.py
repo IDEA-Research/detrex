@@ -1,3 +1,5 @@
+from omegaconf import DictConfig
+
 from ideadet.modeling.meta_arch.detr import DETRDet, Joiner, MaskedBackbone, DETR
 from ideadet.layers.transformer import Transformer
 from ideadet.modeling.matcher import HungarianMatcher
@@ -6,6 +8,7 @@ from ideadet.layers.position_embedding import PositionEmbeddingSine
 
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
+
 
 model = L(DETRDet)(
     detr=L(DETR)(
@@ -32,7 +35,7 @@ model = L(DETRDet)(
             num_encoder_layers=6,
             num_decoder_layers=6,
             normalize_before=False,
-            return_intermediate_dec=False,
+            return_intermediate_dec="${..aux_loss}",
         ),
         num_classes=80,
         num_queries=100,
@@ -57,3 +60,12 @@ model = L(DETRDet)(
     pixel_std=[58.395, 57.120, 57.375],
     device="cuda",
 )
+
+# set aux loss weight dict
+if model.detr.aux_loss:
+    weight_dict = model.criterion.weight_dict
+    aux_weight_dict = {}
+    for i in range(model.detr.transformer.num_decoder_layers - 1):
+        aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
+    weight_dict.update(aux_weight_dict)
+    model.criterion.weight_dict = weight_dict

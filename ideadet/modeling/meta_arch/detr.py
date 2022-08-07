@@ -19,6 +19,7 @@
 # https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
 # ------------------------------------------------------------------------------------------------
 
+
 import numpy as np
 from typing import List
 import torch
@@ -29,7 +30,6 @@ from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from ideadet.layers.mlp import MLP
 from ideadet.utils.misc import NestedTensor, nested_tensor_from_tensor_list
 
-from detectron2.config import configurable
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
@@ -154,7 +154,7 @@ class DETR(nn.Module):
 
 
 class DETRDet(nn.Module):
-    def __init__(self, detr, criterion, pixel_mean, pixel_std, device, deep_supervision=True):
+    def __init__(self, detr, criterion, pixel_mean, pixel_std, device):
         super(DETRDet, self).__init__()
         self.detr = detr
         self.criterion = criterion
