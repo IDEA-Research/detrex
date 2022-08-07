@@ -36,3 +36,4 @@ from .position_embedding import (
     PositionEmbeddingSine,
 )
 from .mlp import MLP
+from .attention import MultiheadAttention
