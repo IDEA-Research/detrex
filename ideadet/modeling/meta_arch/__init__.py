@@ -14,3 +14,4 @@
 # limitations under the License.
 
 from .detr import DETRDet, Joiner, MaskedBackbone, DETR
+from .dab_detr import DABDETRDet, DABDETR

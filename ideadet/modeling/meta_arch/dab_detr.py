@@ -223,9 +223,9 @@ class DABDETR(nn.Module):
                 for a, b in zip(outputs_class[:-1], outputs_coord[:-1])]
 
 
-class DETRDet(nn.Module):
+class DABDETRDet(nn.Module):
     def __init__(self, detr, criterion, pixel_mean, pixel_std, device):
-        super(DETRDet, self).__init__()
+        super(DABDETRDet, self).__init__()
         self.detr = detr
         self.criterion = criterion
         self.device = device
