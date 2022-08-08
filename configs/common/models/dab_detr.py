@@ -4,7 +4,10 @@ from ideadet.modeling.meta_arch.dab_detr import DABDETRDet, Joiner, MaskedBackbo
 from ideadet.layers.dab_transformer import Transformer
 from ideadet.modeling.matcher import DabMatcher
 from ideadet.modeling.criterion import DabCriterion
-from ideadet.layers.position_embedding import PositionEmbeddingSine, PositionEmbeddingSineWithTemperature
+from ideadet.layers.position_embedding import (
+    PositionEmbeddingSine,
+    PositionEmbeddingSineWithTemperature,
+)
 
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
@@ -26,10 +29,7 @@ model = L(DABDETRDet)(
                 )
             ),
             position_embedding=L(PositionEmbeddingSineWithTemperature)(
-                num_pos_feats=64,
-                temperatureH=20,
-                temperatureW=20,
-                normalize=True
+                num_pos_feats=64, temperatureH=20, temperatureW=20, normalize=True
             ),
         ),
         transformer=L(Transformer)(

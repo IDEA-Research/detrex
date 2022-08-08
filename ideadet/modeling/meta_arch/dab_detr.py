@@ -26,12 +26,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from detectron2.modeling import detector_postprocess
-from detectron2.structures import Boxes, ImageList, Instances
-
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from ideadet.layers.mlp import MLP
-from ideadet.utils.misc import NestedTensor, nested_tensor_from_tensor_list, inverse_sigmoid
+from ideadet.utils.misc import NestedTensor, inverse_sigmoid, nested_tensor_from_tensor_list
+
+from detectron2.modeling import detector_postprocess
+from detectron2.structures import Boxes, ImageList, Instances
 
 
 class Joiner(nn.Sequential):
@@ -89,15 +89,21 @@ class MaskedBackbone(nn.Module):
 
 
 class DABDETR(nn.Module):
-    """ This is the DAB-DETR module that performs object detection """
-    def __init__(self, backbone, transformer, num_classes, num_queries, 
-                    aux_loss=False, 
-                    iter_update=True,
-                    query_dim=4, 
-                    bbox_embed_diff_each_layer=False,
-                    random_refpoints_xy=False,
-                    ):
-        """ Initializes the model.
+    """This is the DAB-DETR module that performs object detection"""
+
+    def __init__(
+        self,
+        backbone,
+        transformer,
+        num_classes,
+        num_queries,
+        aux_loss=False,
+        iter_update=True,
+        query_dim=4,
+        bbox_embed_diff_each_layer=False,
+        random_refpoints_xy=False,
+    ):
+        """Initializes the model.
         Parameters:
             backbone: torch module of the backbone to be used. See backbone.py
             transformer: torch module of the transformer architecture. See transformer.py
@@ -109,7 +115,7 @@ class DABDETR(nn.Module):
             query_dim: query dimension. 2 for point and 4 for box.
             bbox_embed_diff_each_layer: dont share weights of prediction heads. Default for False. (shared weights.)
             random_refpoints_xy: random init the x,y of anchor boxes and freeze them. (It sometimes helps to improve the performance)
-            
+
 
         """
         super().__init__()
@@ -122,7 +128,6 @@ class DABDETR(nn.Module):
             self.bbox_embed = nn.ModuleList([MLP(hidden_dim, hidden_dim, 4, 3) for i in range(6)])
         else:
             self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
-        
 
         # setting query dim
         self.query_dim = query_dim
@@ -132,13 +137,11 @@ class DABDETR(nn.Module):
         self.random_refpoints_xy = random_refpoints_xy
         if random_refpoints_xy:
             # import ipdb; ipdb.set_trace()
-            self.refpoint_embed.weight.data[:, :2].uniform_(0,1)
-            self.refpoint_embed.weight.data[:, :2] = inverse_sigmoid(self.refpoint_embed.weight.data[:, :2])
+            self.refpoint_embed.weight.data[:, :2].uniform_(0, 1)
+            self.refpoint_embed.weight.data[:, :2] = inverse_sigmoid(
+                self.refpoint_embed.weight.data[:, :2]
+            )
             self.refpoint_embed.weight.data[:, :2].requires_grad = False
-
-
-
-
 
         self.input_proj = nn.Conv2d(backbone.num_channels, hidden_dim, kernel_size=1)
         self.backbone = backbone
@@ -147,7 +150,6 @@ class DABDETR(nn.Module):
 
         if self.iter_update:
             self.transformer.decoder.bbox_embed = self.bbox_embed
-
 
         # init prior_prob setting for focal loss
         prior_prob = 0.01
@@ -164,22 +166,20 @@ class DABDETR(nn.Module):
             nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
             nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
-        
-
     def forward(self, samples: NestedTensor):
-        """ The forward expects a NestedTensor, which consists of:
-               - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
-               - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
+        """The forward expects a NestedTensor, which consists of:
+           - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
+           - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
 
-            It returns a dict with the following elements:
-               - "pred_logits": the classification logits (including no-object) for all queries.
-                                Shape= [batch_size x num_queries x num_classes]
-               - "pred_boxes": The normalized boxes coordinates for all queries, represented as
-                               (center_x, center_y, width, height). These values are normalized in [0, 1],
-                               relative to the size of each individual image (disregarding possible padding).
-                               See PostProcess for information on how to retrieve the unnormalized bounding box.
-               - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
-                                dictionnaries containing the two above keys for each decoder layer.
+        It returns a dict with the following elements:
+           - "pred_logits": the classification logits (including no-object) for all queries.
+                            Shape= [batch_size x num_queries x num_classes]
+           - "pred_boxes": The normalized boxes coordinates for all queries, represented as
+                           (center_x, center_y, width, height). These values are normalized in [0, 1],
+                           relative to the size of each individual image (disregarding possible padding).
+                           See PostProcess for information on how to retrieve the unnormalized bounding box.
+           - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
+                            dictionnaries containing the two above keys for each decoder layer.
         """
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
@@ -190,28 +190,26 @@ class DABDETR(nn.Module):
         # default pipeline
         embedweight = self.refpoint_embed.weight
         hs, reference = self.transformer(self.input_proj(src), mask, embedweight, pos[-1])
-        
-        
-        
+
         if not self.bbox_embed_diff_each_layer:
             reference_before_sigmoid = inverse_sigmoid(reference)
             tmp = self.bbox_embed(hs)
-            tmp[..., :self.query_dim] += reference_before_sigmoid
+            tmp[..., : self.query_dim] += reference_before_sigmoid
             outputs_coord = tmp.sigmoid()
         else:
             reference_before_sigmoid = inverse_sigmoid(reference)
             outputs_coords = []
             for lvl in range(hs.shape[0]):
                 tmp = self.bbox_embed[lvl](hs[lvl])
-                tmp[..., :self.query_dim] += reference_before_sigmoid[lvl]
+                tmp[..., : self.query_dim] += reference_before_sigmoid[lvl]
                 outputs_coord = tmp.sigmoid()
                 outputs_coords.append(outputs_coord)
             outputs_coord = torch.stack(outputs_coords)
 
         outputs_class = self.class_embed(hs)
-        out = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord[-1]}
+        out = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
-            out['aux_outputs'] = self._set_aux_loss(outputs_class, outputs_coord)
+            out["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
         return out
 
     @torch.jit.unused
@@ -219,8 +217,10 @@ class DABDETR(nn.Module):
         # this is a workaround to make torchscript happy, as torchscript
         # doesn't support dictionary with non-homogeneous values, such
         # as a dict having both a Tensor and a list.
-        return [{'pred_logits': a, 'pred_boxes': b}
-                for a, b in zip(outputs_class[:-1], outputs_coord[:-1])]
+        return [
+            {"pred_logits": a, "pred_boxes": b}
+            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
+        ]
 
 
 class DABDETRDet(nn.Module):
