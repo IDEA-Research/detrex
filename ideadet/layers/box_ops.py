@@ -129,9 +129,3 @@ def masks_to_boxes(masks):
     y_min = y_mask.masked_fill(~(masks.bool()), 1e8).flatten(1).min(-1)[0]
 
     return torch.stack([x_min, y_min, x_max, y_max], 1)
-
-
-if __name__ == "__main__":
-    x = torch.rand(5, 4)
-    y = torch.rand(3, 4)
-    iou, union = box_iou(x, y)
