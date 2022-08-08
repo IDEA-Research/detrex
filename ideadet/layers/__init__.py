@@ -31,9 +31,11 @@ from .transformer import (
     TransformerDecoder,
     TransformerDecoderLayer,
 )
+from .dab_transformer import Transformer as DabTransformer
 from .position_embedding import (
     PositionEmbeddingLearned,
     PositionEmbeddingSine,
+    PositionEmbeddingSineWithTemperature,
 )
 from .mlp import MLP
 from .attention import MultiheadAttention
