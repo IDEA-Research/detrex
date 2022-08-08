@@ -93,7 +93,7 @@ class DETR(nn.Module):
 
     def __init__(self, backbone, transformer, num_classes, num_queries, aux_loss=False):
         """Initializes the model.
-        
+
         Parameters:
             backbone: torch module of the backbone to be used. See backbone.py
             transformer: torch module of the transformer architecture. See transformer.py

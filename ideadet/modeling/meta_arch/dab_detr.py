@@ -286,10 +286,9 @@ class DABDETRDet(nn.Module):
 
         boxes = torch.gather(box_pred, 1, topk_boxes.unsqueeze(-1).repeat(1, 1, 4))
 
-
         # For each box we assign the best class or the second best if the best on is `no_object`.
         # scores, labels = F.softmax(box_cls, dim=-1)[:, :, :-1].max(-1)
-        
+
         for i, (scores_per_image, labels_per_image, box_pred_per_image, image_size) in enumerate(
             zip(scores, labels, boxes, image_sizes)
         ):
