@@ -13,5 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .detr import DETRDet, Joiner, MaskedBackbone, DETR
+from .detr import DETR
 from .dab_detr import DABDETRDet, DABDETR
+from .utils import Joiner, MaskedBackbone

@@ -20,78 +20,33 @@
 # ------------------------------------------------------------------------------------------------
 
 
-import numpy as np
-from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from ideadet.layers.mlp import MLP
-from ideadet.utils.misc import NestedTensor, nested_tensor_from_tensor_list
+from ideadet.utils.misc import nested_tensor_from_tensor_list
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
 
-class Joiner(nn.Sequential):
-    def __init__(self, backbone, position_embedding):
-        super().__init__(backbone, position_embedding)
-
-    def forward(self, tensor_list: NestedTensor):
-        xs = self[0](tensor_list)
-        out: List[NestedTensor] = []
-        pos = []
-        for name, x in xs.items():
-            out.append(x)
-            # position encoding
-            pos.append(self[1](x).to(x.tensors.dtype))
-
-        return out, pos
-
-
-class MaskedBackbone(nn.Module):
-    """This is a thin wrapper around D2's backbone to provide padding masking"""
-
-    def __init__(self, backbone):
-        super().__init__()
-        self.backbone = backbone
-        backbone_shape = self.backbone.output_shape()
-        self.feature_strides = [backbone_shape[f].stride for f in backbone_shape.keys()]
-        self.num_channels = backbone_shape[list(backbone_shape.keys())[-1]].channels
-
-    def forward(self, images):
-        features = self.backbone(images.tensor)
-        masks = self.mask_out_padding(
-            [features_per_level.shape for features_per_level in features.values()],
-            images.image_sizes,
-            images.tensor.device,
-        )
-        assert len(features) == len(masks)
-        for i, k in enumerate(features.keys()):
-            features[k] = NestedTensor(features[k], masks[i])
-        return features
-
-    def mask_out_padding(self, feature_shapes, image_sizes, device):
-        masks = []
-        assert len(feature_shapes) == len(self.feature_strides)
-        for idx, shape in enumerate(feature_shapes):
-            N, _, H, W = shape
-            masks_per_feature_level = torch.ones((N, H, W), dtype=torch.bool, device=device)
-            for img_idx, (h, w) in enumerate(image_sizes):
-                masks_per_feature_level[
-                    img_idx,
-                    : int(np.ceil(float(h) / self.feature_strides[idx])),
-                    : int(np.ceil(float(w) / self.feature_strides[idx])),
-                ] = 0
-            masks.append(masks_per_feature_level)
-        return masks
-
-
 class DETR(nn.Module):
     """This is the DETR module that performs object detection"""
 
-    def __init__(self, backbone, transformer, num_classes, num_queries, aux_loss=False):
+    def __init__(
+        self,
+        backbone,
+        transformer,
+        num_classes,
+        num_queries,
+        criterion,
+        pixel_mean,
+        pixel_std,
+        device="cuda",
+        aux_loss=False,
+    ):
         """Initializes the model.
 
         Parameters:
@@ -112,8 +67,13 @@ class DETR(nn.Module):
         self.input_proj = nn.Conv2d(2048, hidden_dim, kernel_size=1)
         self.backbone = backbone
         self.aux_loss = aux_loss
+        self.criterion = criterion
+        self.device = device
+        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
+        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
+        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
-    def forward(self, samples: NestedTensor):
+    def forward(self, batched_inputs):
         """The forward expects a NestedTensor, which consists of:
            - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
            - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
@@ -128,8 +88,10 @@ class DETR(nn.Module):
            - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
                             dictionnaries containing the two above keys for each decoder layer.
         """
-        if isinstance(samples, (list, torch.Tensor)):
-            samples = nested_tensor_from_tensor_list(samples)
+        images = self.preprocess_image(batched_inputs)
+
+        if isinstance(images, (list, torch.Tensor)):
+            samples = nested_tensor_from_tensor_list(images)
         features, pos = self.backbone(samples)
 
         src, mask = features[-1].decompose()
@@ -138,35 +100,9 @@ class DETR(nn.Module):
 
         outputs_class = self.class_embed(hs)
         outputs_coord = self.bbox_embed(hs).sigmoid()
-        out = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
+        output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
-            out["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
-        return out
-
-    @torch.jit.unused
-    def _set_aux_loss(self, outputs_class, outputs_coord):
-        # this is a workaround to make torchscript happy, as torchscript
-        # doesn't support dictionary with non-homogeneous values, such
-        # as a dict having both a Tensor and a list.
-        return [
-            {"pred_logits": a, "pred_boxes": b}
-            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
-        ]
-
-
-class DETRDet(nn.Module):
-    def __init__(self, detr, criterion, pixel_mean, pixel_std, device):
-        super(DETRDet, self).__init__()
-        self.detr = detr
-        self.criterion = criterion
-        self.device = device
-        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
-        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
-        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
-
-    def forward(self, batched_inputs):
-        images = self.preprocess_image(batched_inputs)
-        output = self.detr(images)
+            output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
 
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
@@ -190,6 +126,16 @@ class DETRDet(nn.Module):
                 r = detector_postprocess(results_per_image, height, width)
                 processed_results.append({"instances": r})
             return processed_results
+
+    @torch.jit.unused
+    def _set_aux_loss(self, outputs_class, outputs_coord):
+        # this is a workaround to make torchscript happy, as torchscript
+        # doesn't support dictionary with non-homogeneous values, such
+        # as a dict having both a Tensor and a list.
+        return [
+            {"pred_logits": a, "pred_boxes": b}
+            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
+        ]
 
     def inference(self, box_cls, box_pred, image_sizes):
         """
