@@ -29,7 +29,7 @@ model = L(DABDETRDet)(
                 )
             ),
             position_embedding=L(PositionEmbeddingSineWithTemperature)(
-                num_pos_feats=64, temperatureH=20, temperatureW=20, normalize=True
+                num_pos_feats=128, temperatureH=20, temperatureW=20, normalize=True
             ),
         ),
         transformer=L(Transformer)(
@@ -40,15 +40,16 @@ model = L(DABDETRDet)(
             num_encoder_layers=6,
             num_decoder_layers=6,
             normalize_before=False,
+            activation="prelu",
             return_intermediate_dec="${..aux_loss}",
         ),
         num_classes=80,
-        num_queries=100,
+        num_queries=300,
         aux_loss=True,
         query_dim=4,
         iter_update=True,
-        box_embed_diff_each_layer=False,
-        random_refpoints_xy=False,
+        bbox_embed_diff_each_layer=False,
+        random_refpoints_xy=True,
     ),
     criterion=L(DabCriterion)(
         num_classes=80,
@@ -62,7 +63,7 @@ model = L(DABDETRDet)(
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
-        eos_coef=0.1,
+        focal_alpha=0.25,
         losses=["labels", "boxes", "cardinality"],
     ),
     pixel_mean=[123.675, 116.280, 103.530],
