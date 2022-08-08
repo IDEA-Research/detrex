@@ -2,8 +2,8 @@ from omegaconf import DictConfig
 
 from ideadet.modeling.meta_arch.detr import DETRDet, Joiner, MaskedBackbone, DETR
 from ideadet.layers.transformer import Transformer
-from ideadet.modeling.matcher import HungarianMatcher
-from ideadet.modeling.criterion import SetCriterion
+from ideadet.modeling.matcher.matcher import HungarianMatcher
+from ideadet.modeling.criterion.criterion import SetCriterion
 from ideadet.layers.position_embedding import PositionEmbeddingSine
 
 from detectron2.modeling.backbone import ResNet, BasicStem
