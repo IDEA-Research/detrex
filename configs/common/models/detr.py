@@ -52,7 +52,8 @@ model = L(DETR)(
                 ),
                 operation_order=('self_attn', 'norm', 'ffn', 'norm'),
             ),
-            num_layers=6
+            num_layers=6,
+            post_norm = False,
         ),
         decoder=L(DetrTransformerDecoder)(
             num_layers=6,
@@ -74,6 +75,7 @@ model = L(DETR)(
                 ),
                 operation_order=('self_attn', 'norm', 'cross_attn', 'norm', 'ffn', 'norm')
             ),
+            post_norm = True,
         ),
     ),
     num_classes=80,
