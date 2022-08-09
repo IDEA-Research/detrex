@@ -27,7 +27,13 @@ import torch.nn as nn
 
 
 class BaseTransformerLayer(nn.Module):
-    def __init__(self, attn, ffn: nn.Module, norm: nn.Module, operation_order: tuple = None):
+    def __init__(
+        self, 
+        attn, 
+        ffn: nn.Module, 
+        norm: nn.Module, 
+        operation_order: tuple = None,
+    ):
         super(BaseTransformerLayer, self).__init__()
         assert set(operation_order).issubset({"self_attn", "norm", "cross_attn", "ffn"})
 
@@ -145,8 +151,12 @@ class TransformerLayerSequence(nn.Module):
         super(TransformerLayerSequence, self).__init__()
         self.num_layers = num_layers
         self.layers = nn.ModuleList()
-        for i in range(num_layers):
-            self.layers.append(copy.deepcopy(transformer_layers))
+        if isinstance(transformer_layers, nn.Module):
+            for _ in range(num_layers):
+                self.layers.append(copy.deepcopy(transformer_layers))
+        else:
+            assert isinstance(transformer_layers, list) and len(transformer_layers) == num_layers
+        
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
 

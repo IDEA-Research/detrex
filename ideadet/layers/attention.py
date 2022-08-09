@@ -468,7 +468,7 @@ class MultiheadAttention(nn.Module):
         num_heads,
         attn_drop=0.0,
         proj_drop=0.0,
-        batch_first=True,
+        batch_first=False,
         **kwargs,
     ):
         super(MultiheadAttention, self).__init__()
