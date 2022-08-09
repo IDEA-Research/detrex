@@ -44,7 +44,7 @@ class MultiheadAttention(nn.Module):
         self.attn = nn.MultiheadAttention(
             embed_dim=embed_dim,
             num_heads=num_heads,
-            attn_drop=attn_drop,
+            dropout=attn_drop,
             batch_first=batch_first,
             **kwargs,
         )
@@ -140,7 +140,7 @@ class FFN(nn.Module):
 
 
 class BaseTransformerLayer(nn.Module):
-    def __init__(self, attn, ffn: nn.Module, norm: nn.Module, operation_order: dict = None):
+    def __init__(self, attn, ffn: nn.Module, norm: nn.Module, operation_order: tuple = None):
         super(BaseTransformerLayer, self).__init__()
         assert set(operation_order) == {"self_attn", "norm", "cross_attn", "ffn"}
 
@@ -227,14 +227,17 @@ class BaseTransformerLayer(nn.Module):
                     query_pos=query_pos,
                     key_pos=key_pos,
                     attn_mask=attn_masks[attn_index],
+                    key_padding_mask=key_padding_mask,
                     **kwargs,
                 )
+                attn_index += 1
+                identity = query
 
             elif layer == "ffn":
                 query = self.ffns[ffn_index](query, identity if self.pre_norm else None)
                 ffn_index += 1
 
-            return query
+        return query
 
 
 class TransformerLayerSequence(nn.Module):
