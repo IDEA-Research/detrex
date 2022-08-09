@@ -25,11 +25,8 @@ from .box_ops import (
     masks_to_boxes,
 )
 from .transformer import (
-    Transformer,
-    TransformerEncoder,
-    TransformerEncoderLayer,
-    TransformerDecoder,
-    TransformerDecoderLayer,
+    BaseTransformerLayer,
+    TransformerLayerSequence,
 )
 from .dab_transformer import Transformer as DabTransformer
 from .position_embedding import (
@@ -37,5 +34,8 @@ from .position_embedding import (
     PositionEmbeddingSine,
     PositionEmbeddingSineWithTemperature,
 )
-from .mlp import MLP
-from .attention import MultiheadAttention
+from .mlp import (
+    MLP,
+    FFN
+)
+from .attention import MultiheadAttention, ConditionalMultiheadAttention
