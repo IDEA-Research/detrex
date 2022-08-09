@@ -7,6 +7,7 @@ from ideadet.layers import (
     DetrTransformerDecoder, 
     BaseTransformerLayer,
     FFN,
+    MultiheadAttention,
 )
 from ideadet.modeling.matcher.matcher import HungarianMatcher
 from ideadet.modeling.criterion.criterion import SetCriterion
@@ -35,10 +36,11 @@ model = L(DETR)(
     transformer=L(DetrTransformer)(
         encoder=L(DetrTransformerEncoder)(
             transformer_layers=L(BaseTransformerLayer)(
-                attn=L(nn.MultiheadAttention)(
+                attn=L(MultiheadAttention)(
                     embed_dim=256,
                     num_heads=8,
-                    dropout=0.1,
+                    attn_drop=0.1,
+                    batch_first=False,
                 ),
                 ffn=L(FFN)(
                     embed_dim=256,
@@ -56,10 +58,11 @@ model = L(DETR)(
             num_layers=6,
             return_intermediate=True,
             transformer_layers=L(BaseTransformerLayer)(
-                attn=L(nn.MultiheadAttention)(
+                attn=L(MultiheadAttention)(
                     embed_dim=256,
                     num_heads=8,
-                    dropout=0.1
+                    attn_drop=0.1,
+                    batch_first=False,
                 ),
                 ffn=L(FFN)(
                     embed_dim=256,

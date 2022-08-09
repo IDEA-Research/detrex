@@ -91,8 +91,8 @@ class DETR(nn.Module):
         images = self.preprocess_image(batched_inputs)
 
         if isinstance(images, (list, torch.Tensor)):
-            samples = nested_tensor_from_tensor_list(images)
-        features, pos = self.backbone(samples)
+            images = nested_tensor_from_tensor_list(images)
+        features, pos = self.backbone(images)
 
         src, mask = features[-1].decompose()
         assert mask is not None

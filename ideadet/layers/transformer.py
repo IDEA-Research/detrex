@@ -217,7 +217,7 @@ class DetrTransformerDecoder(TransformerLayerSequence):
         if not self.return_intermediate:
             x = super().forward(query, *args, **kwargs)
             if self.post_norm_layer is not None:
-                x = self.post_norm(x)[None]
+                x = self.post_norm_layer(x)[None]
             return x
         
         intermediate = []
@@ -225,7 +225,7 @@ class DetrTransformerDecoder(TransformerLayerSequence):
             query = layer(query, *args, **kwargs)
             if self.return_intermediate:
                 if self.post_norm_layer is not None:
-                    intermediate.append(self.post_norm(query))
+                    intermediate.append(self.post_norm_layer(query))
                 else:
                     intermediate.append(query)
         return torch.stack(intermediate)
