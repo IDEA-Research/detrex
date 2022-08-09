@@ -27,6 +27,9 @@ from .box_ops import (
 from .transformer import (
     BaseTransformerLayer,
     TransformerLayerSequence,
+    DetrTransformerEncoder,
+    DetrTransformerDecoder,
+    DetrTransformer,
 )
 from .dab_transformer import Transformer as DabTransformer
 from .position_embedding import (

@@ -1,5 +1,13 @@
+import torch.nn as nn
+
+from ideadet.layers.transformer import DetrTransformer
 from ideadet.modeling import DETR, MaskedBackbone, Joiner
-from ideadet.layers.transformer import Transformer
+from ideadet.layers import (
+    DetrTransformerEncoder, 
+    DetrTransformerDecoder, 
+    BaseTransformerLayer,
+    FFN,
+)
 from ideadet.modeling.matcher.matcher import HungarianMatcher
 from ideadet.modeling.criterion.criterion import SetCriterion
 from ideadet.layers.position_embedding import PositionEmbeddingSine
@@ -24,15 +32,46 @@ model = L(DETR)(
         ),
         position_embedding=L(PositionEmbeddingSine)(num_pos_feats=128, normalize=True),
     ),
-    transformer=L(Transformer)(
-        d_model=256,
-        dropout=0.1,
-        nhead=8,
-        dim_feedforward=2048,
-        num_encoder_layers=6,
-        num_decoder_layers=6,
-        normalize_before=False,
-        return_intermediate_dec="${..aux_loss}",
+    transformer=L(DetrTransformer)(
+        encoder=L(DetrTransformerEncoder)(
+            transformer_layers=L(BaseTransformerLayer)(
+                attn=L(nn.MultiheadAttention)(
+                    embed_dim=256,
+                    num_heads=8,
+                    dropout=0.1,
+                ),
+                ffn=L(FFN)(
+                    embed_dim=256,
+                    feedforward_dim=2048,
+                    ffn_drop=0.1,
+                ),
+                norm=L(nn.LayerNorm)(
+                    normalized_shape=256
+                ),
+                operation_order=('self_attn', 'norm', 'ffn', 'norm'),
+            ),
+            num_layers=6
+        ),
+        decoder=L(DetrTransformerDecoder)(
+            num_layers=6,
+            return_intermediate=True,
+            transformer_layers=L(BaseTransformerLayer)(
+                attn=L(nn.MultiheadAttention)(
+                    embed_dim=256,
+                    num_heads=8,
+                    dropout=0.1
+                ),
+                ffn=L(FFN)(
+                    embed_dim=256,
+                    feedforward_dim=2048,
+                    ffn_drop=0.1,
+                ),
+                norm=L(nn.LayerNorm)(
+                    normalized_shape=256,
+                ),
+                operation_order=('self_attn', 'norm', 'cross_attn', 'norm', 'ffn', 'norm')
+            ),
+        ),
     ),
     num_classes=80,
     num_queries=100,
@@ -61,7 +100,7 @@ model = L(DETR)(
 if model.aux_loss:
     weight_dict = model.criterion.weight_dict
     aux_weight_dict = {}
-    for i in range(model.transformer.num_decoder_layers - 1):
+    for i in range(model.transformer.decoder.num_layers - 1):
         aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
     weight_dict.update(aux_weight_dict)
     model.criterion.weight_dict = weight_dict
