@@ -37,7 +37,7 @@ class MultiheadAttention(nn.Module):
         **kwargs,
     ):
         super(MultiheadAttention, self).__init__()
-        self.dim = embed_dim
+        self.embed_dim = embed_dim
         self.num_heads = num_heads
         self.batch_first = batch_first
 
@@ -142,7 +142,7 @@ class FFN(nn.Module):
 class BaseTransformerLayer(nn.Module):
     def __init__(self, attn, ffn: nn.Module, norm: nn.Module, operation_order: tuple = None):
         super(BaseTransformerLayer, self).__init__()
-        assert set(operation_order) == {"self_attn", "norm", "cross_attn", "ffn"}
+        assert set(operation_order).issubset({"self_attn", "norm", "cross_attn", "ffn"})
 
         # count attention nums
         self.num_attn = operation_order.count("self_attn") + operation_order.count("cross_attn")
@@ -155,6 +155,8 @@ class BaseTransformerLayer(nn.Module):
             if operation_name in ["self_attn", "cross_attn"]:
                 self.attentions.append(attn[index])
                 index += 1
+
+        self.embed_dim = self.attentions[0].embed_dim
 
         # count ffn nums
         self.ffns = nn.ModuleList()
