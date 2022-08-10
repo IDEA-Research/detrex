@@ -249,7 +249,7 @@ class TransformerDecoder(nn.Module):
 
         if not keep_query_pos:
             for layer_id in range(num_layers - 1):
-                self.layers[layer_id + 1].ca_qpos_proj = None
+                self.layers[layer_id + 1].cross_attn.query_pos_proj = None
 
     def forward(
         self,
@@ -416,7 +416,7 @@ class TransformerDecoderLayer(nn.Module):
             self.dropout1 = nn.Dropout(dropout)
 
         # Decoder Cross-Attention
-        self.cross_attn = ConditionalCrossAttention(d_model * 2, nhead, dropout=dropout, vdim=d_model)
+        self.cross_attn = ConditionalCrossAttention(d_model, nhead, attn_drop=dropout, vdim=d_model)
 
         self.nhead = nhead
         self.rm_self_attn_decoder = rm_self_attn_decoder
@@ -463,7 +463,7 @@ class TransformerDecoderLayer(nn.Module):
             )
             # ========== End of Self-Attention =============
 
-            tgt = tgt + self.dropout1(tgt2)
+            # tgt = tgt + self.dropout1(tgt2)
             tgt = self.norm1(tgt)
 
         # ========== Begin of Cross-Attention =============
@@ -471,11 +471,11 @@ class TransformerDecoderLayer(nn.Module):
         # shape: num_queries x batch_size x 256
         tgt2 = self.cross_attn(
             query=tgt, key=memory, value=memory, attn_mask=memory_mask, key_padding_mask=memory_key_padding_mask, query_sine_embed=query_sine_embed,
-            query_pos=query_pos, key_pos=pos,
+            query_pos=query_pos, key_pos=pos, is_first_layer=is_first,
         )
         # ========== End of Cross-Attention =============
 
-        tgt = tgt + self.dropout2(tgt2)
+        # tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout3(tgt2)

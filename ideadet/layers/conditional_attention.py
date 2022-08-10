@@ -105,7 +105,6 @@ class ConditionalCrossAttention(nn.Module):
         attn_drop=0.,
         proj_drop=0.,
         batch_first=False,
-        is_first_layer=False,
         **kwargs,
     ):
         super(ConditionalCrossAttention, self).__init__()
@@ -123,9 +122,8 @@ class ConditionalCrossAttention(nn.Module):
         head_dim = embed_dim // num_heads
         self.scale = head_dim ** -0.5
         self.batch_first = batch_first
-        self.is_first_layer = is_first_layer
 
-    def forward(self, query, key=None, value=None, identity=None, query_pos=None, key_pos=None, query_sine_embed=None, attn_mask=None, key_padding_mask=None, **kwargs):
+    def forward(self, query, key=None, value=None, identity=None, query_pos=None, key_pos=None, query_sine_embed=None, is_first_layer=False, attn_mask=None, key_padding_mask=None, **kwargs):
         if key is None:
             key = query
         if value is None:
@@ -163,7 +161,7 @@ class ConditionalCrossAttention(nn.Module):
 
         # position projection
         key_pos = self.key_pos_proj(key_pos)
-        if self.is_first_layer:
+        if is_first_layer:
             query_pos = self.query_pos_proj(query_pos)
             q = query_content + query_pos
             k = key_content + key_pos

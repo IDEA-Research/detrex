@@ -5,5 +5,6 @@ from .common.train import train
 from .common.optim import SGD as optimizer
 
 # train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-# train.init_checkpoint = "/comp_robot/rentianhe/code/IDEADet/converted_new_detr_model.pth"
+train.init_checkpoint = "/comp_robot/rentianhe/code/IDEADet/converted_dab_new_model.pth"
+dataloader.train.total_batch_size = 4
 train.output_dir = "./output"
