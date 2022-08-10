@@ -156,22 +156,41 @@ class TransformerLayerSequence(nn.Module):
                 self.layers.append(copy.deepcopy(transformer_layers))
         else:
             assert isinstance(transformer_layers, list) and len(transformer_layers) == num_layers
-        
+
+    def forward(self):
+        raise NotImplementedError()
+
+
+class DetrTransformerEncoder(TransformerLayerSequence):
+    def __init__(
+        self,
+        transformer_layers: BaseTransformerLayer = None,
+        post_norm: bool = True,
+        num_layers: int = None,
+    ):
+        super(DetrTransformerEncoder, self).__init__(
+            transformer_layers=transformer_layers,
+            num_layers=num_layers
+        )
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
-
-    def forward(
-        self,
-        query,
-        key,
-        value,
-        query_pos=None,
-        key_pos=None,
-        attn_masks=None,
-        query_key_padding_mask=None,
-        key_padding_mask=None,
-        **kwargs,
-    ):
+        
+        if post_norm:
+            self.post_norm_layer = nn.LayerNorm(self.embed_dim)
+        else:
+            self.post_norm_layer = None
+    
+    def forward(self,
+                query,
+                key,
+                value,
+                query_pos=None,
+                key_pos=None,
+                attn_masks=None,
+                query_key_padding_mask=None,
+                key_padding_mask=None,
+                **kwargs):
+        
         for layer in self.layers:
             query = layer(
                 query,
@@ -182,62 +201,82 @@ class TransformerLayerSequence(nn.Module):
                 attn_masks=attn_masks,
                 query_key_padding_mask=query_key_padding_mask,
                 key_padding_mask=key_padding_mask,
-                **kwargs,
-            )
-        return query
-
-
-class DetrTransformerEncoder(TransformerLayerSequence):
-    def __init__(
-        self,
-        *args,
-        post_norm=True,
-        **kwargs,
-    ):
-        super(DetrTransformerEncoder, self).__init__(*args, **kwargs)
-        if post_norm:
-            self.post_norm_layer = nn.LayerNorm(self.embed_dim)
-        else:
-            self.post_norm_layer = None
-    
-    def forward(self, query, *args, **kwargs):
-        x = super(DetrTransformerEncoder, self).forward(query, *args, **kwargs)
+                **kwargs)
+        
         if self.post_norm_layer is not None:
-            x = self.post_norm_layer(x)
-        return x
+            query = self.post_norm_layer(query)
+        return query
 
 
 class DetrTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
-        *args,
-        post_norm=True,
-        return_intermediate=True,
-        **kwargs
+        transformer_layers: BaseTransformerLayer = None,
+        num_layers: int = None,
+        post_norm: bool = True,
+        return_intermediate: bool = True,
     ):
-        super(DetrTransformerDecoder, self).__init__(*args, **kwargs)
+        super(DetrTransformerDecoder, self).__init__(
+            transformer_layers=transformer_layers,
+            num_layers=num_layers
+        )
         self.return_intermediate = return_intermediate
+        self.embed_dim = self.layers[0].embed_dim
+        
         if post_norm:
             self.post_norm_layer = nn.LayerNorm(self.embed_dim)
         else:
             self.post_norm_layer = None
     
 
-    def forward(self, query, *args, **kwargs):
+    def forward(self,
+                query,
+                key,
+                value,
+                query_pos=None,
+                key_pos=None,
+                attn_masks=None,
+                query_key_padding_mask=None,
+                key_padding_mask=None,
+                **kwargs):
+
         if not self.return_intermediate:
-            x = super().forward(query, *args, **kwargs)
+            for layer in self.layers:
+                query = layer(
+                    query,
+                    key,
+                    value,
+                    query_pos=query_pos,
+                    key_pos=key_pos,
+                    attn_masks=attn_masks,
+                    query_key_padding_mask=query_key_padding_mask,
+                    key_padding_mask=key_padding_mask,
+                    **kwargs)
+
             if self.post_norm_layer is not None:
-                x = self.post_norm_layer(x)[None]
-            return x
+                query = self.post_norm_layer(query)[None]
+            return query
         
+        # return intermediate
         intermediate = []
         for layer in self.layers:
-            query = layer(query, *args, **kwargs)
+            query = layer(
+                query,
+                key,
+                value,
+                query_pos=query_pos,
+                key_pos=key_pos,
+                attn_masks=attn_masks,
+                query_key_padding_mask=query_key_padding_mask,
+                key_padding_mask=key_padding_mask,
+                **kwargs)
+
             if self.return_intermediate:
                 if self.post_norm_layer is not None:
                     intermediate.append(self.post_norm_layer(query))
                 else:
                     intermediate.append(query)
+
         return torch.stack(intermediate)
 
 
