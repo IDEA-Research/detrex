@@ -37,8 +37,5 @@ from .position_embedding import (
     PositionEmbeddingSine,
     PositionEmbeddingSineWithTemperature,
 )
-from .mlp import (
-    MLP,
-    FFN
-)
+from .mlp import MLP, FFN
 from .attention import MultiheadAttention, ConditionalMultiheadAttention

@@ -19,34 +19,30 @@
 # https://github.com/open-mmlab/mmcv/blob/master/tests/test_cnn/test_transformer.py
 # ------------------------------------------------------------------------------------------------
 
-import copy
 
 import pytest
 import torch
 import torch.nn as nn
 
-from ideadet.layers import (
-    MultiheadAttention, 
-    BaseTransformerLayer, 
-    TransformerLayerSequence,
-    FFN
-)
+from ideadet.layers import FFN, BaseTransformerLayer, MultiheadAttention, TransformerLayerSequence
+
 
 def test_ffn():
     with pytest.raises(AssertionError):
         FFN(num_fcs=1)
-    
-    ffn = FFN(ffn_drop=0.)
+
+    ffn = FFN(ffn_drop=0.0)
     input_tensor = torch.rand(2, 20, 256)
     input_tensor_nbc = input_tensor.transpose(0, 1)
     assert torch.allclose(ffn(input_tensor).sum(), ffn(input_tensor_nbc).sum())
     residual = torch.rand_like(input_tensor)
     torch.allclose(
         ffn(input_tensor, identity=residual).sum(),
-        ffn(input_tensor).sum() + residual.sum() - input_tensor.sum())
+        ffn(input_tensor).sum() + residual.sum() - input_tensor.sum(),
+    )
 
 
-@pytest.mark.parametrize('embed_dim', [256])
+@pytest.mark.parametrize("embed_dim", [256])
 def test_basetransformerlayer(embed_dim):
     attn = MultiheadAttention(embed_dim=embed_dim, num_heads=8, batch_first=True)
     ffn = FFN(embed_dim, 1024, num_fcs=2, activation=nn.ReLU(inplace=True))
@@ -54,7 +50,7 @@ def test_basetransformerlayer(embed_dim):
         attn=attn,
         ffn=ffn,
         norm=nn.LayerNorm(embed_dim),
-        operation_order=('self_attn', 'norm', 'ffn', 'norm')
+        operation_order=("self_attn", "norm", "ffn", "norm"),
     )
     feedforward_dim = 1024
 
@@ -69,13 +65,13 @@ def test_transformerlayersequence():
         transformer_layers=BaseTransformerLayer(
             attn=[
                 MultiheadAttention(256, 8, batch_first=True),
-                MultiheadAttention(256, 8, batch_first=True)
+                MultiheadAttention(256, 8, batch_first=True),
             ],
             ffn=FFN(256, 1024, num_fcs=2),
             norm=nn.LayerNorm(256),
-            operation_order=('self_attn', 'norm', 'cross_attn', 'norm', 'ffn', 'norm')
+            operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
         ),
-        num_layers=6
+        num_layers=6,
     )
     assert sequence.num_layers == 6
     with pytest.raises(AssertionError):
@@ -84,12 +80,12 @@ def test_transformerlayersequence():
                 BaseTransformerLayer(
                     attn=[
                         MultiheadAttention(256, 8, batch_first=True),
-                        MultiheadAttention(256, 8, batch_first=True)
+                        MultiheadAttention(256, 8, batch_first=True),
                     ],
                     ffn=FFN(256, 1024, num_fcs=2),
                     norm=nn.LayerNorm(256),
-                    operation_order=('self_attn', 'norm', 'cross_attn', 'norm', 'ffn', 'norm')
+                    operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
                 ),
             ],
-            num_layers=6
+            num_layers=6,
         )

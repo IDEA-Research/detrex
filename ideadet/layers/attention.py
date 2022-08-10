@@ -460,7 +460,6 @@ def multi_head_attention_forward(
         return attn_output, None
 
 
-
 class MultiheadAttention(nn.Module):
     def __init__(
         self,

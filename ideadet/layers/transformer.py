@@ -28,10 +28,10 @@ import torch.nn as nn
 
 class BaseTransformerLayer(nn.Module):
     def __init__(
-        self, 
-        attn, 
-        ffn: nn.Module, 
-        norm: nn.Module, 
+        self,
+        attn,
+        ffn: nn.Module,
+        norm: nn.Module,
         operation_order: tuple = None,
     ):
         super(BaseTransformerLayer, self).__init__()
@@ -43,8 +43,10 @@ class BaseTransformerLayer(nn.Module):
         if isinstance(attn, nn.Module):
             attn = [copy.deepcopy(attn) for _ in range(num_attn)]
         else:
-            assert len(attn) == num_attn, f"The length of attn (nn.Module or List[nn.Module]) {num_attn}" \
+            assert len(attn) == num_attn, (
+                f"The length of attn (nn.Module or List[nn.Module]) {num_attn}"
                 f"is not consistent with the number of attention in operation_order {operation_order}"
+            )
 
         self.num_attn = num_attn
         self.operation_order = operation_order
@@ -169,28 +171,29 @@ class DetrTransformerEncoder(TransformerLayerSequence):
         num_layers: int = None,
     ):
         super(DetrTransformerEncoder, self).__init__(
-            transformer_layers=transformer_layers,
-            num_layers=num_layers
+            transformer_layers=transformer_layers, num_layers=num_layers
         )
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
-        
+
         if post_norm:
             self.post_norm_layer = nn.LayerNorm(self.embed_dim)
         else:
             self.post_norm_layer = None
-    
-    def forward(self,
-                query,
-                key,
-                value,
-                query_pos=None,
-                key_pos=None,
-                attn_masks=None,
-                query_key_padding_mask=None,
-                key_padding_mask=None,
-                **kwargs):
-        
+
+    def forward(
+        self,
+        query,
+        key,
+        value,
+        query_pos=None,
+        key_pos=None,
+        attn_masks=None,
+        query_key_padding_mask=None,
+        key_padding_mask=None,
+        **kwargs,
+    ):
+
         for layer in self.layers:
             query = layer(
                 query,
@@ -201,8 +204,9 @@ class DetrTransformerEncoder(TransformerLayerSequence):
                 attn_masks=attn_masks,
                 query_key_padding_mask=query_key_padding_mask,
                 key_padding_mask=key_padding_mask,
-                **kwargs)
-        
+                **kwargs,
+            )
+
         if self.post_norm_layer is not None:
             query = self.post_norm_layer(query)
         return query
@@ -217,28 +221,28 @@ class DetrTransformerDecoder(TransformerLayerSequence):
         return_intermediate: bool = True,
     ):
         super(DetrTransformerDecoder, self).__init__(
-            transformer_layers=transformer_layers,
-            num_layers=num_layers
+            transformer_layers=transformer_layers, num_layers=num_layers
         )
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim
-        
+
         if post_norm:
             self.post_norm_layer = nn.LayerNorm(self.embed_dim)
         else:
             self.post_norm_layer = None
-    
 
-    def forward(self,
-                query,
-                key,
-                value,
-                query_pos=None,
-                key_pos=None,
-                attn_masks=None,
-                query_key_padding_mask=None,
-                key_padding_mask=None,
-                **kwargs):
+    def forward(
+        self,
+        query,
+        key,
+        value,
+        query_pos=None,
+        key_pos=None,
+        attn_masks=None,
+        query_key_padding_mask=None,
+        key_padding_mask=None,
+        **kwargs,
+    ):
 
         if not self.return_intermediate:
             for layer in self.layers:
@@ -251,12 +255,13 @@ class DetrTransformerDecoder(TransformerLayerSequence):
                     attn_masks=attn_masks,
                     query_key_padding_mask=query_key_padding_mask,
                     key_padding_mask=key_padding_mask,
-                    **kwargs)
+                    **kwargs,
+                )
 
             if self.post_norm_layer is not None:
                 query = self.post_norm_layer(query)[None]
             return query
-        
+
         # return intermediate
         intermediate = []
         for layer in self.layers:
@@ -269,7 +274,8 @@ class DetrTransformerDecoder(TransformerLayerSequence):
                 attn_masks=attn_masks,
                 query_key_padding_mask=query_key_padding_mask,
                 key_padding_mask=key_padding_mask,
-                **kwargs)
+                **kwargs,
+            )
 
             if self.return_intermediate:
                 if self.post_norm_layer is not None:
@@ -288,17 +294,19 @@ class DetrTransformer(nn.Module):
         self.embed_dim = self.encoder.embed_dim
 
         self.init_weights()
-    
+
     def init_weights(self):
         for p in self.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
-    
+
     def forward(self, x, mask, query_embed, pos_embed):
         bs, c, h, w = x.shape
         x = x.view(bs, c, -1).permute(2, 0, 1)  # [bs, c, h, w] -> [h*w, bs, c]
         pos_embed = pos_embed.view(bs, c, -1).permute(2, 0, 1)
-        query_embed = query_embed.unsqueeze(1).repeat(1, bs, 1)  # [num_query, dim] -> [num_query, bs, dim]
+        query_embed = query_embed.unsqueeze(1).repeat(
+            1, bs, 1
+        )  # [num_query, dim] -> [num_query, bs, dim]
         mask = mask.view(bs, -1)  # [bs, h, w] -> [bs, h*w]
         memory = self.encoder(
             query=x,

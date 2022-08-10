@@ -3,8 +3,8 @@ import torch.nn as nn
 from ideadet.layers.transformer import DetrTransformer
 from ideadet.modeling import DETR, MaskedBackbone, Joiner
 from ideadet.layers import (
-    DetrTransformerEncoder, 
-    DetrTransformerDecoder, 
+    DetrTransformerEncoder,
+    DetrTransformerDecoder,
     BaseTransformerLayer,
     FFN,
     MultiheadAttention,
@@ -47,13 +47,11 @@ model = L(DETR)(
                     feedforward_dim=2048,
                     ffn_drop=0.1,
                 ),
-                norm=L(nn.LayerNorm)(
-                    normalized_shape=256
-                ),
-                operation_order=('self_attn', 'norm', 'ffn', 'norm'),
+                norm=L(nn.LayerNorm)(normalized_shape=256),
+                operation_order=("self_attn", "norm", "ffn", "norm"),
             ),
             num_layers=6,
-            post_norm = False,
+            post_norm=False,
         ),
         decoder=L(DetrTransformerDecoder)(
             num_layers=6,
@@ -73,9 +71,9 @@ model = L(DETR)(
                 norm=L(nn.LayerNorm)(
                     normalized_shape=256,
                 ),
-                operation_order=('self_attn', 'norm', 'cross_attn', 'norm', 'ffn', 'norm')
+                operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
             ),
-            post_norm = True,
+            post_norm=True,
         ),
     ),
     num_classes=80,
