@@ -73,8 +73,18 @@ class ConditionalSelfAttention(nn.Module):
         q = q.reshape(N, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)  # (B, num_heads, N, head_dim)
         k = k.reshape(N, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
         v = v.reshape(N, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
-        
+
         attn = (q @ k.transpose(-2, -1)) * self.scale
+        
+        # add attention mask
+        if attn_mask is not None:
+            if attn_mask.dtype == torch.bool:
+                attn.masked_fill_(attn_mask, float('-inf'))
+            else:
+                attn += attn_mask
+        if key_padding_mask is not None:
+            attn = attn.masked_fill_(key_padding_mask.unsqueeze(1).unsqueeze(2), float('-inf'))
+
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
@@ -176,6 +186,16 @@ class ConditionalCrossAttention(nn.Module):
         v = v.reshape(N, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
         
         attn = (q @ k.transpose(-2, -1)) * self.scale
+
+        # add attention mask
+        if attn_mask is not None:
+            if attn_mask.dtype == torch.bool:
+                attn.masked_fill_(attn_mask, float('-inf'))
+            else:
+                attn += attn_mask
+        if key_padding_mask is not None:
+            attn = attn.masked_fill_(key_padding_mask.unsqueeze(1).unsqueeze(2), float('-inf'))
+
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
