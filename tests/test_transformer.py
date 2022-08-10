@@ -78,7 +78,6 @@ def test_transformerlayersequence():
         num_layers=6
     )
     assert sequence.num_layers == 6
-    assert sequence.pre_norm is False
     with pytest.raises(AssertionError):
         TransformerLayerSequence(
             transformer_layers=[
