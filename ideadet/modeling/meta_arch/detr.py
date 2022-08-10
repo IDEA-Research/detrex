@@ -60,7 +60,7 @@ class DETR(nn.Module):
         super().__init__()
         self.num_queries = num_queries
         self.transformer = transformer
-        hidden_dim = transformer.d_model
+        hidden_dim = 256
         self.class_embed = nn.Linear(hidden_dim, num_classes + 1)
         self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
         self.query_embed = nn.Embedding(num_queries, hidden_dim)
@@ -91,8 +91,8 @@ class DETR(nn.Module):
         images = self.preprocess_image(batched_inputs)
 
         if isinstance(images, (list, torch.Tensor)):
-            samples = nested_tensor_from_tensor_list(images)
-        features, pos = self.backbone(samples)
+            images = nested_tensor_from_tensor_list(images)
+        features, pos = self.backbone(images)
 
         src, mask = features[-1].decompose()
         assert mask is not None
