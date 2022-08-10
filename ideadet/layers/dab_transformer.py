@@ -19,7 +19,8 @@ from torch import Tensor, nn
 
 from ideadet.utils.misc import inverse_sigmoid
 
-from .conditional_attention import ConditionalSelfAttention, ConditionalCrossAttention
+from .conditional_attention import ConditionalCrossAttention, ConditionalSelfAttention
+
 
 class MLP(nn.Module):
     """Very simple multi-layer perceptron (also called FFN)"""
@@ -455,28 +456,40 @@ class TransformerDecoderLayer(nn.Module):
         # ========== Begin of Self-Attention =============
         if not self.rm_self_attn_decoder:
             # Apply projections here
-            # shape: num_queries x batch_size x 256     
+            # shape: num_queries x batch_size x 256
 
             tgt2 = self.self_attn(
-                tgt, tgt, value=tgt, attn_mask=tgt_mask, key_padding_mask=tgt_key_padding_mask,
-                query_pos=query_pos, key_pos=query_pos
+                tgt,
+                tgt,
+                value=tgt,
+                attn_mask=tgt_mask,
+                key_padding_mask=tgt_key_padding_mask,
+                query_pos=query_pos,
+                key_pos=query_pos,
             )
             # ========== End of Self-Attention =============
 
             # tgt = tgt + self.dropout1(tgt2)
-            tgt = self.norm1(tgt)
+            tgt = self.norm1(tgt2)
 
         # ========== Begin of Cross-Attention =============
         # Apply projections here
         # shape: num_queries x batch_size x 256
         tgt2 = self.cross_attn(
-            query=tgt, key=memory, value=memory, attn_mask=memory_mask, key_padding_mask=memory_key_padding_mask, query_sine_embed=query_sine_embed,
-            query_pos=query_pos, key_pos=pos, is_first_layer=is_first,
+            query=tgt,
+            key=memory,
+            value=memory,
+            attn_mask=memory_mask,
+            key_padding_mask=memory_key_padding_mask,
+            query_sine_embed=query_sine_embed,
+            query_pos=query_pos,
+            key_pos=pos,
+            is_first_layer=is_first,
         )
         # ========== End of Cross-Attention =============
-
+        # tgt2 = tgt + tgt2
         # tgt = tgt + self.dropout2(tgt2)
-        tgt = self.norm2(tgt)
+        tgt = self.norm2(tgt2)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout3(tgt2)
         tgt = self.norm3(tgt)
