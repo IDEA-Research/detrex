@@ -74,7 +74,8 @@ class ConditionalSelfAttention(nn.Module):
         k = k.reshape(N, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
         v = v.reshape(N, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
 
-        attn = (q @ k.transpose(-2, -1)) * self.scale
+        q = q * self.scale
+        attn = (q @ k.transpose(-2, -1))
         
         # add attention mask
         if attn_mask is not None:
@@ -118,9 +119,6 @@ class ConditionalCrossAttention(nn.Module):
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj_drop = nn.Dropout(proj_drop)
         self.num_heads = num_heads
-        self.embed_dim = embed_dim
-        head_dim = embed_dim // num_heads
-        self.scale = head_dim ** -0.5
         self.batch_first = batch_first
 
     def forward(self, query, key=None, value=None, identity=None, query_pos=None, key_pos=None, query_sine_embed=None, is_first_layer=False, attn_mask=None, key_padding_mask=None, **kwargs):
@@ -185,7 +183,9 @@ class ConditionalCrossAttention(nn.Module):
         k = k.reshape(HW, B, self.num_heads, C * 2 // self.num_heads).permute(1, 2, 0, 3)
         v = v.reshape(HW, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
         
-        attn = (q @ k.transpose(-2, -1)) * self.scale
+        scale = (C * 2 // self.num_heads) ** -0.5
+        q = q * scale
+        attn = (q @ k.transpose(-2, -1))
 
         # add attention mask
         if attn_mask is not None:
