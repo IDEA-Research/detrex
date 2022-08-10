@@ -45,7 +45,7 @@ except:
 Tensor = torch.Tensor
 
 
-class MultiheadAttention(Module):
+class ConditionalMultiheadAttention(Module):
     r"""Allows the model to jointly attend to information
     from different representation subspaces.
     See reference: Attention Is All You Need
@@ -82,7 +82,7 @@ class MultiheadAttention(Module):
         kdim=None,
         vdim=None,
     ):
-        super(MultiheadAttention, self).__init__()
+        super(ConditionalMultiheadAttention, self).__init__()
         self.embed_dim = embed_dim
         self.kdim = kdim if kdim is not None else embed_dim
         self.vdim = vdim if vdim is not None else embed_dim
@@ -117,7 +117,7 @@ class MultiheadAttention(Module):
         if "_qkv_same_embed_dim" not in state:
             state["_qkv_same_embed_dim"] = True
 
-        super(MultiheadAttention, self).__setstate__(state)
+        super(ConditionalMultiheadAttention, self).__setstate__(state)
 
     def forward(self, query, key, value, key_padding_mask=None, need_weights=True, attn_mask=None):
         # type: (Tensor, Tensor, Tensor, Optional[Tensor], bool, Optional[Tensor]) -> Tuple[Tensor, Optional[Tensor]]
@@ -458,3 +458,71 @@ def multi_head_attention_forward(
         return attn_output, attn_output_weights.sum(dim=1) / num_heads
     else:
         return attn_output, None
+
+
+class MultiheadAttention(nn.Module):
+    def __init__(
+        self,
+        embed_dim,
+        num_heads,
+        attn_drop=0.0,
+        proj_drop=0.0,
+        batch_first=False,
+        **kwargs,
+    ):
+        super(MultiheadAttention, self).__init__()
+        self.embed_dim = embed_dim
+        self.num_heads = num_heads
+        self.batch_first = batch_first
+
+        self.attn = nn.MultiheadAttention(
+            embed_dim=embed_dim,
+            num_heads=num_heads,
+            dropout=attn_drop,
+            batch_first=batch_first,
+            **kwargs,
+        )
+
+        self.proj_drop = nn.Dropout(proj_drop)
+
+    def forward(
+        self,
+        query,
+        key=None,
+        value=None,
+        identity=None,
+        query_pos=None,
+        key_pos=None,
+        attn_mask=None,
+        key_padding_mask=None,
+        **kwargs,
+    ):
+        if key is None:
+            key = query
+        if value is None:
+            value = key
+        if identity is None:
+            identity = query
+        if key_pos is None:
+            if query_pos is not None:
+                # use query_pos if key_pos is not available
+                if query_pos.shape == key.shape:
+                    key_pos = query_pos
+                else:
+                    warnings.warn(
+                        f"position encoding of key is" f"missing in {self.__class__.__name__}."
+                    )
+        if query_pos is not None:
+            query = query + query_pos
+        if key_pos is not None:
+            key = key + key_pos
+
+        out = self.attn(
+            query=query,
+            key=key,
+            value=value,
+            attn_mask=attn_mask,
+            key_padding_mask=key_padding_mask,
+        )[0]
+
+        return identity + self.proj_drop(out)

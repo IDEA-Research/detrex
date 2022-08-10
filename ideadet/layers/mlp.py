@@ -32,3 +32,49 @@ class MLP(nn.Module):
         for i, layer in enumerate(self.layers):
             x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
         return x
+
+
+class FFN(nn.Module):
+    def __init__(
+        self,
+        embed_dim=256,
+        feedforward_dim=1024,
+        output_dim=None,
+        num_fcs=2,
+        activation=nn.ReLU(inplace=True),
+        ffn_drop=0.0,
+        fc_bias=True,
+        add_identity=True,
+    ):
+        super(FFN, self).__init__()
+        assert num_fcs >= 2, "num_fcs should be no less " f"than 2. got {num_fcs}."
+        self.embed_dim = embed_dim
+        self.feedforward_dim = feedforward_dim
+        self.num_fcs = num_fcs
+        self.activation = activation
+
+        output_dim = embed_dim if output_dim is None else output_dim
+
+        layers = []
+        in_channels = embed_dim
+        for _ in range(num_fcs - 1):
+            layers.append(
+                nn.Sequential(
+                    nn.Linear(in_channels, feedforward_dim, bias=fc_bias),
+                    self.activation,
+                    nn.Dropout(ffn_drop),
+                )
+            )
+            in_channels = feedforward_dim
+        layers.append(nn.Linear(feedforward_dim, output_dim, bias=fc_bias))
+        layers.append(nn.Dropout(ffn_drop))
+        self.layers = nn.Sequential(*layers)
+        self.add_identity = add_identity
+
+    def forward(self, x, identity=None):
+        out = self.layers(x)
+        if not self.add_identity:
+            return out
+        if identity is None:
+            identity = x
+        return identity + out
