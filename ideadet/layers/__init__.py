@@ -39,3 +39,4 @@ from .position_embedding import (
 )
 from .mlp import MLP, FFN
 from .attention import MultiheadAttention, ConditionalMultiheadAttention
+from .conditional_attention import ConditionalSelfAttention, ConditionalCrossAttention

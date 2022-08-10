@@ -159,6 +159,7 @@ class ConditionalCrossAttention(nn.Module):
 
         # shape info
         N, B, C = query_content.shape
+        HW, _, _ = key_content.shape
 
         # position projection
         key_pos = self.key_pos_proj(key_pos)
@@ -175,15 +176,16 @@ class ConditionalCrossAttention(nn.Module):
         q = q.view(N, B, self.num_heads, C // self.num_heads)
         query_sine_embed = self.query_pos_sine_proj(query_sine_embed).view(N, B, self.num_heads, C // self.num_heads)
         q = torch.cat([q, query_sine_embed], dim=3).view(N, B, C * 2)
-        k = k.view(N, B, self.num_heads, C // self.num_heads)
-        key_pos = key_pos.view(N, B, self.num_heads, C // self.num_heads)
-        k = torch.cat([k, key_pos], dim=3).view(N, B, C * 2)
+
+        k = k.view(HW, B, self.num_heads, C // self.num_heads)  # N, 16, 256
+        key_pos = key_pos.view(HW, B, self.num_heads, C // self.num_heads)
+        k = torch.cat([k, key_pos], dim=3).view(HW, B, C * 2)
         
 
         # attention calculation
         q = q.reshape(N, B, self.num_heads, C * 2 // self.num_heads).permute(1, 2, 0, 3)  # (B, num_heads, N, head_dim)
-        k = k.reshape(N, B, self.num_heads, C * 2 // self.num_heads).permute(1, 2, 0, 3)
-        v = v.reshape(N, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
+        k = k.reshape(HW, B, self.num_heads, C * 2 // self.num_heads).permute(1, 2, 0, 3)
+        v = v.reshape(HW, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
         
         attn = (q @ k.transpose(-2, -1)) * self.scale
 

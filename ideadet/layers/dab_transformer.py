@@ -19,8 +19,7 @@ from torch import Tensor, nn
 
 from ideadet.utils.misc import inverse_sigmoid
 
-from .attention import MultiheadAttention
-
+from .conditional_attention import ConditionalSelfAttention, ConditionalCrossAttention
 
 class MLP(nn.Module):
     """Very simple multi-layer perceptron (also called FFN)"""
@@ -411,24 +410,13 @@ class TransformerDecoderLayer(nn.Module):
         super().__init__()
         # Decoder Self-Attention
         if not rm_self_attn_decoder:
-            self.sa_qcontent_proj = nn.Linear(d_model, d_model)
-            self.sa_qpos_proj = nn.Linear(d_model, d_model)
-            self.sa_kcontent_proj = nn.Linear(d_model, d_model)
-            self.sa_kpos_proj = nn.Linear(d_model, d_model)
-            self.sa_v_proj = nn.Linear(d_model, d_model)
-            self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout, vdim=d_model)
+            self.self_attn = ConditionalSelfAttention(d_model, nhead, dropout)
 
             self.norm1 = nn.LayerNorm(d_model)
             self.dropout1 = nn.Dropout(dropout)
 
         # Decoder Cross-Attention
-        self.ca_qcontent_proj = nn.Linear(d_model, d_model)
-        self.ca_qpos_proj = nn.Linear(d_model, d_model)
-        self.ca_kcontent_proj = nn.Linear(d_model, d_model)
-        self.ca_kpos_proj = nn.Linear(d_model, d_model)
-        self.ca_v_proj = nn.Linear(d_model, d_model)
-        self.ca_qpos_sine_proj = nn.Linear(d_model, d_model)
-        self.cross_attn = MultiheadAttention(d_model * 2, nhead, dropout=dropout, vdim=d_model)
+        self.cross_attn = ConditionalCrossAttention(d_model * 2, nhead, dropout=dropout, vdim=d_model)
 
         self.nhead = nhead
         self.rm_self_attn_decoder = rm_self_attn_decoder
@@ -467,24 +455,12 @@ class TransformerDecoderLayer(nn.Module):
         # ========== Begin of Self-Attention =============
         if not self.rm_self_attn_decoder:
             # Apply projections here
-            # shape: num_queries x batch_size x 256
-            q_content = self.sa_qcontent_proj(
-                tgt
-            )  # target is the input of the first decoder layer. zero by default.
-            q_pos = self.sa_qpos_proj(query_pos)
-            k_content = self.sa_kcontent_proj(tgt)
-            k_pos = self.sa_kpos_proj(query_pos)
-            v = self.sa_v_proj(tgt)
-
-            num_queries, bs, n_model = q_content.shape
-            hw, _, _ = k_content.shape
-
-            q = q_content + q_pos
-            k = k_content + k_pos
+            # shape: num_queries x batch_size x 256     
 
             tgt2 = self.self_attn(
-                q, k, value=v, attn_mask=tgt_mask, key_padding_mask=tgt_key_padding_mask
-            )[0]
+                tgt, tgt, value=tgt, attn_mask=tgt_mask, key_padding_mask=tgt_key_padding_mask,
+                query_pos=query_pos, key_pos=query_pos
+            )
             # ========== End of Self-Attention =============
 
             tgt = tgt + self.dropout1(tgt2)
@@ -493,36 +469,10 @@ class TransformerDecoderLayer(nn.Module):
         # ========== Begin of Cross-Attention =============
         # Apply projections here
         # shape: num_queries x batch_size x 256
-        q_content = self.ca_qcontent_proj(tgt)
-        k_content = self.ca_kcontent_proj(memory)
-        v = self.ca_v_proj(memory)
-
-        num_queries, bs, n_model = q_content.shape
-        hw, _, _ = k_content.shape
-
-        k_pos = self.ca_kpos_proj(pos)
-
-        # For the first decoder layer, we concatenate the positional embedding predicted from
-        # the object query (the positional embedding) into the original query (key) in DETR.
-        if is_first or self.keep_query_pos:
-            q_pos = self.ca_qpos_proj(query_pos)
-            q = q_content + q_pos
-            k = k_content + k_pos
-        else:
-            q = q_content
-            k = k_content
-
-        q = q.view(num_queries, bs, self.nhead, n_model // self.nhead)
-        query_sine_embed = self.ca_qpos_sine_proj(query_sine_embed)
-        query_sine_embed = query_sine_embed.view(num_queries, bs, self.nhead, n_model // self.nhead)
-        q = torch.cat([q, query_sine_embed], dim=3).view(num_queries, bs, n_model * 2)
-        k = k.view(hw, bs, self.nhead, n_model // self.nhead)
-        k_pos = k_pos.view(hw, bs, self.nhead, n_model // self.nhead)
-        k = torch.cat([k, k_pos], dim=3).view(hw, bs, n_model * 2)
-
         tgt2 = self.cross_attn(
-            query=q, key=k, value=v, attn_mask=memory_mask, key_padding_mask=memory_key_padding_mask
-        )[0]
+            query=tgt, key=memory, value=memory, attn_mask=memory_mask, key_padding_mask=memory_key_padding_mask, query_sine_embed=query_sine_embed,
+            query_pos=query_pos, key_pos=pos,
+        )
         # ========== End of Cross-Attention =============
 
         tgt = tgt + self.dropout2(tgt2)
