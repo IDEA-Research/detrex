@@ -3,7 +3,7 @@ import torch.nn as nn
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
 
-from ideadet.modeling import DETR, MaskedBackbone, Joiner
+from ideadet.modeling import MaskedBackbone, Joiner
 from ideadet.layers import (
     BaseTransformerLayer,
     FFN,
@@ -14,6 +14,7 @@ from ideadet.modeling.criterion.criterion import SetCriterion
 from ideadet.layers.position_embedding import PositionEmbeddingSine
 
 from modeling import (
+    DETR,
     DetrTransformer,
     DetrTransformerEncoder,
     DetrTransformerDecoder,
