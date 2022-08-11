@@ -110,7 +110,12 @@ class PositionEmbeddingLearned(nn.Module):
         return pos
 
 
-def get_sine_pos_embed(pos_tensor: torch.Tensor, num_pos_feats: int = 128, temperature: int = 10000, exchange_xy: bool = True):
+def get_sine_pos_embed(
+    pos_tensor: torch.Tensor,
+    num_pos_feats: int = 128,
+    temperature: int = 10000,
+    exchange_xy: bool = True,
+):
     """generate sine position embedding from a position tensor
 
     Args:
