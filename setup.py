@@ -18,13 +18,12 @@
 # ------------------------------------------------------------------------------------------------
 
 
-import os
 import glob
+import os
 import shutil
-from setuptools import find_packages, setup
 from os import path
+from setuptools import find_packages, setup
 from typing import List
-
 import torch
 from torch.utils.cpp_extension import CUDA_HOME, CppExtension, CUDAExtension
 
@@ -38,9 +37,7 @@ def get_ideadet_configs() -> List[str]:
     Return a list of configs to include in package for model zoo.
     """
     source_configs_dir = path.join(path.dirname(path.realpath(__file__)), "configs")
-    destination = path.join(
-        path.dirname(path.realpath(__file__)), "ideadet", "config", "configs"
-    )
+    destination = path.join(path.dirname(path.realpath(__file__)), "ideadet", "config", "configs")
     # Symlink the config directory inside package to have a cleaner pip install.
 
     # Remove stale symlink/directory from a previous build.
