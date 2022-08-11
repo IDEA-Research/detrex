@@ -6,7 +6,6 @@ from ideadet.modeling.matcher import DabMatcher
 from ideadet.modeling.criterion import DabCriterion
 from ideadet.layers.position_embedding import (
     PositionEmbeddingSine,
-    PositionEmbeddingSineWithTemperature,
 )
 
 from detectron2.modeling.backbone import ResNet, BasicStem
@@ -28,8 +27,8 @@ model = L(DABDETRDet)(
                     freeze_at=2,
                 )
             ),
-            position_embedding=L(PositionEmbeddingSineWithTemperature)(
-                num_pos_feats=128, temperatureH=20, temperatureW=20, normalize=True
+            position_embedding=L(PositionEmbeddingSine)(
+                num_pos_feats=128, temperature=20, normalize=True
             ),
         ),
         transformer=L(Transformer)(
