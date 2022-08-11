@@ -13,8 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ideadet import layers
-from ideadet import modeling
-from ideadet import utils
-from ideadet import data
-from ideadet import config
+
+from .config import try_get_key, get_config

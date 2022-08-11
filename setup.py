@@ -17,15 +17,47 @@
 # Modified from https://github.com/facebookresearch/detectron2/blob/main/setup.py
 # ------------------------------------------------------------------------------------------------
 
-import glob
+
 import os
+import glob
+import shutil
 from setuptools import find_packages, setup
+from os import path
+from typing import List
+
 import torch
 from torch.utils.cpp_extension import CUDA_HOME, CppExtension, CUDAExtension
 
 requirements = ["torch", "torchvision"]
 
 torch_ver = [int(x) for x in torch.__version__.split(".")[:2]]
+
+
+def get_ideadet_configs() -> List[str]:
+    """
+    Return a list of configs to include in package for model zoo.
+    """
+    source_configs_dir = path.join(path.dirname(path.realpath(__file__)), "configs")
+    destination = path.join(
+        path.dirname(path.realpath(__file__)), "ideadet", "config", "configs"
+    )
+    # Symlink the config directory inside package to have a cleaner pip install.
+
+    # Remove stale symlink/directory from a previous build.
+    if path.exists(source_configs_dir):
+        if path.islink(destination):
+            os.unlink(destination)
+        elif path.isdir(destination):
+            shutil.rmtree(destination)
+
+    if not path.exists(destination):
+        try:
+            os.symlink(source_configs_dir, destination)
+        except OSError:
+            # Fall back to copying if symlink fails: ex. on Windows.
+            shutil.copytree(source_configs_dir, destination)
+    config_paths = glob.glob("configs/**/*.py", recursive=True)
+    return config_paths
 
 
 def get_extensions():
@@ -86,6 +118,7 @@ setup(
             "tests",
         )
     ),
+    package_data={"ideadet.config": get_ideadet_configs()},
     ext_modules=get_extensions(),
     cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
 )
