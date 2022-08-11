@@ -35,7 +35,11 @@ from .dab_transformer import Transformer as DabTransformer
 from .position_embedding import (
     PositionEmbeddingLearned,
     PositionEmbeddingSine,
-    PositionEmbeddingSineWithTemperature,
+    get_sine_pos_embed,
 )
 from .mlp import MLP, FFN
-from .attention import MultiheadAttention, ConditionalMultiheadAttention
+from .attention import (
+    MultiheadAttention,
+    ConditionalSelfAttention,
+    ConditionalCrossAttention,
+)
