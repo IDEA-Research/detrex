@@ -177,7 +177,7 @@ class TransformerDecoder(nn.Module):
         query_dim=2,
         keep_query_pos=False,
         query_scale_type="cond_elewise",
-        modulate_hw_attn=False,
+        modulate_hw_attn=True,
         bbox_embed_diff_each_layer=False,
     ):
         super().__init__()
@@ -395,7 +395,6 @@ class TransformerDecoderLayer(nn.Module):
 
         self.activation = _get_activation_fn(activation)
         self.normalize_before = normalize_before
-        self.keep_query_pos = keep_query_pos
 
     def with_pos_embed(self, tensor, pos: Optional[Tensor]):
         return tensor if pos is None else tensor + pos
