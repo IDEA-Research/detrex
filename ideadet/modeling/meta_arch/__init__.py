@@ -14,4 +14,4 @@
 # limitations under the License.
 
 
-from .dab_detr import DABDETRDet, DABDETR
+from .dab_detr import DABDETR

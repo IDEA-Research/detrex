@@ -1,6 +1,5 @@
-from omegaconf import DictConfig
-
-from ideadet.modeling.meta_arch.dab_detr import DABDETRDet, Joiner, MaskedBackbone, DABDETR
+from ideadet.modeling.utils import Joiner, MaskedBackbone
+from ideadet.modeling.meta_arch.dab_detr import DABDETR
 from ideadet.layers.dab_transformer import Transformer
 from ideadet.modeling.matcher import DabMatcher
 from ideadet.modeling.criterion import DabCriterion
@@ -12,44 +11,41 @@ from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
 
 
-model = L(DABDETRDet)(
-    detr=L(DABDETR)(
-        backbone=L(Joiner)(
-            backbone=L(MaskedBackbone)(
-                backbone=L(ResNet)(
-                    stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
-                    stages=L(ResNet.make_default_stages)(
-                        depth=50,
-                        stride_in_1x1=False,
-                        norm="FrozenBN",
-                    ),
-                    out_features=["res2", "res3", "res4", "res5"],
-                    freeze_at=2,
-                )
-            ),
-            position_embedding=L(PositionEmbeddingSine)(
-                num_pos_feats=128, temperature=20, normalize=True
-            ),
+model = L(DABDETR)(
+    backbone=L(Joiner)(
+        backbone=L(MaskedBackbone)(
+            backbone=L(ResNet)(
+                stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
+                stages=L(ResNet.make_default_stages)(
+                    depth=50,
+                    stride_in_1x1=False,
+                    norm="FrozenBN",
+                ),
+                out_features=["res2", "res3", "res4", "res5"],
+                freeze_at=2,
+            )
         ),
-        transformer=L(Transformer)(
-            d_model=256,
-            dropout=0.1,
-            nhead=8,
-            dim_feedforward=2048,
-            num_encoder_layers=6,
-            num_decoder_layers=6,
-            normalize_before=False,
-            activation="prelu",
-            return_intermediate_dec="${..aux_loss}",
+        position_embedding=L(PositionEmbeddingSine)(
+            num_pos_feats=128, temperature=20, normalize=True
         ),
-        num_classes=80,
-        num_queries=300,
-        aux_loss=True,
-        query_dim=4,
-        iter_update=True,
-        bbox_embed_diff_each_layer=False,
-        random_refpoints_xy=True,
     ),
+    transformer=L(Transformer)(
+        d_model=256,
+        dropout=0.1,
+        nhead=8,
+        dim_feedforward=2048,
+        num_encoder_layers=6,
+        num_decoder_layers=6,
+        normalize_before=False,
+        activation="prelu",
+        return_intermediate_dec="${..aux_loss}",
+    ),
+    num_classes=80,
+    num_queries=300,
+    aux_loss=True,
+    query_dim=4,
+    iter_update=True,
+    random_refpoints_xy=True,
     criterion=L(DabCriterion)(
         num_classes=80,
         matcher=L(DabMatcher)(
@@ -71,10 +67,10 @@ model = L(DABDETRDet)(
 )
 
 # set aux loss weight dict
-if model.detr.aux_loss:
+if model.aux_loss:
     weight_dict = model.criterion.weight_dict
     aux_weight_dict = {}
-    for i in range(model.detr.transformer.num_decoder_layers - 1):
+    for i in range(model.transformer.num_decoder_layers - 1):
         aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
     weight_dict.update(aux_weight_dict)
     model.criterion.weight_dict = weight_dict

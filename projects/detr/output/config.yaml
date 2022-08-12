@@ -1,0 +1,116 @@
+dataloader:
+  evaluator: {_target_: detectron2.evaluation.COCOEvaluator, dataset_name: '${..test.dataset.names}'}
+  test:
+    _target_: detectron2.data.build_detection_test_loader
+    dataset: {_target_: detectron2.data.get_detection_dataset_dicts, filter_empty: false, names: coco_2017_val}
+    mapper:
+      _target_: ideadet.data.DetrDatasetMapper
+      augmentation:
+      - {_target_: detectron2.data.transforms.ResizeShortestEdge, max_size: 1333, short_edge_length: 800}
+      augmentation_with_crop: null
+      img_format: RGB
+      is_train: false
+      mask_on: false
+    num_workers: 4
+  train:
+    _target_: detectron2.data.build_detection_train_loader
+    dataset: {_target_: detectron2.data.get_detection_dataset_dicts, filter_empty: false, names: coco_2017_train}
+    mapper:
+      _target_: ideadet.data.DetrDatasetMapper
+      augmentation:
+      - {_target_: detectron2.data.transforms.RandomFlip}
+      - _target_: detectron2.data.transforms.ResizeShortestEdge
+        max_size: 1333
+        sample_style: choice
+        short_edge_length: [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
+      augmentation_with_crop:
+      - {_target_: detectron2.data.transforms.RandomFlip}
+      - _target_: detectron2.data.transforms.ResizeShortestEdge
+        sample_style: choice
+        short_edge_length: [400, 500, 600]
+      - _target_: detectron2.data.transforms.RandomCrop
+        crop_size: [384, 600]
+        crop_type: absolute_range
+      - _target_: detectron2.data.transforms.ResizeShortestEdge
+        max_size: 1333
+        sample_style: choice
+        short_edge_length: [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
+      img_format: RGB
+      is_train: true
+      mask_on: false
+    num_workers: 4
+    total_batch_size: 16
+lr_multiplier:
+  _target_: detectron2.solver.WarmupParamScheduler
+  scheduler:
+    _target_: fvcore.common.param_scheduler.MultiStepParamScheduler
+    milestones: [60000, 80000, 90000]
+    values: [1.0, 0.1, 0.01]
+  warmup_factor: 0.001
+  warmup_length: 0.011111111111111112
+  warmup_method: linear
+model:
+  _target_: modeling.DETR
+  aux_loss: true
+  backbone:
+    _target_: ideadet.modeling.Joiner
+    backbone:
+      _target_: ideadet.modeling.MaskedBackbone
+      backbone:
+        _target_: detectron2.modeling.ResNet
+        freeze_at: 2
+        out_features: [res2, res3, res4, res5]
+        stages: {_target_: detectron2.modeling.ResNet.make_default_stages, depth: 50, norm: FrozenBN, stride_in_1x1: false}
+        stem: {_target_: detectron2.modeling.backbone.BasicStem, in_channels: 3, norm: FrozenBN, out_channels: 64}
+    position_embedding: {_target_: ideadet.layers.PositionEmbeddingSine, normalize: true, num_pos_feats: 128}
+  criterion:
+    _target_: ideadet.modeling.SetCriterion
+    eos_coef: 0.1
+    losses: [labels, boxes, cardinality]
+    matcher: {_target_: ideadet.modeling.HungarianMatcher, cost_bbox: 5.0, cost_class: 1, cost_giou: 2.0}
+    num_classes: 80
+    weight_dict: {loss_bbox: 5.0, loss_bbox_0: 5.0, loss_bbox_1: 5.0, loss_bbox_2: 5.0, loss_bbox_3: 5.0, loss_bbox_4: 5.0, loss_ce: 1, loss_ce_0: 1, loss_ce_1: 1, loss_ce_2: 1, loss_ce_3: 1, loss_ce_4: 1, loss_giou: 2.0, loss_giou_0: 2.0, loss_giou_1: 2.0, loss_giou_2: 2.0, loss_giou_3: 2.0, loss_giou_4: 2.0}
+  device: cuda
+  num_classes: 80
+  num_queries: 100
+  pixel_mean: [123.675, 116.28, 103.53]
+  pixel_std: [58.395, 57.12, 57.375]
+  transformer:
+    _target_: modeling.DetrTransformer
+    decoder:
+      _target_: modeling.DetrTransformerDecoder
+      num_layers: 6
+      post_norm: true
+      return_intermediate: true
+      transformer_layers:
+        _target_: ideadet.layers.BaseTransformerLayer
+        attn: {_target_: ideadet.layers.MultiheadAttention, attn_drop: 0.1, batch_first: false, embed_dim: 256, num_heads: 8}
+        ffn: {_target_: ideadet.layers.FFN, embed_dim: 256, feedforward_dim: 2048, ffn_drop: 0.1}
+        norm: {_target_: torch.nn.LayerNorm, normalized_shape: 256}
+        operation_order: [self_attn, norm, cross_attn, norm, ffn, norm]
+    encoder:
+      _target_: modeling.DetrTransformerEncoder
+      num_layers: 6
+      post_norm: false
+      transformer_layers:
+        _target_: ideadet.layers.BaseTransformerLayer
+        attn: {_target_: ideadet.layers.MultiheadAttention, attn_drop: 0.1, batch_first: false, embed_dim: 256, num_heads: 8}
+        ffn: {_target_: ideadet.layers.FFN, embed_dim: 256, feedforward_dim: 2048, ffn_drop: 0.1}
+        norm: {_target_: torch.nn.LayerNorm, normalized_shape: 256}
+        operation_order: [self_attn, norm, ffn, norm]
+optimizer:
+  _target_: torch.optim.AdamW
+  betas: [0.9, 0.999]
+  lr: 0.0001
+  params: {_target_: detectron2.solver.get_default_optimizer_params, base_lr: '${..lr}', weight_decay_norm: 0.0}
+  weight_decay: 0.1
+train:
+  amp: {enabled: false}
+  checkpointer: {max_to_keep: 100, period: 5000}
+  ddp: {broadcast_buffers: false, find_unused_parameters: false, fp16_compression: false}
+  device: cuda
+  eval_period: 5000
+  init_checkpoint: /comp_robot/rentianhe/code/IDEADet/weights/converted_new_detr_model.pth
+  log_period: 20
+  max_iter: 90000
+  output_dir: ./output
