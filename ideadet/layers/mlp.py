@@ -51,7 +51,7 @@ class FFN(nn.Module):
         self.embed_dim = embed_dim
         self.feedforward_dim = feedforward_dim
         self.num_fcs = num_fcs
-        # self.activation = activation
+        self.activation = activation
 
         output_dim = embed_dim if output_dim is None else output_dim
 
@@ -61,7 +61,7 @@ class FFN(nn.Module):
             layers.append(
                 nn.Sequential(
                     nn.Linear(in_channels, feedforward_dim, bias=fc_bias),
-                    activation,
+                    self.activation,
                     nn.Dropout(ffn_drop),
                 )
             )

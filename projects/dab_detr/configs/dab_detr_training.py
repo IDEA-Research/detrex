@@ -1,6 +1,6 @@
 from ideadet.config import get_config
 
-from .models.rebuild_dab_detr import model
+from .models.dab_detr_r50 import model
 from .common.coco_loader import dataloader
 
 lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_1x

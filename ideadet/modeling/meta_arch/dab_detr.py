@@ -23,12 +23,12 @@ import math
 import torch
 import torch.nn as nn
 
-from detectron2.modeling import detector_postprocess
-from detectron2.structures import Boxes, ImageList, Instances
-
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from ideadet.layers.mlp import MLP
 from ideadet.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
+
+from detectron2.modeling import detector_postprocess
+from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DABDETR(nn.Module):

@@ -191,7 +191,6 @@ class ConditionalSelfAttention(nn.Module):
 
         if not self.batch_first:
             out = out.transpose(0, 1)
-
         return identity + self.proj_drop(out)
 
 
