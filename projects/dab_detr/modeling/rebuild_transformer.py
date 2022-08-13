@@ -37,6 +37,7 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
         )
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
+        self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
 
         if post_norm:
             self.post_norm_layer = nn.LayerNorm(self.embed_dim)
@@ -57,12 +58,12 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
     ):
 
         for layer in self.layers:
+            position_scales = self.query_scale(query)
             query = layer(
                 query,
                 key,
                 value,
-                query_pos=query_pos,
-                key_pos=key_pos,
+                query_pos=query_pos * position_scales,
                 attn_masks=attn_masks,
                 query_key_padding_mask=query_key_padding_mask,
                 key_padding_mask=key_padding_mask,
@@ -100,7 +101,11 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
             self.post_norm_layer = nn.LayerNorm(self.embed_dim)
         else:
             self.post_norm_layer = None
-    
+
+        for idx in range(num_layers - 1):
+            self.layers[idx + 1].attentions[1].query_pos_proj = None
+
+
     def forward(
         self,
         query,
