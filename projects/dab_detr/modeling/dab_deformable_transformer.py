@@ -211,3 +211,47 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
             return torch.stack(intermediate), torch.stack(intermediate_reference_points)
 
         return output, reference_points
+
+
+
+class DabDeformableDetrTransformer(nn.Module):
+    def __init__(
+        self,
+        encoder=None,
+        decoder=None,
+        as_two_stage=False,
+        num_feature_levels=4,
+        two_stage_num_proposals=300,
+    ):
+        super(DabDeformableDetrTransformer, self).__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+        self.as_two_stage = as_two_stage
+        self.num_feature_levels = num_feature_levels
+        self.two_stage_num_proposals = two_stage_num_proposals
+
+        self.embed_dim = self.encoder.embed_dim
+        self.use_dab = self.decoder.use_dab
+
+        self.level_embeds = nn.Parameter(
+            torch.Tensor(self.num_feature_levels, self.embed_dims))
+
+        if self.as_two_stage:
+            self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
+            self.enc_outpout_norm = nn.LayerNorm(self.embed_dim)
+            self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
+            self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
+        else:
+            self.reference_points = nn.Linear(self.embed_dim, 2)
+
+    def init_weights(self):
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+        for m in self.modules():
+            if isinstance(m, MultiScaleDeformableAttention):
+                m.init_weights()
+        if not self.as_two_stage and not self.use_dab:
+            nn.init.xavier_uniform_(self.reference_points.weight.data, gain=1.0)
+            nn.init.constant_(self.reference_points.bias.data, 0.)
+        nn.init.normal_(self.level_embeds)
