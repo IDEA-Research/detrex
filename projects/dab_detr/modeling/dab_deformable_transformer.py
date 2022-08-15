@@ -213,7 +213,6 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         return output, reference_points
 
 
-
 class DabDeformableDetrTransformer(nn.Module):
     def __init__(
         self,
@@ -233,8 +232,7 @@ class DabDeformableDetrTransformer(nn.Module):
         self.embed_dim = self.encoder.embed_dim
         self.use_dab = self.decoder.use_dab
 
-        self.level_embeds = nn.Parameter(
-            torch.Tensor(self.num_feature_levels, self.embed_dims))
+        self.level_embeds = nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dims))
 
         if self.as_two_stage:
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
@@ -253,5 +251,54 @@ class DabDeformableDetrTransformer(nn.Module):
                 m.init_weights()
         if not self.as_two_stage and not self.use_dab:
             nn.init.xavier_uniform_(self.reference_points.weight.data, gain=1.0)
-            nn.init.constant_(self.reference_points.bias.data, 0.)
+            nn.init.constant_(self.reference_points.bias.data, 0.0)
         nn.init.normal_(self.level_embeds)
+
+    def gen_encoder_output_proposals(self, memory, memory_padding_mask, spatial_shapes):
+        N, S, C = memory.shape
+        proposals = []
+        _cur = 0
+        for lvl, (H, W) in enumerate(spatial_shapes):
+            mask_flatten_ = memory_padding_mask[:, _cur : (_cur + H * W)].view(N, H, W, 1)
+            valid_H = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
+            valid_W = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
+
+            grid_y, grid_x = torch.meshgrid(
+                torch.linspace(0, H - 1, H, dtype=torch.float32, device=memory.device),
+                torch.linspace(0, W - 1, W, dtype=torch.float32, device=memory.device),
+            )
+            grid = torch.cat([grid_x.unsqueeze(-1), grid_y.unsqueeze(-1)], -1)
+
+            scale = torch.cat([valid_W.unsqueeze(-1), valid_H.unsqueeze(-1)], 1).view(N, 1, 1, 2)
+            grid = (grid.unsqueeze(0).expand(N, -1, -1, -1) + 0.5) / scale
+            wh = torch.ones_like(grid) * 0.05 * (2.0**lvl)
+            proposal = torch.cat((grid, wh), -1).view(N, -1, 4)
+            proposals.append(proposal)
+            _cur += H * W
+
+        output_proposals = torch.cat(proposals, 1)
+        output_proposals_valid = ((output_proposals > 0.01) & (output_proposals < 0.99)).all(
+            -1, keepdim=True
+        )
+        output_proposals = torch.log(output_proposals / (1 - output_proposals))
+        output_proposals = output_proposals.masked_fill(
+            memory_padding_mask.unsqueeze(-1), float("inf")
+        )
+        output_proposals = output_proposals.masked_fill(~output_proposals_valid, float("inf"))
+
+        output_memory = memory
+        output_memory = output_memory.masked_fill(memory_padding_mask.unsqueeze(-1), float(0))
+        output_memory = output_memory.masked_fill(~output_proposals_valid, float(0))
+        output_memory = self.enc_output_norm(self.enc_output(output_memory))
+        return output_memory, output_proposals
+
+
+    def get_valid_ratio(self, mask):
+        """Get the valid radios of feature maps of all  level."""
+        _, H, W = mask.shape
+        valid_H = torch.sum(~mask[:, :, 0], 1)
+        valid_W = torch.sum(~mask[:, 0, :], 1)
+        valid_ratio_h = valid_H.float() / H
+        valid_ratio_w = valid_W.float() / W
+        valid_ratio = torch.stack([valid_ratio_w, valid_ratio_h], -1)
+        return valid_ratio
