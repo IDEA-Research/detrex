@@ -115,7 +115,7 @@ model = L(DABDETR)(
             "loss_giou": 2.0,
         },
         focal_alpha=0.25,
-        losses=["labels", "boxes", "cardinality"],
+        losses=["labels", "boxes",],
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
