@@ -10,12 +10,13 @@ train = get_config("common/train.py").train
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output_dab_r50_freeze_1"
+train.output_dir = "./output_dab_r50_freeze_1_no_decay_norm"
 train.max_iter = 375000
 
 
 # modify optimizer config
 optimizer.weight_decay = 1e-4
+optimizer.params.weight_decay_norm = None
 optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in module_name else 1
 
 # modify dataloader config
