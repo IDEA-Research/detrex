@@ -224,6 +224,7 @@ class MultiScaleDeformableAttention(nn.Module):
         reference_points,
         spatial_shapes,
         level_start_index,
+        **kwargs,
     ):
         """
         :param query                       (N, Length_{query}, C)
