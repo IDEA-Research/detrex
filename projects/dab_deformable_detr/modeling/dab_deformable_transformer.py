@@ -243,8 +243,6 @@ class DabDeformableDetrTransformer(nn.Module):
             self.enc_outpout_norm = nn.LayerNorm(self.embed_dim)
             self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
             self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
-        else:
-            self.reference_points = nn.Linear(self.embed_dim, 2)
 
     def init_weights(self):
         for p in self.parameters():
@@ -253,9 +251,6 @@ class DabDeformableDetrTransformer(nn.Module):
         for m in self.modules():
             if isinstance(m, MultiScaleDeformableAttention):
                 m.init_weights()
-        if not self.as_two_stage and not self.use_dab:
-            nn.init.xavier_uniform_(self.reference_points.weight.data, gain=1.0)
-            nn.init.constant_(self.reference_points.bias.data, 0.0)
         nn.init.normal_(self.level_embeds)
 
     def gen_encoder_output_proposals(self, memory, memory_padding_mask, spatial_shapes):

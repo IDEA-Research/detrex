@@ -7,7 +7,7 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_1x
 optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
-train.init_checkpoint = "/comp_robot/rentianhe/code/IDEADet/test_new_dab.pth"
+train.init_checkpoint = "/comp_robot/rentianhe/code/IDEADet/converted_deformable_dab.pth"
 train.output_dir = "./output"
 
 dataloader.train.total_batch_size = 2

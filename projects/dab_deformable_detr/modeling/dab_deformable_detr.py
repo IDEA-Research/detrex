@@ -130,7 +130,22 @@ class DabDeformableDETR(nn.Module):
 
 
     def forward(self, batched_inputs):
+
+        # [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
+
         images = self.preprocess_image(batched_inputs)
+        
+        if self.training:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_ones(batch_size, H, W)
+            for img_id in range(batch_size):
+                img_h, img_w = batched_inputs[img_id]["instances"].image_size
+                img_masks[img_id, :img_h, :img_w] = 0
+        else:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_ones(batch_size, H, W)
+            img_masks[:, :H, :W] = 0
+        
 
         if isinstance(images, (list, torch.Tensor)):
             images = nested_tensor_from_tensor_list(images)
@@ -144,18 +159,19 @@ class DabDeformableDETR(nn.Module):
             multi_level_masks.append(mask)
             assert mask is not None
         
+
         if self.num_feature_levels > len(multi_level_feats):
             len_feats = len(multi_level_feats)
             for idx in range(len_feats, self.num_feature_levels):
                 if idx == len_feats:
                     feat = self.input_proj[idx](features[-1].tensors)
                 else:
-                    src = self.input_proj[idx](multi_level_feats[-1])
+                    feat = self.input_proj[idx](multi_level_feats[-1])
                 
-                m = images.mask
-                mask = F.interpolate(m[None].float(), size=src.shape[-2:]).to(torch.bool)[0]
-                pos_l = self.backbone[1](NestedTensor(src, mask)).to(src.dtype)
-                multi_level_feats.append(src)
+                # m = images.mask  # 原图的mask
+                mask = F.interpolate(img_masks[None].float(), size=feat.shape[-2:]).to(torch.bool)[0]
+                pos_l = self.backbone[1](NestedTensor(feat, mask)).to(feat.dtype)
+                multi_level_feats.append(feat)
                 multi_level_masks.append(mask)
                 pos.append(pos_l)
         

@@ -26,7 +26,7 @@ model = L(DabDeformableDETR)(
                     stride_in_1x1=False,
                     norm="FrozenBN",
                 ),
-                out_features=["res2", "res3", "res4", "res5"],
+                out_features=["res3", "res4", "res5"],
                 freeze_at=2,
             )
         ),
@@ -47,7 +47,7 @@ model = L(DabDeformableDETR)(
         decoder=L(DabDeformableDetrTransformerDecoder)(
             embed_dim=256,
             num_heads=8,
-            feedforward_dim=1024,
+            feedforward_dim=2048,
             attn_dropout=0.,
             ffn_dropout=0.,
             num_layers=6,
