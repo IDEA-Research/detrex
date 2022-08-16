@@ -19,3 +19,4 @@ from .dab_deformable_transformer import (
     DabDeformableDetrTransformerDecoder,
     DabDeformableDetrTransformer
 )
+from .dab_deformable_detr import DabDeformableDETR

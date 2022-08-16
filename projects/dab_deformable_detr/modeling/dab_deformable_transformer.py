@@ -41,7 +41,7 @@ class DeformableDetrEncoder(TransformerLayerSequence):
         num_layers: int = 6,
         post_norm: bool = False,
     ):
-        super(DeformableDetrEncoder).__init__(
+        super(DeformableDetrEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=MultiScaleDeformableAttention(
                     embed_dim=embed_dim,
@@ -117,11 +117,13 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
                         embed_dim=embed_dim,
                         num_heads=num_heads,
                         attn_drop=attn_dropout,
+                        batch_first=True,
                     ),
                     MultiScaleDeformableAttention(
                         embed_dim=embed_dim,
                         num_heads=num_heads,
                         dropout=attn_dropout,
+                        batch_first=True,
                     ),
                 ],
                 ffn=FFN(
@@ -177,6 +179,9 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 raw_query_pos = self.ref_point_head(query_sine_embed)
                 pos_scale = self.query_scale(output) if layer_idx != 0 else 1
                 query_pos = pos_scale * raw_query_pos
+                # query_pos: (4, 300, 256)
+                import pdb
+                pdb.set_trace()
 
             output = layer(
                 output,
@@ -233,7 +238,7 @@ class DabDeformableDetrTransformer(nn.Module):
         self.embed_dim = self.encoder.embed_dim
         self.use_dab = self.decoder.use_dab
 
-        self.level_embeds = nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dims))
+        self.level_embeds = nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dim))
 
         if self.as_two_stage:
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
@@ -373,8 +378,8 @@ class DabDeformableDetrTransformer(nn.Module):
         spatial_shapes = []
         for lvl, (feat, mask, pos_embed) in enumerate(zip(multi_level_feats, multi_level_masks, multi_level_pos_embeds)):
             bs, c, h, w = feat.shape
-            spatial_shapes = (h, w)
-            spatial_shapes.append(spatial_shapes)
+            spatial_shape = (h, w)
+            spatial_shapes.append(spatial_shape)
             
             feat = feat.flatten(2).transpose(1, 2)  # bs, hw, c
             mask = mask.flatten(1)
@@ -413,7 +418,6 @@ class DabDeformableDetrTransformer(nn.Module):
             valid_ratios=valid_ratios,
             **kwargs)  
 
-        memory = memory.permute(1, 0, 2)
         bs, _, c = memory.shape
         
         if self.as_two_stage:
@@ -433,23 +437,18 @@ class DabDeformableDetrTransformer(nn.Module):
             pos_trans_out = self.pos_trans_norm(self.pos_trans(self.get_proposal_pos_embed(topk_coords_unact)))
             query_embed, target = torch.split(pos_trans_out, c, dim=2)
         elif self.use_dab:
-            reference_points = query_embed[..., self.d_model:].sigmoid() 
-            target = query_embed[..., :self.d_model]
+            reference_points = query_embed[..., self.embed_dim:].sigmoid() 
+            target = query_embed[..., :self.embed_dim]
             target = target.unsqueeze(0).expand(bs, -1, -1)
-            init_reference_out = reference_points
-        else:
-            query_embed, target = torch.split(query_embed, c, dim=1)
-            query_embed = query_embed.unsqueeze(0).expand(bs, -1, -1)
-            target = target.unsqueeze(0).expand(bs, -1, -1)
-            reference_points = self.reference_points(query_embed).sigmoid() 
-                # bs, num_quires, 2
             init_reference_out = reference_points
 
+        # decoder
+        
         inter_states, inter_references = self.decoder(
             query=target,
-            key=reference_points,
+            key=memory,
             value=memory,
-            query_pos=query_embed,
+            query_pos=None,
             key_padding_mask=mask_flatten,
             reference_points=reference_points,
             spatial_shapes=spatial_shapes,

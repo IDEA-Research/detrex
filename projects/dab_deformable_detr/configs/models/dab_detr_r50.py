@@ -1,29 +1,22 @@
-import torch.nn as nn
-
 from ideadet.modeling.utils import Joiner, MaskedBackbone
 from ideadet.modeling.matcher import DabMatcher
 from ideadet.modeling.criterion import DabCriterion
 from ideadet.layers import (
-    MultiheadAttention,
-    ConditionalSelfAttention,
-    ConditionalCrossAttention,
     PositionEmbeddingSine,
-    FFN,
-    BaseTransformerLayer,
 )
 
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
 
 from modeling import (
-    DABDETR,
-    DabDetrTransformer,
-    DabDetrTransformerDecoder,
-    DabDetrTransformerEncoder,
+    DabDeformableDETR,
+    DabDeformableDetrTransformer,
+    DeformableDetrEncoder,
+    DabDeformableDetrTransformerDecoder
 )
 
 
-model = L(DABDETR)(
+model = L(DabDeformableDETR)(
     backbone=L(Joiner)(
         backbone=L(MaskedBackbone)(
             backbone=L(ResNet)(
@@ -41,67 +34,34 @@ model = L(DABDETR)(
             num_pos_feats=128, temperature=20, normalize=True
         ),
     ),
-    transformer=L(DabDetrTransformer)(
-        encoder=L(DabDetrTransformerEncoder)(
-            transformer_layers=L(BaseTransformerLayer)(
-                attn=L(MultiheadAttention)(
-                    embed_dim=256,
-                    num_heads=8,
-                    attn_drop=0.1,
-                    batch_first=False,
-                ),
-                ffn=L(FFN)(
-                    embed_dim=256,
-                    feedforward_dim=2048,
-                    ffn_drop=0.1,
-                    activation=L(nn.PReLU)(),
-                ),
-                norm=L(nn.LayerNorm)(normalized_shape=256),
-                operation_order=("self_attn", "norm", "ffn", "norm"),
-            ),
+    transformer=L(DabDeformableDetrTransformer)(
+        encoder=L(DeformableDetrEncoder)(
+            embed_dim=256,
+            num_heads=8,
+            feedforward_dim=2048,
+            attn_dropout=0.,
+            ffn_dropout=0.,
             num_layers=6,
             post_norm=False,
         ),
-        decoder=L(DabDetrTransformerDecoder)(
+        decoder=L(DabDeformableDetrTransformerDecoder)(
+            embed_dim=256,
+            num_heads=8,
+            feedforward_dim=1024,
+            attn_dropout=0.,
+            ffn_dropout=0.,
             num_layers=6,
             return_intermediate=True,
-            query_dim=4,
-            modulate_hw_attn=True,
-            post_norm=True,
-            transformer_layers=L(BaseTransformerLayer)(
-                attn=[
-                    L(ConditionalSelfAttention)(
-                        embed_dim=256,
-                        num_heads=8,
-                        attn_drop=0.1,
-                        batch_first=False,
-                    ),
-                    L(ConditionalCrossAttention)(
-                        embed_dim=256,
-                        num_heads=8,
-                        attn_drop=0.1,
-                        batch_first=False,
-                    ),
-                ],
-                ffn=L(FFN)(
-                    embed_dim=256,
-                    feedforward_dim=2048,
-                    ffn_drop=0.1,
-                    activation=L(nn.PReLU)(),
-                ),
-                norm=L(nn.LayerNorm)(
-                    normalized_shape=256,
-                ),
-                operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
-            ),
+            use_dab=True,
         ),
+        as_two_stage=False,
+        num_feature_levels=4,
+        two_stage_num_proposals=300,
     ),
     num_classes=80,
     num_queries=300,
     aux_loss=True,
-    query_dim=4,
-    iter_update=True,
-    random_refpoints_xy=True,
+    num_feature_levels=4,
     criterion=L(DabCriterion)(
         num_classes=80,
         matcher=L(DabMatcher)(

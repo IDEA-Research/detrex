@@ -253,7 +253,12 @@ class MultiScaleDeformableAttention(nn.Module):
 
         bs, num_query, _ = query.shape
         bs, num_value, _ = value.shape
-        assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_value
+
+        try:
+            assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_value
+        except:
+            import pdb
+            pdb.set_trace()
 
         value = self.value_proj(value)
         if key_padding_mask is not None:
@@ -312,6 +317,6 @@ class MultiScaleDeformableAttention(nn.Module):
         output = self.output_proj(output)
 
         if not self.batch_first:
-            output = output.premute(1, 0, 2)
+            output = output.permute(1, 0, 2)
 
         return self.dropout(output) + identity
