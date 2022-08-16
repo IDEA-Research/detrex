@@ -47,6 +47,7 @@ class DeformableDetrEncoder(TransformerLayerSequence):
                     embed_dim=embed_dim,
                     num_heads=num_heads,
                     dropout=attn_dropout,
+                    batch_first=True,
                 ),
                 ffn=FFN(
                     embed_dim=embed_dim,
@@ -179,9 +180,6 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 raw_query_pos = self.ref_point_head(query_sine_embed)
                 pos_scale = self.query_scale(output) if layer_idx != 0 else 1
                 query_pos = pos_scale * raw_query_pos
-                # query_pos: (4, 300, 256)
-                import pdb
-                pdb.set_trace()
 
             output = layer(
                 output,
@@ -193,7 +191,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 attn_masks=attn_masks,
                 query_key_padding_mask=query_key_padding_mask,
                 key_padding_mask=key_padding_mask,
-                reference_points=reference_points,
+                reference_points=reference_points_input,
                 **kwargs,
             )
 
@@ -403,9 +401,11 @@ class DabDeformableDetrTransformer(nn.Module):
                                       valid_ratios,
                                       device=feat.device)
         
-        feat_flatten = feat_flatten.permute(1, 0, 2)  # (H*W, bs, embed_dims)
-        lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
-            1, 0, 2)  # (H*W, bs, embed_dims)
+        # feat_flatten = feat_flatten.permute(1, 0, 2)  # (H*W, bs, embed_dims)
+        # lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
+        #     1, 0, 2)  # (H*W, bs, embed_dims)
+        
+
         memory = self.encoder(
             query=feat_flatten,
             key=None,
@@ -419,7 +419,6 @@ class DabDeformableDetrTransformer(nn.Module):
             **kwargs)  
 
         bs, _, c = memory.shape
-        
         if self.as_two_stage:
             output_memory, output_proposals = \
                 self.gen_encoder_output_proposals(
@@ -441,9 +440,9 @@ class DabDeformableDetrTransformer(nn.Module):
             target = query_embed[..., :self.embed_dim]
             target = target.unsqueeze(0).expand(bs, -1, -1)
             init_reference_out = reference_points
+            # (300, 4)
 
         # decoder
-        
         inter_states, inter_references = self.decoder(
             query=target,
             key=memory,
