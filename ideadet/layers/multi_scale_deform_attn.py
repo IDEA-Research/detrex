@@ -258,6 +258,7 @@ class MultiScaleDeformableAttention(nn.Module):
             assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_value
         except:
             import pdb
+
             pdb.set_trace()
 
         value = self.value_proj(value)

@@ -12,7 +12,7 @@ from modeling import (
     DabDeformableDETR,
     DabDeformableDetrTransformer,
     DeformableDetrEncoder,
-    DabDeformableDetrTransformerDecoder
+    DabDeformableDetrTransformerDecoder,
 )
 
 
@@ -39,8 +39,8 @@ model = L(DabDeformableDETR)(
             embed_dim=256,
             num_heads=8,
             feedforward_dim=2048,
-            attn_dropout=0.,
-            ffn_dropout=0.,
+            attn_dropout=0.0,
+            ffn_dropout=0.0,
             num_layers=6,
             post_norm=False,
         ),
@@ -48,8 +48,8 @@ model = L(DabDeformableDETR)(
             embed_dim=256,
             num_heads=8,
             feedforward_dim=2048,
-            attn_dropout=0.,
-            ffn_dropout=0.,
+            attn_dropout=0.0,
+            ffn_dropout=0.0,
             num_layers=6,
             return_intermediate=True,
             use_dab=True,
