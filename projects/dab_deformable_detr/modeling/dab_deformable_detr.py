@@ -142,7 +142,9 @@ class DabDeformableDETR(nn.Module):
             for img_id in range(batch_size):
                 img_h, img_w = batched_inputs[img_id]["instances"].image_size
                 img_masks[img_id, :img_h, :img_w] = 0
+            # import ipdb; ipdb.set_trace()
         else:
+            # import ipdb; ipdb.set_trace()
             batch_size, _, H, W = images.tensor.shape
             img_masks = images.tensor.new_ones(batch_size, H, W)
             img_masks[:, :H, :W] = 0

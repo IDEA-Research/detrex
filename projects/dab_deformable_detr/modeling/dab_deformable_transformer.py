@@ -40,6 +40,7 @@ class DeformableDetrEncoder(TransformerLayerSequence):
         operation_order: tuple = ("self_attn", "norm", "ffn", "norm"),
         num_layers: int = 6,
         post_norm: bool = False,
+        num_feature_levels: int = 4,
     ):
         super(DeformableDetrEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
@@ -48,6 +49,7 @@ class DeformableDetrEncoder(TransformerLayerSequence):
                     num_heads=num_heads,
                     dropout=attn_dropout,
                     batch_first=True,
+                    num_levels=num_feature_levels,
                 ),
                 ffn=FFN(
                     embed_dim=embed_dim,
@@ -110,6 +112,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         num_layers: int = 6,
         return_intermediate: bool = True,
         use_dab: bool = True,
+        num_feature_levels: int = 4,
     ):
         super(DabDeformableDetrTransformerDecoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
@@ -125,6 +128,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
                         num_heads=num_heads,
                         dropout=attn_dropout,
                         batch_first=True,
+                        num_levels=num_feature_levels,
                     ),
                 ],
                 ffn=FFN(
@@ -158,11 +162,15 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         attn_masks=None,
         query_key_padding_mask=None,
         key_padding_mask=None,
-        reference_points=None,
+        reference_points=None, # num_queries, 4
         valid_ratios=None,
         **kwargs,
     ):
         output = query
+        bs, num_queries, _ = output.size()
+        reference_points = reference_points.unsqueeze(0).repeat(bs, 1, 1) # bs, num_queries, 4
+
+
         intermediate = []
         intermediate_reference_points = []
         for layer_idx, layer in enumerate(self.layers):
@@ -391,6 +399,7 @@ class DabDeformableDetrTransformer(nn.Module):
         # lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
         #     1, 0, 2)  # (H*W, bs, embed_dims)
 
+        # import ipdb; ipdb.set_trace()
         memory = self.encoder(
             query=feat_flatten,
             key=None,
@@ -398,7 +407,7 @@ class DabDeformableDetrTransformer(nn.Module):
             query_pos=lvl_pos_embed_flatten,
             query_key_padding_mask=mask_flatten,
             spatial_shapes=spatial_shapes,
-            reference_points=reference_points,
+            reference_points=reference_points, # bs, num_token, num_level, 2
             level_start_index=level_start_index,
             valid_ratios=valid_ratios,
             **kwargs,
@@ -406,6 +415,7 @@ class DabDeformableDetrTransformer(nn.Module):
 
         bs, _, c = memory.shape
         if self.as_two_stage:
+            # TODO: to support two stage
             output_memory, output_proposals = self.gen_encoder_output_proposals(
                 memory, mask_flatten, spatial_shapes
             )
@@ -434,17 +444,18 @@ class DabDeformableDetrTransformer(nn.Module):
             init_reference_out = reference_points
             # (300, 4)
 
+
         # decoder
         inter_states, inter_references = self.decoder(
-            query=target,
-            key=memory,
-            value=memory,
+            query=target,                           # bs, num_queries, embed_dims
+            key=memory,                             # bs, num_tokens, embed_dims
+            value=memory,                           # bs, num_tokens, embed_dims
             query_pos=None,
-            key_padding_mask=mask_flatten,
-            reference_points=reference_points,
-            spatial_shapes=spatial_shapes,
-            level_start_index=level_start_index,
-            valid_ratios=valid_ratios,
+            key_padding_mask=mask_flatten,          # bs, num_tokens
+            reference_points=reference_points,      # num_queries, 4
+            spatial_shapes=spatial_shapes,          # nlvl, 2
+            level_start_index=level_start_index,    # nlvl
+            valid_ratios=valid_ratios,              # bs, nlvl, 2
             **kwargs,
         )
 

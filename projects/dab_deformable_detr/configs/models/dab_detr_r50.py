@@ -15,6 +15,7 @@ from modeling import (
     DabDeformableDetrTransformerDecoder,
 )
 
+num_feature_levels=4
 
 model = L(DabDeformableDETR)(
     backbone=L(Joiner)(
@@ -43,6 +44,7 @@ model = L(DabDeformableDETR)(
             ffn_dropout=0.0,
             num_layers=6,
             post_norm=False,
+            num_feature_levels=num_feature_levels,
         ),
         decoder=L(DabDeformableDetrTransformerDecoder)(
             embed_dim=256,
@@ -53,15 +55,16 @@ model = L(DabDeformableDETR)(
             num_layers=6,
             return_intermediate=True,
             use_dab=True,
+            num_feature_levels=num_feature_levels,
         ),
         as_two_stage=False,
-        num_feature_levels=4,
+        num_feature_levels=num_feature_levels,
         two_stage_num_proposals=300,
     ),
     num_classes=80,
     num_queries=300,
     aux_loss=True,
-    num_feature_levels=4,
+    num_feature_levels=num_feature_levels,
     criterion=L(DabCriterion)(
         num_classes=80,
         matcher=L(DabMatcher)(
