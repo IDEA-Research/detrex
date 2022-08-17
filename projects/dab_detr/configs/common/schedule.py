@@ -4,7 +4,7 @@ from detectron2.config import LazyCall as L
 from detectron2.solver import WarmupParamScheduler
 
 
-def dab_coco_scheduler(epochs=50, decay_epochs=40, warmup_epochs=0.):
+def dab_coco_scheduler(epochs=50, decay_epochs=40, warmup_epochs=0.0):
     """
     Returns the config for a default multi-step LR scheduler such as "1x", "3x",
     commonly referred to in papers, where every 1x has the total length of 1440k

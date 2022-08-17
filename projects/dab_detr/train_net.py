@@ -10,9 +10,8 @@ few common configuration parameters currently defined in "configs/common/train.p
 To add more complicated training logic, you can easily add other configs
 in the config file and implement a new train_net.py to handle them.
 """
-import time
 import logging
-
+import time
 import torch
 
 from detectron2.checkpoint import DetectionCheckpointer
