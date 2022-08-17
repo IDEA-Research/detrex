@@ -68,9 +68,9 @@ class SetCriterion(nn.Module):
         )
         losses = {"loss_ce": loss_ce}
 
-        if log:
-            # TODO this should probably be a separate loss, not hacked in this one here
-            losses["class_error"] = 100 - accuracy(src_logits[idx], target_classes_o)[0]
+        # if log:
+        #     # TODO this should probably be a separate loss, not hacked in this one here
+        #     losses["class_error"] = 100 - accuracy(src_logits[idx], target_classes_o)[0]
         return losses
 
     @torch.no_grad()
@@ -110,9 +110,9 @@ class SetCriterion(nn.Module):
         losses["loss_giou"] = loss_giou.sum() / num_boxes
 
         # calculate the x,y and h,w loss
-        with torch.no_grad():
-            losses["loss_xy"] = loss_bbox[..., :2].sum() / num_boxes
-            losses["loss_hw"] = loss_bbox[..., 2:].sum() / num_boxes
+        # with torch.no_grad():
+        #     losses["loss_xy"] = loss_bbox[..., :2].sum() / num_boxes
+        #     losses["loss_hw"] = loss_bbox[..., 2:].sum() / num_boxes
 
         return losses
 
