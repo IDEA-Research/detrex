@@ -9,8 +9,8 @@ optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "detectron2://ImageNetPretrained/MSRA/R-101.pkl"
-train.output_dir = "./dab_r101_50epoch"
+train.init_checkpoint = "./pretrained_weights/r101.pkl"
+train.output_dir = "./output/dab_r101_50epoch"
 train.max_iter = 375000
 
 
