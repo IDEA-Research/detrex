@@ -16,7 +16,6 @@ train.max_iter = 375000
 
 # modify optimizer config
 optimizer.weight_decay = 1e-4
-optimizer.params.weight_decay_norm = None
 optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in module_name else 1
 
 # modify dataloader config
