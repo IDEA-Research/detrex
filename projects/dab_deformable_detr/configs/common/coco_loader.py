@@ -45,7 +45,7 @@ dataloader.train = L(build_detection_train_loader)(
         img_format="RGB",
     ),
     total_batch_size=16,
-    num_workers=4,
+    num_workers=10,
 )
 
 dataloader.test = L(build_detection_test_loader)(
@@ -62,7 +62,7 @@ dataloader.test = L(build_detection_test_loader)(
         mask_on=False,
         img_format="RGB",
     ),
-    num_workers=4,
+    num_workers=10,
 )
 
 dataloader.evaluator = L(COCOEvaluator)(

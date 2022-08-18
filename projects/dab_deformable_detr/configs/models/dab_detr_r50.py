@@ -1,9 +1,10 @@
 from ideadet.modeling.utils import Joiner, MaskedBackbone
 from ideadet.modeling.matcher import DabMatcher
 from ideadet.modeling.criterion import DabCriterion
-from ideadet.layers import (
-    PositionEmbeddingSine,
-)
+# from ideadet.layers import (
+#     PositionEmbeddingSine,
+# )
+from ...modeling.positional_encoding import PositionEmbeddingSine
 
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
@@ -28,11 +29,11 @@ model = L(DabDeformableDETR)(
                     norm="FrozenBN",
                 ),
                 out_features=["res3", "res4", "res5"],
-                freeze_at=2,
+                freeze_at=1,
             )
         ),
         position_embedding=L(PositionEmbeddingSine)(
-            num_pos_feats=128, temperature=20, normalize=True
+            num_pos_feats=128, temperature=10000, normalize=True
         ),
     ),
     transformer=L(DabDeformableDetrTransformer)(
@@ -68,7 +69,7 @@ model = L(DabDeformableDETR)(
     criterion=L(DabCriterion)(
         num_classes=80,
         matcher=L(DabMatcher)(
-            cost_class=1,
+            cost_class=2.0,
             cost_bbox=5.0,
             cost_giou=2.0,
         ),
@@ -78,7 +79,7 @@ model = L(DabDeformableDETR)(
             "loss_giou": 2.0,
         },
         focal_alpha=0.25,
-        losses=["labels", "boxes", "cardinality"],
+        losses=["labels", "boxes"],
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],

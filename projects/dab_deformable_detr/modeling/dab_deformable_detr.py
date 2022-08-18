@@ -120,7 +120,7 @@ class DabDeformableDETR(nn.Module):
         )
         self.class_embed = _get_clones(self.class_embed, num_pred)
         self.bbox_embed = _get_clones(self.bbox_embed, num_pred)
-        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
+        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], 0.0)
         # hack implementation for iterative bounding box refinement
         self.transformer.decoder.bbox_embed = self.bbox_embed
 
@@ -142,9 +142,7 @@ class DabDeformableDETR(nn.Module):
             for img_id in range(batch_size):
                 img_h, img_w = batched_inputs[img_id]["instances"].image_size
                 img_masks[img_id, :img_h, :img_w] = 0
-            # import ipdb; ipdb.set_trace()
         else:
-            # import ipdb; ipdb.set_trace()
             batch_size, _, H, W = images.tensor.shape
             img_masks = images.tensor.new_ones(batch_size, H, W)
             img_masks[:, :H, :W] = 0
