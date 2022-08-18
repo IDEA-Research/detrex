@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # Copyright (c) Facebook, Inc. and its affiliates.
+
+###
 """
 Training script using the new "LazyConfig" python config files.
 This scripts reads a given python config file and runs the training or evaluation.
