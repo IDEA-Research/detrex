@@ -13,11 +13,11 @@ in the config file and implement a new train_net.py to handle them.
 import logging
 import time
 import torch
+from torch.nn.parallel import DataParallel, DistributedDataParallel
 
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import LazyConfig, instantiate
 from detectron2.engine import (
-    AMPTrainer,
     SimpleTrainer,
     default_argument_parser,
     default_setup,
@@ -33,14 +33,37 @@ logger = logging.getLogger("ideadet")
 
 
 class Trainer(SimpleTrainer):
-    def __init__(self, model, dataloader, optimizer):
+    """
+    We've combine Simple and AMP Trainer together.
+    """
+
+    def __init__(self, model, dataloader, optimizer, cfg, grad_scaler=None):
         super().__init__(model=model, data_loader=dataloader, optimizer=optimizer)
+
+        unsupported = "AMPTrainer does not support single-process multi-device training!"
+        if isinstance(model, DistributedDataParallel):
+            assert not (model.device_ids and len(model.device_ids) > 1), unsupported
+        assert not isinstance(model, DataParallel), unsupported
+
+        if grad_scaler is None:
+            from torch.cuda.amp import GradScaler
+
+            grad_scaler = GradScaler()
+        self.grad_scaler = grad_scaler
+
+        # set True to use amp training
+        self.amp = cfg.train.amp.enabled
+
+        self.cfg = cfg
 
     def run_step(self):
         """
         Implement the standard training logic described above.
         """
-        assert self.model.training, "[SimpleTrainer] model was changed to eval mode!"
+        assert self.model.training, "[Trainer] model was changed to eval mode!"
+        assert torch.cuda.is_available(), "[Trainer] CUDA is required for AMP training!"
+        from torch.cuda.amp import autocast
+
         start = time.perf_counter()
         """
         If you want to do something with the data, you can wrap the dataloader.
@@ -52,30 +75,35 @@ class Trainer(SimpleTrainer):
         If you want to do something with the losses, you can wrap the model.
         """
         loss_dict = self.model(data)
-        if isinstance(loss_dict, torch.Tensor):
-            losses = loss_dict
-            loss_dict = {"total_loss": loss_dict}
-        else:
-            losses = sum(loss_dict.values())
+        with autocast(enabled=self.amp):
+            if isinstance(loss_dict, torch.Tensor):
+                losses = loss_dict
+                loss_dict = {"total_loss": loss_dict}
+            else:
+                losses = sum(loss_dict.values())
 
         """
         If you need to accumulate gradients or do something similar, you can
         wrap the optimizer with your custom `zero_grad()` method.
         """
         self.optimizer.zero_grad()
-        losses.backward()
+
+        if self.amp:
+            self.grad_scaler.scale(losses).backward()
+            self.grad_scaler.unscale_(self.optimizer)
+            torch.nn.utils.clip_grad_norm_(
+                self.model.parameters(), max_norm=self.cfg.train.clip_grad_max_norm
+            )
+            self.grad_scaler.step(self.optimizer)
+            self.grad_scaler.update()
+        else:
+            losses.backward()
+            torch.nn.utils.clip_grad_norm_(
+                self.model.parameters(), max_norm=self.cfg.train.clip_grad_max_norm
+            )
+            self.optimizer.step()
 
         self._write_metrics(loss_dict, data_time)
-
-        """
-        If you need gradient clipping/scaling or other processing, you can
-        wrap the optimizer with your custom `step()` method. But it is
-        suboptimal as explained in https://arxiv.org/abs/2006.15704 Sec 3.2.4
-        """
-
-        # add gradient clip here
-        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=0.1)
-        self.optimizer.step()
 
 
 def do_test(cfg, model):
@@ -117,8 +145,7 @@ def do_train(args, cfg):
     train_loader = instantiate(cfg.dataloader.train)
 
     model = create_ddp_model(model, **cfg.train.ddp)
-    # trainer = (AMPTrainer if cfg.train.amp.enabled else SimpleTrainer)(model, train_loader, optim)
-    trainer = Trainer(model, train_loader, optim)
+    trainer = Trainer(model, train_loader, optim, cfg)
     checkpointer = DetectionCheckpointer(
         model,
         cfg.train.output_dir,
