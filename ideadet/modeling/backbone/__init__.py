@@ -14,5 +14,10 @@
 # limitations under the License.
 
 
-from .criterion import SetCriterion
-from .dab_criterion import SetCriterion as DabCriterion
+from .resnet import (
+    BasicStem,
+    ResNet,
+    ResNetBlockBase,
+    make_stage,
+    BottleneckBlock,
+)
