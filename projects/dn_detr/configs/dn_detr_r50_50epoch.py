@@ -12,7 +12,7 @@ train = get_config("common/train.py").train
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
 # train.init_checkpoint = "/student/lifeng/model/dn_detr_r50_official/checkpoint_46ep_44.6ap.pth"
 # train.init_checkpoint = "/student/lifeng/model//output_dab_r50_freeze_1_no_decay_norm_dn-idea01//converted_model.pth"
-train.output_dir = "/student/lifeng/model//output_dab_r50_freeze_1_no_decay_norm_idea01/"
+train.output_dir = "./output/dn_detr_r50_50epoch"
 train.max_iter = 375000
 
 
