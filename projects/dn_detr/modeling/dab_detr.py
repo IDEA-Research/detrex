@@ -29,6 +29,7 @@ from ideadet.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
+from ideadet.modeling.criterion.dn_components import prepare_for_dn, dn_post_process
 
 
 class DABDETR(nn.Module):
@@ -46,6 +47,10 @@ class DABDETR(nn.Module):
         query_dim=4,
         random_refpoints_xy=True,
         device="cuda",
+        use_dn=True,
+        scalar=5,
+        label_noise_scale=0.,
+        box_noise_scale=0.,
     ):
         super(DABDETR, self).__init__()
         self.backbone = backbone
@@ -56,6 +61,14 @@ class DABDETR(nn.Module):
         self.query_dim = query_dim
         self.aux_loss = aux_loss
         self.iter_update = iter_update
+        ####################
+        self.hidden_dim = hidden_dim
+        self.num_queries = num_queries
+        self.num_classes = num_classes
+        self.use_dn = use_dn
+        self.dn_args = (scalar, label_noise_scale, box_noise_scale)
+        # leave one dim for indicator
+        self.label_enc = nn.Embedding(num_classes + 1, hidden_dim - 1)
 
         assert self.query_dim in [2, 4]
 
@@ -95,9 +108,21 @@ class DABDETR(nn.Module):
 
         src, mask = features[-1].decompose()
         assert mask is not None
-        embedweight = self.refpoint_embed.weight
+        embedweight = self.refpoint_embed.weight  # TODO this should be moved to the Transformer
 
-        hs, reference = self.transformer(self.input_proj(src), mask, embedweight, pos[-1])
+        ####### prepare for dn
+        if self.training:
+            gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
+            targets = self.prepare_targets(gt_instances)
+        else:
+            targets = None
+        input_query_label, input_query_bbox, attn_mask, mask_dict = \
+            prepare_for_dn(targets, self.dn_args, embedweight, src.size(0), self.training, self.num_queries, self.num_classes,
+                               self.hidden_dim, self.label_enc)
+
+        # hs, reference = self.transformer(self.input_proj(src), mask, embedweight, pos[-1])
+        hs, reference = self.transformer(self.input_proj(src), mask, input_query_bbox, pos[-1], target=input_query_label,
+                                         attn_mask=attn_mask)
 
         reference_before_sigmoid = inverse_sigmoid(reference)
         tmp = self.bbox_embed(hs)
@@ -105,14 +130,15 @@ class DABDETR(nn.Module):
         outputs_coord = tmp.sigmoid()
         outputs_class = self.class_embed(hs)
 
+        ###### dn post process
+        outputs_class, outputs_coord = dn_post_process(outputs_class, outputs_coord, mask_dict)
+
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
 
         if self.training:
-            gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
-            targets = self.prepare_targets(gt_instances)
-            loss_dict = self.criterion(output, targets)
+            loss_dict = self.criterion(output, targets, mask_dict)
             weight_dict = self.criterion.weight_dict
             for k in loss_dict.keys():
                 if k in weight_dict:
