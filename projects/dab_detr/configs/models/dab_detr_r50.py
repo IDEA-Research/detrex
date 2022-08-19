@@ -34,7 +34,7 @@ model = L(DABDETR)(
                     norm="FrozenBN",
                 ),
                 out_features=["res2", "res3", "res4", "res5"],
-                freeze_at=2,
+                freeze_at=1,
             )
         ),
         position_embedding=L(PositionEmbeddingSine)(
@@ -47,13 +47,13 @@ model = L(DABDETR)(
                 attn=L(MultiheadAttention)(
                     embed_dim=256,
                     num_heads=8,
-                    attn_drop=0.1,
+                    attn_drop=0.0,
                     batch_first=False,
                 ),
                 ffn=L(FFN)(
                     embed_dim=256,
                     feedforward_dim=2048,
-                    ffn_drop=0.1,
+                    ffn_drop=0.0,
                     activation=L(nn.PReLU)(),
                 ),
                 norm=L(nn.LayerNorm)(normalized_shape=256),
@@ -73,20 +73,20 @@ model = L(DABDETR)(
                     L(ConditionalSelfAttention)(
                         embed_dim=256,
                         num_heads=8,
-                        attn_drop=0.1,
+                        attn_drop=0.0,
                         batch_first=False,
                     ),
                     L(ConditionalCrossAttention)(
                         embed_dim=256,
                         num_heads=8,
-                        attn_drop=0.1,
+                        attn_drop=0.0,
                         batch_first=False,
                     ),
                 ],
                 ffn=L(FFN)(
                     embed_dim=256,
                     feedforward_dim=2048,
-                    ffn_drop=0.1,
+                    ffn_drop=0.0,
                     activation=L(nn.PReLU)(),
                 ),
                 norm=L(nn.LayerNorm)(
@@ -115,7 +115,10 @@ model = L(DABDETR)(
             "loss_giou": 2.0,
         },
         focal_alpha=0.25,
-        losses=["labels", "boxes", "cardinality"],
+        losses=[
+            "labels",
+            "boxes",
+        ],
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
