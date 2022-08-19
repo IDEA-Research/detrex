@@ -22,7 +22,6 @@
 
 
 from typing import List, Optional
-
 import torch
 import torchvision
 from torch import Tensor
