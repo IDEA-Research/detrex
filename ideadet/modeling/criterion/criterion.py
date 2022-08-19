@@ -26,7 +26,6 @@ import torch.nn.functional as F
 
 from ideadet.layers import box_ops
 from ideadet.utils import (
-    accuracy,
     get_world_size,
     interpolate,
     is_dist_avail_and_initialized,
@@ -79,9 +78,6 @@ class SetCriterion(nn.Module):
         loss_ce = F.cross_entropy(src_logits.transpose(1, 2), target_classes, self.empty_weight)
         losses = {"loss_ce": loss_ce}
 
-        if log:
-            # TODO this should probably be a separate loss, not hacked in this one here
-            losses["class_error"] = 100 - accuracy(src_logits[idx], target_classes_o)[0]
         return losses
 
     @torch.no_grad()
