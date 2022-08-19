@@ -20,4 +20,5 @@ from .resnet import (
     ResNetBlockBase,
     make_stage,
     BottleneckBlock,
+    BasicBlock,
 )
