@@ -336,11 +336,15 @@ class DeformableTransformerDecoderLayer(nn.Module):
     def forward(self, tgt, query_pos, reference_points, src, src_spatial_shapes, level_start_index, src_padding_mask=None):
         # self attention
         q = k = self.with_pos_embed(tgt, query_pos)
+        import pdb
+        pdb.set_trace()
         tgt2 = self.self_attn(q.transpose(0, 1), k.transpose(0, 1), tgt.transpose(0, 1))[0].transpose(0, 1)
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
 
         # cross attention
+        import pdb
+        pdb.set_trace()
         tgt2 = self.cross_attn(self.with_pos_embed(tgt, query_pos),
                                reference_points,
                                src, src_spatial_shapes, level_start_index, src_padding_mask)
@@ -408,7 +412,8 @@ class DeformableTransformerDecoder(nn.Module):
             if self.high_dim_query_update and lid != 0:
                 query_pos = query_pos + self.high_dim_query_proj(output)                 
 
-
+            import pdb
+            pdb.set_trace()
             output = layer(output, query_pos, reference_points_input, src, src_spatial_shapes, src_level_start_index, src_padding_mask)
 
             # hack implementation for iterative bounding box refinement

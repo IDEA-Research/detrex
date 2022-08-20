@@ -188,6 +188,8 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 raw_query_pos = self.ref_point_head(query_sine_embed)
                 pos_scale = self.query_scale(output) if layer_idx != 0 else 1
                 query_pos = pos_scale * raw_query_pos
+            
+
 
             output = layer(
                 output,
@@ -195,7 +197,6 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 value,
                 query_pos=query_pos,
                 key_pos=key_pos,
-                query_sine_embed=query_sine_embed,
                 attn_masks=attn_masks,
                 query_key_padding_mask=query_key_padding_mask,
                 key_padding_mask=key_padding_mask,
@@ -443,7 +444,6 @@ class DabDeformableDetrTransformer(nn.Module):
             target = target.unsqueeze(0).expand(bs, -1, -1)
             init_reference_out = reference_points
             # (300, 4)
-
 
         # decoder
         inter_states, inter_references = self.decoder(

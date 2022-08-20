@@ -237,7 +237,8 @@ class MultiScaleDeformableAttention(nn.Module):
 
         :return output                     (N, Length_{query}, C)
         """
-
+        # import pdb
+        # pdb.set_trace()
         if value is None:
             value = query
 

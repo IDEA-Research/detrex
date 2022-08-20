@@ -82,7 +82,6 @@ class MultiheadAttention(nn.Module):
             attn_mask=attn_mask,
             key_padding_mask=key_padding_mask,
         )[0]
-
         return identity + self.proj_drop(out)
 
 
