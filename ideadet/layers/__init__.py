@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .ms_deform_attn import MSDeformAttn, MSDeformAttnFunction
+from .multi_scale_deform_attn import (
+    MultiScaleDeformableAttention,
+    multi_scale_deformable_attn_pytorch,
+)
 from .layer_norm import LayerNorm
 from .box_ops import (
     box_cxcywh_to_xyxy,
