@@ -28,6 +28,12 @@ from ideadet.layers import (
     PositionEmbeddingLearned,
 )
 
+from utils import (
+    DABPositionEmbeddingLearned,
+    DABPositionEmbeddingSine,
+    DeformablePositionEmbeddingSine,
+)
+
 def test_sine_position_embedding(num_pos_feats=16, batch_size=2):
     # test invalid type of scale
     with pytest.raises(AssertionError):
@@ -48,7 +54,7 @@ def test_sine_position_embedding(num_pos_feats=16, batch_size=2):
     assert out.shape == (batch_size, num_pos_feats * 2, h, w)
 
 
-def test_learned_positional_encoding(num_pos_feats=16,
+def test_learned_position_embedding(num_pos_feats=16,
                                      row_num_embed=10,
                                      col_num_embed=10,
                                      batch_size=2):
@@ -59,3 +65,52 @@ def test_learned_positional_encoding(num_pos_feats=16,
     mask = torch.rand(batch_size, h, w) > 0.5
     out = module(mask)
     assert out.shape == (batch_size, num_pos_feats * 2, h, w)
+
+
+def test_sine_position_embedding_output(num_pos_feats=16, batch_size=2):
+    # test position embedding without normalize
+    module_new = PositionEmbeddingSine(num_pos_feats)
+    module_original = DABPositionEmbeddingSine(num_pos_feats)
+    h, w = 10, 6
+    mask = (torch.rand(batch_size, h, w) > 0.5).to(torch.int)
+
+    output_new = module_new(mask)
+    output_original = module_original(mask)
+
+    torch.allclose(output_new.sum(), output_original.sum())
+
+    # test position embedding with normalize
+    module_new = PositionEmbeddingSine(num_pos_feats, normalize=True)
+    module_original = DABPositionEmbeddingSine(num_pos_feats, normalize=True)
+    h, w = 10, 6
+    mask = (torch.rand(batch_size, h, w) > 0.5).to(torch.int)
+
+    output_new = module_new(mask)
+    output_original = module_original(mask)
+
+    torch.allclose(output_new.sum(), output_original.sum())
+
+
+def test_sine_position_embedding_deformable(num_pos_feats=16, batch_size=2):
+    # test position embedding used in Deformable-DETR without normalize
+    # test position embedding without normalize
+    module_new = PositionEmbeddingSine(num_pos_feats, offset=-0.5)
+    module_original = DeformablePositionEmbeddingSine(num_pos_feats)
+    h, w = 10, 6
+    mask = (torch.rand(batch_size, h, w) > 0.5).to(torch.int)
+
+    output_new = module_new(mask)
+    output_original = module_original(mask)
+
+    torch.allclose(output_new.sum(), output_original.sum())
+
+    # test position embedding with normalize
+    module_new = PositionEmbeddingSine(num_pos_feats, offset=-0.5, normalize=True)
+    module_original = DeformablePositionEmbeddingSine(num_pos_feats, normalize=True)
+    h, w = 10, 6
+    mask = (torch.rand(batch_size, h, w) > 0.5).to(torch.int)
+
+    output_new = module_new(mask)
+    output_original = module_original(mask)
+
+    torch.allclose(output_new.sum(), output_original.sum())
