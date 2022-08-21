@@ -25,11 +25,11 @@ import torch.nn as nn
 
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from ideadet.layers.mlp import MLP
+from ideadet.modeling.criterion.dn_components import dn_post_process, prepare_for_dn
 from ideadet.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
-from ideadet.modeling.criterion.dn_components import prepare_for_dn, dn_post_process
 
 
 class DABDETR(nn.Module):
@@ -49,8 +49,8 @@ class DABDETR(nn.Module):
         device="cuda",
         use_dn=True,
         scalar=5,
-        label_noise_scale=0.,
-        box_noise_scale=0.,
+        label_noise_scale=0.0,
+        box_noise_scale=0.0,
     ):
         super(DABDETR, self).__init__()
         self.backbone = backbone
@@ -116,13 +116,27 @@ class DABDETR(nn.Module):
             targets = self.prepare_targets(gt_instances)
         else:
             targets = None
-        input_query_label, input_query_bbox, attn_mask, mask_dict = \
-            prepare_for_dn(targets, self.dn_args, embedweight, src.size(0), self.training, self.num_queries, self.num_classes,
-                               self.hidden_dim, self.label_enc)
+        input_query_label, input_query_bbox, attn_mask, mask_dict = prepare_for_dn(
+            targets,
+            self.dn_args,
+            embedweight,
+            src.size(0),
+            self.training,
+            self.num_queries,
+            self.num_classes,
+            self.hidden_dim,
+            self.label_enc,
+        )
 
         # hs, reference = self.transformer(self.input_proj(src), mask, embedweight, pos[-1])
-        hs, reference = self.transformer(self.input_proj(src), mask, input_query_bbox, pos[-1], target=input_query_label,
-                                         attn_mask=attn_mask)
+        hs, reference = self.transformer(
+            self.input_proj(src),
+            mask,
+            input_query_bbox,
+            pos[-1],
+            target=input_query_label,
+            attn_mask=attn_mask,
+        )
 
         reference_before_sigmoid = inverse_sigmoid(reference)
         tmp = self.bbox_embed(hs)

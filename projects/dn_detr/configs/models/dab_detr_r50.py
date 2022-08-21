@@ -133,13 +133,11 @@ model = L(DABDETR)(
 if model.aux_loss:
     weight_dict = model.criterion.weight_dict
     if model.use_dn:
-        weight_dict['tgt_loss_ce'] = 1.0
-        weight_dict['tgt_loss_bbox'] = 5.0
-        weight_dict['tgt_loss_giou'] = 2.0
+        weight_dict["tgt_loss_ce"] = 1.0
+        weight_dict["tgt_loss_bbox"] = 5.0
+        weight_dict["tgt_loss_giou"] = 2.0
     aux_weight_dict = {}
     for i in range(model.transformer.decoder.num_layers - 1):
         aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
     weight_dict.update(aux_weight_dict)
     model.criterion.weight_dict = weight_dict
-
-
