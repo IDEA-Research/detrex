@@ -123,6 +123,7 @@ def test_learned_position_embedding_output(num_pos_feats=16,
     module_new = PositionEmbeddingLearned(num_pos_feats, row_num_embed, col_num_embed)
     module_original = DABPositionEmbeddingLearned(num_pos_feats)
 
+
     # transfer weights
     module_new.col_embed.weight = module_original.col_embed.weight
     module_new.row_embed.weight = module_original.row_embed.weight

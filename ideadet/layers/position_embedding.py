@@ -53,7 +53,7 @@ class PositionEmbeddingSine(nn.Module):
         self.offset = offset
 
     def forward(self, mask):
-        
+
         # TODO: support to export to ONNX as mmdet
         assert mask is not None
         not_mask = ~mask

@@ -1,10 +1,9 @@
 from ideadet.modeling.utils import Joiner, MaskedBackbone
 from ideadet.modeling.matcher import DabMatcher
 from ideadet.modeling.criterion import DabCriterion
-# from ideadet.layers import (
-#     PositionEmbeddingSine,
-# )
-from ...modeling.positional_encoding import PositionEmbeddingSine
+from ideadet.layers import (
+    PositionEmbeddingSine,
+)
 
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
@@ -33,7 +32,7 @@ model = L(DabDeformableDETR)(
             )
         ),
         position_embedding=L(PositionEmbeddingSine)(
-            num_pos_feats=128, temperature=10000, normalize=True
+            num_pos_feats=128, temperature=10000, normalize=True, offset=-0.5,
         ),
     ),
     transformer=L(DabDeformableDetrTransformer)(
