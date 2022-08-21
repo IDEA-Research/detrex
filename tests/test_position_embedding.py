@@ -114,3 +114,22 @@ def test_sine_position_embedding_deformable(num_pos_feats=16, batch_size=2):
     output_original = module_original(mask)
 
     torch.allclose(output_new.sum(), output_original.sum())
+
+
+def test_learned_position_embedding_output(num_pos_feats=16,
+                                           row_num_embed=10,
+                                           col_num_embed=10,
+                                           batch_size=2):
+    module_new = PositionEmbeddingLearned(num_pos_feats, row_num_embed, col_num_embed)
+    module_original = DABPositionEmbeddingLearned(num_pos_feats)
+
+    # transfer weights
+    module_new.col_embed.weight = module_original.col_embed.weight
+    module_new.row_embed.weight = module_original.row_embed.weight
+
+    h, w = 10, 6
+    mask = torch.rand(batch_size, h, w) > 0.5
+    output_new = module_new(mask)
+    output_original = module_original(mask)
+
+    torch.allclose(output_new.sum(), output_original.sum())

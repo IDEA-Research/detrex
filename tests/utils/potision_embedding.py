@@ -128,6 +128,6 @@ class DABPositionEmbeddingLearned(nn.Module):
             )
             .permute(2, 0, 1)
             .unsqueeze(0)
-            .repeat(x.shape[0], 1, 1, 1)
+            .repeat(mask.shape[0], 1, 1, 1)
         )
-        return 
+        return pos
