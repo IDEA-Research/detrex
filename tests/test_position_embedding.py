@@ -23,10 +23,7 @@
 import pytest
 import torch
 
-from ideadet.layers import (
-    PositionEmbeddingSine,
-    PositionEmbeddingLearned,
-)
+from ideadet.layers import PositionEmbeddingLearned, PositionEmbeddingSine
 
 from utils import (
     DABPositionEmbeddingLearned,
@@ -34,12 +31,12 @@ from utils import (
     DeformablePositionEmbeddingSine,
 )
 
+
 def test_sine_position_embedding(num_pos_feats=16, batch_size=2):
     # test invalid type of scale
     with pytest.raises(AssertionError):
-        module = PositionEmbeddingSine(
-            num_pos_feats, scale=(3., ), normalize=True)
-    
+        module = PositionEmbeddingSine(num_pos_feats, scale=(3.0,), normalize=True)
+
     module = PositionEmbeddingSine(num_pos_feats)
     h, w = 10, 6
     mask = (torch.rand(batch_size, h, w) > 0.5).to(torch.int)
@@ -54,10 +51,9 @@ def test_sine_position_embedding(num_pos_feats=16, batch_size=2):
     assert out.shape == (batch_size, num_pos_feats * 2, h, w)
 
 
-def test_learned_position_embedding(num_pos_feats=16,
-                                     row_num_embed=10,
-                                     col_num_embed=10,
-                                     batch_size=2):
+def test_learned_position_embedding(
+    num_pos_feats=16, row_num_embed=10, col_num_embed=10, batch_size=2
+):
     module = PositionEmbeddingLearned(num_pos_feats, row_num_embed, col_num_embed)
     assert module.row_embed.weight.shape == (row_num_embed, num_pos_feats)
     assert module.col_embed.weight.shape == (col_num_embed, num_pos_feats)
@@ -116,13 +112,11 @@ def test_sine_position_embedding_deformable(num_pos_feats=16, batch_size=2):
     torch.allclose(output_new.sum(), output_original.sum())
 
 
-def test_learned_position_embedding_output(num_pos_feats=16,
-                                           row_num_embed=10,
-                                           col_num_embed=10,
-                                           batch_size=2):
+def test_learned_position_embedding_output(
+    num_pos_feats=16, row_num_embed=10, col_num_embed=10, batch_size=2
+):
     module_new = PositionEmbeddingLearned(num_pos_feats, row_num_embed, col_num_embed)
     module_original = DABPositionEmbeddingLearned(num_pos_feats)
-
 
     # transfer weights
     module_new.col_embed.weight = module_original.col_embed.weight

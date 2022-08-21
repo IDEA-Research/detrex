@@ -162,14 +162,13 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         attn_masks=None,
         query_key_padding_mask=None,
         key_padding_mask=None,
-        reference_points=None, # num_queries, 4
+        reference_points=None,  # num_queries, 4
         valid_ratios=None,
         **kwargs,
     ):
         output = query
         bs, num_queries, _ = output.size()
-        reference_points = reference_points.unsqueeze(0).repeat(bs, 1, 1) # bs, num_queries, 4
-
+        reference_points = reference_points.unsqueeze(0).repeat(bs, 1, 1)  # bs, num_queries, 4
 
         intermediate = []
         intermediate_reference_points = []
@@ -407,7 +406,7 @@ class DabDeformableDetrTransformer(nn.Module):
             query_pos=lvl_pos_embed_flatten,
             query_key_padding_mask=mask_flatten,
             spatial_shapes=spatial_shapes,
-            reference_points=reference_points, # bs, num_token, num_level, 2
+            reference_points=reference_points,  # bs, num_token, num_level, 2
             level_start_index=level_start_index,
             valid_ratios=valid_ratios,
             **kwargs,
@@ -444,18 +443,17 @@ class DabDeformableDetrTransformer(nn.Module):
             init_reference_out = reference_points
             # (300, 4)
 
-
         # decoder
         inter_states, inter_references = self.decoder(
-            query=target,                           # bs, num_queries, embed_dims
-            key=memory,                             # bs, num_tokens, embed_dims
-            value=memory,                           # bs, num_tokens, embed_dims
+            query=target,  # bs, num_queries, embed_dims
+            key=memory,  # bs, num_tokens, embed_dims
+            value=memory,  # bs, num_tokens, embed_dims
             query_pos=None,
-            key_padding_mask=mask_flatten,          # bs, num_tokens
-            reference_points=reference_points,      # num_queries, 4
-            spatial_shapes=spatial_shapes,          # nlvl, 2
-            level_start_index=level_start_index,    # nlvl
-            valid_ratios=valid_ratios,              # bs, nlvl, 2
+            key_padding_mask=mask_flatten,  # bs, num_tokens
+            reference_points=reference_points,  # num_queries, 4
+            spatial_shapes=spatial_shapes,  # nlvl, 2
+            level_start_index=level_start_index,  # nlvl
+            valid_ratios=valid_ratios,  # bs, nlvl, 2
             **kwargs,
         )
 

@@ -15,7 +15,7 @@ from modeling import (
     DabDeformableDetrTransformerDecoder,
 )
 
-num_feature_levels=4
+num_feature_levels = 4
 
 model = L(DabDeformableDETR)(
     backbone=L(Joiner)(
@@ -32,7 +32,10 @@ model = L(DabDeformableDETR)(
             )
         ),
         position_embedding=L(PositionEmbeddingSine)(
-            num_pos_feats=128, temperature=10000, normalize=True, offset=-0.5,
+            num_pos_feats=128,
+            temperature=10000,
+            normalize=True,
+            offset=-0.5,
         ),
     ),
     transformer=L(DabDeformableDetrTransformer)(

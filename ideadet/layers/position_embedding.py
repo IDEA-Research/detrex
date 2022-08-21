@@ -32,19 +32,22 @@ class PositionEmbeddingSine(nn.Module):
     used by the Attention is all you need paper, generalized to work on images.
     """
 
-    def __init__(self, 
-                 num_pos_feats=64, 
-                 temperature=10000,
-                 scale=2 * math.pi,
-                 eps=1e-6,
-                 offset=0.,
-                 normalize=False, 
-                ):
+    def __init__(
+        self,
+        num_pos_feats=64,
+        temperature=10000,
+        scale=2 * math.pi,
+        eps=1e-6,
+        offset=0.0,
+        normalize=False,
+    ):
         super().__init__()
         if normalize:
-            assert isinstance(scale, (float, int)), 'when normalize is set,' \
-                'scale should be provided and in float or int type, ' \
-                f'found {type(scale)}'
+            assert isinstance(scale, (float, int)), (
+                "when normalize is set,"
+                "scale should be provided and in float or int type, "
+                f"found {type(scale)}"
+            )
         self.num_pos_feats = num_pos_feats
         self.temperature = temperature
         self.normalize = normalize
@@ -60,10 +63,8 @@ class PositionEmbeddingSine(nn.Module):
         y_embed = not_mask.cumsum(1, dtype=torch.float32)
         x_embed = not_mask.cumsum(2, dtype=torch.float32)
         if self.normalize:
-            y_embed = (y_embed + self.offset) / \
-                      (y_embed[:, -1:, :] + self.eps) * self.scale
-            x_embed = (x_embed + self.offset) / \
-                      (x_embed[:, :, -1:] + self.eps) * self.scale
+            y_embed = (y_embed + self.offset) / (y_embed[:, -1:, :] + self.eps) * self.scale
+            x_embed = (x_embed + self.offset) / (x_embed[:, :, -1:] + self.eps) * self.scale
         dim_t = torch.arange(self.num_pos_feats, dtype=torch.float32, device=mask.device)
         dim_t = self.temperature ** (
             2 * torch.div(dim_t, 2, rounding_mode="floor") / self.num_pos_feats
@@ -73,12 +74,12 @@ class PositionEmbeddingSine(nn.Module):
 
         # use view as mmdet instead of flatten for dynamically exporting to ONNX
         B, H, W = mask.size()
-        pos_x = torch.stack(
-            (pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()), dim=4
-        ).view(B, H, W, -1)
-        pos_y = torch.stack(
-            (pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()), dim=4
-        ).view(B, H, W, -1)
+        pos_x = torch.stack((pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()), dim=4).view(
+            B, H, W, -1
+        )
+        pos_y = torch.stack((pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()), dim=4).view(
+            B, H, W, -1
+        )
         pos = torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)
         return pos
 
@@ -88,10 +89,12 @@ class PositionEmbeddingLearned(nn.Module):
     Absolute pos embedding, learned.
     """
 
-    def __init__(self, 
-                 num_pos_feats=256,
-                 row_num_embed=50,
-                 col_num_embed=50,):
+    def __init__(
+        self,
+        num_pos_feats=256,
+        row_num_embed=50,
+        col_num_embed=50,
+    ):
         super().__init__()
         self.row_embed = nn.Embedding(row_num_embed, num_pos_feats)
         self.col_embed = nn.Embedding(col_num_embed, num_pos_feats)
@@ -106,7 +109,7 @@ class PositionEmbeddingLearned(nn.Module):
         nn.init.uniform_(self.col_embed.weight)
 
     def forward(self, mask):
-        h, w = mask.shape[-2: ]
+        h, w = mask.shape[-2:]
         x = torch.arange(w, device=mask.device)
         y = torch.arange(h, device=mask.device)
         x_emb = self.col_embed(x)
