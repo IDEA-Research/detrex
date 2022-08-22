@@ -113,11 +113,7 @@ class DABDETR(nn.Module):
         # only use last level feature in DAB-DETR
         features = self.backbone(images.tensor)["res5"]
         features = self.input_proj(features)
-        img_masks = (
-            F.interpolate(img_masks.unsqueeze(1), size=features.shape[-2:])
-            .to(torch.bool)
-            .squeeze(1)
-        )
+        img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
         pos_embed = self.position_embedding(img_masks)
         embed_weight = self.refpoint_embed.weight
 
