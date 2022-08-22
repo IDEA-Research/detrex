@@ -33,13 +33,13 @@ class HungarianMatcher(nn.Module):
     """
 
     def __init__(
-        self, 
-        cost_class: float = 1, 
-        cost_bbox: float = 1, 
+        self,
+        cost_class: float = 1,
+        cost_bbox: float = 1,
         cost_giou: float = 1,
         cost_class_type: str = "focal_loss_cost",
         alpha: float = 0.25,
-        gamma: float = 2.0
+        gamma: float = 2.0,
     ):
         """Creates the matcher
 
@@ -56,7 +56,10 @@ class HungarianMatcher(nn.Module):
         self.alpha = alpha
         self.gamma = gamma
         assert cost_class != 0 or cost_bbox != 0 or cost_giou != 0, "all costs cant be 0"
-        assert cost_class_type in {"ce_cost", "focal_loss_cost"}, "only support ce loss or focal loss for computing class cost"
+        assert cost_class_type in {
+            "ce_cost",
+            "focal_loss_cost",
+        }, "only support ce loss or focal loss for computing class cost"
 
     @torch.no_grad()
     def forward(self, outputs, targets):
@@ -90,14 +93,13 @@ class HungarianMatcher(nn.Module):
             out_prob = (
                 outputs["pred_logits"].flatten(0, 1).sigmoid()
             )  # [batch_size * num_queries, num_classes]
-            
+
         out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size * num_queries, 4]
 
         # Also concat the target labels and boxes
         tgt_ids = torch.cat([v["labels"] for v in targets])
         tgt_bbox = torch.cat([v["boxes"] for v in targets])
 
-        
         # Compute the classification cost.
         if self.cost_class_type == "ce_cost":
             # Compute the classification cost. Contrary to the loss, we don't use the NLL,
@@ -110,7 +112,7 @@ class HungarianMatcher(nn.Module):
             neg_cost_class = (1 - alpha) * (out_prob**gamma) * (-(1 - out_prob + 1e-8).log())
             pos_cost_class = alpha * ((1 - out_prob) ** gamma) * (-(out_prob + 1e-8).log())
             cost_class = pos_cost_class[:, tgt_ids] - neg_cost_class[:, tgt_ids]
-        
+
         # Compute the L1 cost between boxes
         cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
 

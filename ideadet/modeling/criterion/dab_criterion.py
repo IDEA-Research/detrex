@@ -105,11 +105,6 @@ class SetCriterion(nn.Module):
         )
         losses["loss_giou"] = loss_giou.sum() / num_boxes
 
-        # calculate the x,y and h,w loss
-        # with torch.no_grad():
-        #     losses["loss_xy"] = loss_bbox[..., :2].sum() / num_boxes
-        #     losses["loss_hw"] = loss_bbox[..., 2:].sum() / num_boxes
-
         return losses
 
     def loss_masks(self, outputs, targets, indices, num_boxes):
@@ -157,9 +152,7 @@ class SetCriterion(nn.Module):
     def get_loss(self, loss, outputs, targets, indices, num_boxes, **kwargs):
         loss_map = {
             "labels": self.loss_labels,
-            "cardinality": self.loss_cardinality,
             "boxes": self.loss_boxes,
-            "masks": self.loss_masks,
         }
         assert loss in loss_map, f"do you really want to compute {loss} loss?"
         return loss_map[loss](outputs, targets, indices, num_boxes, **kwargs)

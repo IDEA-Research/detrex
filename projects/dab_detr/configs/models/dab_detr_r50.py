@@ -1,7 +1,7 @@
 import torch.nn as nn
 
-from ideadet.modeling.matcher import DabMatcher
-from ideadet.modeling.criterion import DabCriterion
+from ideadet.modeling.matcher import HungarianMatcher
+from ideadet.modeling.criterion import SetCriterion
 from ideadet.layers import PositionEmbeddingSine
 
 from detectron2.modeling.backbone import ResNet, BasicStem
@@ -68,23 +68,28 @@ model = L(DABDETR)(
     query_dim=4,
     iter_update=True,
     random_refpoints_xy=True,
-    criterion=L(DabCriterion)(
+    criterion=L(SetCriterion)(
         num_classes=80,
-        matcher=L(DabMatcher)(
+        matcher=L(HungarianMatcher)(
             cost_class=2.0,
             cost_bbox=5.0,
             cost_giou=2.0,
+            cost_class_type="focal_loss_cost",
+            alpha=0.25,
+            gamma=2.0,
         ),
         weight_dict={
-            "loss_ce": 1,
+            "loss_class": 1,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
-        focal_alpha=0.25,
         losses=[
-            "labels",
+            "class",
             "boxes",
         ],
+        loss_class_type="focal_loss",
+        alpha=0.25,
+        gamma=2.0,
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
