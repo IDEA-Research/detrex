@@ -24,22 +24,20 @@ from modeling import (
 
 
 model = L(DABDETR)(
-    backbone=L(Joiner)(
-        backbone=L(MaskedBackbone)(
-            backbone=L(ResNet)(
-                stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
-                stages=L(ResNet.make_default_stages)(
-                    depth=50,
-                    stride_in_1x1=False,
-                    norm="FrozenBN",
-                ),
-                out_features=["res2", "res3", "res4", "res5"],
-                freeze_at=1,
-            )
+    backbone=L(ResNet)(
+        stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
+        stages=L(ResNet.make_default_stages)(
+            depth=50,
+            stride_in_1x1=False,
+            norm="FrozenBN",
         ),
-        position_embedding=L(PositionEmbeddingSine)(
-            num_pos_feats=128, temperature=20, normalize=True
-        ),
+        out_features=["res2", "res3", "res4", "res5"],
+        freeze_at=1,
+    ),
+    position_embedding=L(PositionEmbeddingSine)(
+        num_pos_feats=128, 
+        temperature=20, 
+        normalize=True,
     ),
     transformer=L(DabDetrTransformer)(
         encoder=L(DabDetrTransformerEncoder)(
@@ -70,6 +68,8 @@ model = L(DABDETR)(
             batch_first=False,
         ),
     ),
+    embed_dim=256,
+    in_channels=2048,
     num_classes=80,
     num_queries=300,
     aux_loss=True,

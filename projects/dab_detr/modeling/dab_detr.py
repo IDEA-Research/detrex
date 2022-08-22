@@ -22,6 +22,7 @@
 import math
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from ideadet.layers.mlp import MLP
@@ -36,12 +37,14 @@ class DABDETR(nn.Module):
         self,
         backbone,
         transformer,
+        position_embedding,
         num_classes,
         num_queries,
         criterion,
         pixel_mean,
         pixel_std,
-        hidden_dim=256,
+        in_channels=2048,
+        embed_dim=256,
         aux_loss=True,
         iter_update=True,
         query_dim=4,
@@ -51,8 +54,9 @@ class DABDETR(nn.Module):
         super(DABDETR, self).__init__()
         self.backbone = backbone
         self.transformer = transformer
-        self.class_embed = nn.Linear(hidden_dim, num_classes)
-        self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
+        self.position_embedding = position_embedding
+        self.class_embed = nn.Linear(embed_dim, num_classes)
+        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.refpoint_embed = nn.Embedding(num_queries, query_dim)
         self.query_dim = query_dim
         self.aux_loss = aux_loss
@@ -62,7 +66,8 @@ class DABDETR(nn.Module):
 
         self.random_refpoints_xy = random_refpoints_xy
 
-        self.input_proj = nn.Conv2d(2048, hidden_dim, kernel_size=1)
+        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
+        
         if self.iter_update:
             self.transformer.decoder.bbox_embed = self.bbox_embed
 
@@ -92,23 +97,33 @@ class DABDETR(nn.Module):
         nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
     def forward(self, batched_inputs):
+        
         images = self.preprocess_image(batched_inputs)
 
-        if isinstance(images, (list, torch.Tensor)):
-            images = nested_tensor_from_tensor_list(images)
-        features, pos = self.backbone(images)
+        if self.training:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_ones(batch_size, H, W)
+            for img_id in range(batch_size):
+                img_h, img_w = batched_inputs[img_id]["instances"].image_size
+                img_masks[img_id, :img_h, :img_w] = 0
+        else:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_zeros(batch_size, H, W)
 
-        src, mask = features[-1].decompose()
-        assert mask is not None
+        # only use last level feature in DAB-DETR
+        features = self.backbone(images.tensor)["res5"]
+        features = self.input_proj(features)
+        img_masks = F.interpolate(img_masks.unsqueeze(1), size=features.shape[-2:]).to(torch.bool).squeeze(1)
+        pos_embed = self.position_embedding(img_masks)
         embed_weight = self.refpoint_embed.weight
-
-        hs, reference = self.transformer(self.input_proj(src), mask, embed_weight, pos[-1])
+        
+        hidden_states, reference = self.transformer(features, img_masks, embed_weight, pos_embed)
 
         reference_before_sigmoid = inverse_sigmoid(reference)
-        tmp = self.bbox_embed(hs)
-        tmp[..., : self.query_dim] += reference_before_sigmoid
-        outputs_coord = tmp.sigmoid()
-        outputs_class = self.class_embed(hs)
+        temp = self.bbox_embed(hidden_states)
+        temp[..., : self.query_dim] += reference_before_sigmoid
+        outputs_coord = temp.sigmoid()
+        outputs_class = self.class_embed(hidden_states)
 
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:

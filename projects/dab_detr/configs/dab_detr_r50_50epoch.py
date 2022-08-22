@@ -10,7 +10,7 @@ train = get_config("common/train.py").train
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output_dab_r50_freeze_1_no_decay_norm"
+train.output_dir = "./test"
 train.max_iter = 375000
 
 
