@@ -22,4 +22,4 @@ optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in modul
 dataloader.train.num_workers = 16
 
 # modify model config
-model.backbone.backbone.backbone.stages.depth = 101
+model.backbone.stages.depth = 101
