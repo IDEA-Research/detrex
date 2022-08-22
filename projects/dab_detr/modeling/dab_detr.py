@@ -67,13 +67,13 @@ class DABDETR(nn.Module):
         self.random_refpoints_xy = random_refpoints_xy
 
         self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
-        
+
         if self.iter_update:
             self.transformer.decoder.bbox_embed = self.bbox_embed
 
         self.num_classes = num_classes
         self.criterion = criterion
-        
+
         # normalizer for input raw images
         self.device = device
         pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
@@ -89,7 +89,7 @@ class DABDETR(nn.Module):
                 self.refpoint_embed.weight.data[:, :2]
             )
             self.refpoint_embed.weight.data[:, :2].requires_grad = False
-        
+
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         self.class_embed.bias.data = torch.ones(self.num_classes) * bias_value
@@ -97,7 +97,7 @@ class DABDETR(nn.Module):
         nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
     def forward(self, batched_inputs):
-        
+
         images = self.preprocess_image(batched_inputs)
 
         if self.training:
@@ -113,10 +113,14 @@ class DABDETR(nn.Module):
         # only use last level feature in DAB-DETR
         features = self.backbone(images.tensor)["res5"]
         features = self.input_proj(features)
-        img_masks = F.interpolate(img_masks.unsqueeze(1), size=features.shape[-2:]).to(torch.bool).squeeze(1)
+        img_masks = (
+            F.interpolate(img_masks.unsqueeze(1), size=features.shape[-2:])
+            .to(torch.bool)
+            .squeeze(1)
+        )
         pos_embed = self.position_embedding(img_masks)
         embed_weight = self.refpoint_embed.weight
-        
+
         hidden_states, reference = self.transformer(features, img_masks, embed_weight, pos_embed)
 
         reference_before_sigmoid = inverse_sigmoid(reference)

@@ -27,8 +27,8 @@ model = L(DABDETR)(
         freeze_at=1,
     ),
     position_embedding=L(PositionEmbeddingSine)(
-        num_pos_feats=128, 
-        temperature=20, 
+        num_pos_feats=128,
+        temperature=20,
         normalize=True,
     ),
     transformer=L(DabDetrTransformer)(

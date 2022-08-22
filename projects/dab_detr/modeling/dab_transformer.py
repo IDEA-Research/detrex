@@ -14,18 +14,17 @@
 # limitations under the License.
 
 from typing import Tuple
-
 import torch
 import torch.nn as nn
 
 from ideadet.layers import (
-    MLP,
     FFN,
-    BaseTransformerLayer, 
-    TransformerLayerSequence,
-    MultiheadAttention,
-    ConditionalSelfAttention,
+    MLP,
+    BaseTransformerLayer,
     ConditionalCrossAttention,
+    ConditionalSelfAttention,
+    MultiheadAttention,
+    TransformerLayerSequence,
     get_sine_pos_embed,
 )
 from ideadet.utils import inverse_sigmoid
@@ -61,8 +60,8 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
                 ),
                 norm=nn.LayerNorm(normalized_shape=embed_dim),
                 operation_order=operation_order,
-            ), 
-            num_layers=num_layers
+            ),
+            num_layers=num_layers,
         )
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
@@ -122,8 +121,8 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         return_intermediate: bool = True,
     ):
         super(DabDetrTransformerDecoder, self).__init__(
-            transformer_layers = BaseTransformerLayer(
-                attn = [
+            transformer_layers=BaseTransformerLayer(
+                attn=[
                     ConditionalSelfAttention(
                         embed_dim=embed_dim,
                         num_heads=num_heads,
@@ -135,7 +134,7 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
                         num_heads=num_heads,
                         attn_drop=attn_dropout,
                         batch_first=batch_first,
-                    )
+                    ),
                 ],
                 ffn=FFN(
                     embed_dim=embed_dim,
@@ -148,7 +147,7 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
                 ),
                 operation_order=operation_order,
             ),
-            num_layers=num_layers
+            num_layers=num_layers,
         )
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim
@@ -158,7 +157,7 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         )
 
         self.bbox_embed = None
-        
+
         if modulate_hw_attn:
             self.ref_anchor_head = MLP(self.embed_dim, self.embed_dim, 2, 2)
         self.modulate_hw_attn = modulate_hw_attn
