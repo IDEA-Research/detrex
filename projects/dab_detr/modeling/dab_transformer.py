@@ -36,8 +36,8 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
         self,
         embed_dim: int = 256,
         num_heads: int = 8,
-        feedforward_dim: int = 1024,
         attn_dropout: float = 0.1,
+        feedforward_dim: int = 2048,
         ffn_dropout: float = 0.1,
         activation: nn.Module = nn.PReLU(),
         operation_order: Tuple = ("self_attn", "norm", "ffn", "norm"),
@@ -107,25 +107,58 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
 class DabDetrTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
-        transformer_layers: BaseTransformerLayer = None,
+        embed_dim: int = 256,
+        num_heads: int = 8,
+        attn_dropout: float = 0.0,
+        feedforward_dim: int = 2048,
+        ffn_dropout: float = 0.0,
+        activation: nn.Module = nn.PReLU(),
+        operation_order: Tuple = ("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
         num_layers: int = None,
         query_dim: int = 4,
         modulate_hw_attn: bool = True,
+        batch_first: bool = False,
         post_norm: bool = True,
         return_intermediate: bool = True,
     ):
         super(DabDetrTransformerDecoder, self).__init__(
-            transformer_layers, num_layers
+            transformer_layers = BaseTransformerLayer(
+                attn = [
+                    ConditionalSelfAttention(
+                        embed_dim=embed_dim,
+                        num_heads=num_heads,
+                        attn_drop=attn_dropout,
+                        batch_first=batch_first,
+                    ),
+                    ConditionalCrossAttention(
+                        embed_dim=embed_dim,
+                        num_heads=num_heads,
+                        attn_drop=attn_dropout,
+                        batch_first=batch_first,
+                    )
+                ],
+                ffn=FFN(
+                    embed_dim=embed_dim,
+                    feedforward_dim=feedforward_dim,
+                    ffn_drop=ffn_dropout,
+                    activation=activation,
+                ),
+                norm=nn.LayerNorm(
+                    normalized_shape=embed_dim,
+                ),
+                operation_order=operation_order,
+            ),
+            num_layers=num_layers
         )
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim
-
         self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
         self.ref_point_head = MLP(
             query_dim // 2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
         )
 
         self.bbox_embed = None
+        
         if modulate_hw_attn:
             self.ref_anchor_head = MLP(self.embed_dim, self.embed_dim, 2, 2)
         self.modulate_hw_attn = modulate_hw_attn

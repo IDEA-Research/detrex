@@ -43,57 +43,31 @@ model = L(DABDETR)(
     ),
     transformer=L(DabDetrTransformer)(
         encoder=L(DabDetrTransformerEncoder)(
-            transformer_layers=L(BaseTransformerLayer)(
-                attn=L(MultiheadAttention)(
-                    embed_dim=256,
-                    num_heads=8,
-                    attn_drop=0.0,
-                    batch_first=False,
-                ),
-                ffn=L(FFN)(
-                    embed_dim=256,
-                    feedforward_dim=2048,
-                    ffn_drop=0.0,
-                    activation=L(nn.PReLU)(),
-                ),
-                norm=L(nn.LayerNorm)(normalized_shape=256),
-                operation_order=("self_attn", "norm", "ffn", "norm"),
-            ),
+            embed_dim=256,
+            num_heads=8,
+            attn_dropout=0.0,
+            feedforward_dim=2048,
+            ffn_dropout=0.0,
+            activation=L(nn.PReLU)(),
+            operation_order=("self_attn", "norm", "ffn", "norm"),
             num_layers=6,
             post_norm=False,
+            batch_first=False,
         ),
         decoder=L(DabDetrTransformerDecoder)(
+            embed_dim=256,
+            num_heads=8,
+            attn_dropout=0.0,
+            feedforward_dim=2048,
+            ffn_dropout=0.0,
+            activation=L(nn.PReLU)(),
+            operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
             num_layers=6,
-            return_intermediate=True,
             query_dim=4,
             modulate_hw_attn=True,
             post_norm=True,
-            transformer_layers=L(BaseTransformerLayer)(
-                attn=[
-                    L(ConditionalSelfAttention)(
-                        embed_dim=256,
-                        num_heads=8,
-                        attn_drop=0.0,
-                        batch_first=False,
-                    ),
-                    L(ConditionalCrossAttention)(
-                        embed_dim=256,
-                        num_heads=8,
-                        attn_drop=0.0,
-                        batch_first=False,
-                    ),
-                ],
-                ffn=L(FFN)(
-                    embed_dim=256,
-                    feedforward_dim=2048,
-                    ffn_drop=0.0,
-                    activation=L(nn.PReLU)(),
-                ),
-                norm=L(nn.LayerNorm)(
-                    normalized_shape=256,
-                ),
-                operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
-            ),
+            return_intermediate=True,
+            batch_first=False,
         ),
     ),
     num_classes=80,
@@ -105,7 +79,7 @@ model = L(DABDETR)(
     criterion=L(DabCriterion)(
         num_classes=80,
         matcher=L(DabMatcher)(
-            cost_class=1,
+            cost_class=2.0,
             cost_bbox=5.0,
             cost_giou=2.0,
         ),
