@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from ideadet.layers import box_ops
 from ideadet.utils import (
+    accuracy,
     get_world_size,
     interpolate,
     is_dist_avail_and_initialized,
@@ -11,16 +12,17 @@ from ideadet.utils import (
 )
 
 from ..losses import dice_loss, sigmoid_focal_loss
+from .dn_components import compute_dn_loss
 
 
 class SetCriterion(nn.Module):
-    """This class computes the loss for Conditional DETR.
+    """This class computes the loss for DETR.
     The process happens in two steps:
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
     """
 
-    def __init__(self, num_classes, matcher, weight_dict, focal_alpha, losses):
+    def __init__(self, num_classes, matcher, weight_dict, losses, focal_alpha=0.25):
         """Create the criterion.
         Parameters:
             num_classes: number of object categories, omitting the special no-object category
@@ -37,7 +39,7 @@ class SetCriterion(nn.Module):
         self.focal_alpha = focal_alpha
 
     def loss_labels(self, outputs, targets, indices, num_boxes, log=True):
-        """Classification loss (Binary focal loss)
+        """Classification loss (NLL)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
         assert "pred_logits" in outputs
@@ -67,6 +69,9 @@ class SetCriterion(nn.Module):
         )
         losses = {"loss_ce": loss_ce}
 
+        if log:
+            # TODO this should probably be a separate loss, not hacked in this one here
+            losses["class_error"] = 100 - accuracy(src_logits[idx], target_classes_o)[0]
         return losses
 
     @torch.no_grad()
@@ -86,7 +91,7 @@ class SetCriterion(nn.Module):
     def loss_boxes(self, outputs, targets, indices, num_boxes):
         """Compute the losses related to the bounding boxes, the L1 regression loss and the GIoU loss
         targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
-        The target boxes are expected in format (center_x, center_y, w, h), normalized by the image size.
+        The target boxes are expected in format (center_x, center_y, h, w), normalized by the image size.
         """
         assert "pred_boxes" in outputs
         idx = self._get_src_permutation_idx(indices)
@@ -104,7 +109,6 @@ class SetCriterion(nn.Module):
             )
         )
         losses["loss_giou"] = loss_giou.sum() / num_boxes
-
         return losses
 
     def loss_masks(self, outputs, targets, indices, num_boxes):
@@ -115,22 +119,24 @@ class SetCriterion(nn.Module):
 
         src_idx = self._get_src_permutation_idx(indices)
         tgt_idx = self._get_tgt_permutation_idx(indices)
-        src_masks = outputs["pred_masks"]
-        src_masks = src_masks[src_idx]
-        masks = [t["masks"] for t in targets]
-        # TODO use valid to mask invalid areas due to padding in loss
-        target_masks, valid = nested_tensor_from_tensor_list(masks).decompose()
-        target_masks = target_masks.to(src_masks)
-        target_masks = target_masks[tgt_idx]
 
+        src_masks = outputs["pred_masks"]
+
+        # TODO use valid to mask invalid areas due to padding in loss
+        target_masks, valid = nested_tensor_from_tensor_list(
+            [t["masks"] for t in targets]
+        ).decompose()
+        target_masks = target_masks.to(src_masks)
+
+        src_masks = src_masks[src_idx]
         # upsample predictions to the target size
         src_masks = interpolate(
             src_masks[:, None], size=target_masks.shape[-2:], mode="bilinear", align_corners=False
         )
         src_masks = src_masks[:, 0].flatten(1)
 
-        target_masks = target_masks.flatten(1)
-        target_masks = target_masks.view(src_masks.shape)
+        target_masks = target_masks[tgt_idx].flatten(1)
+
         losses = {
             "loss_mask": sigmoid_focal_loss(src_masks, target_masks, num_boxes),
             "loss_dice": dice_loss(src_masks, target_masks, num_boxes),
@@ -152,29 +158,26 @@ class SetCriterion(nn.Module):
     def get_loss(self, loss, outputs, targets, indices, num_boxes, **kwargs):
         loss_map = {
             "labels": self.loss_labels,
+            "cardinality": self.loss_cardinality,
             "boxes": self.loss_boxes,
+            "masks": self.loss_masks,
         }
         assert loss in loss_map, f"do you really want to compute {loss} loss?"
         return loss_map[loss](outputs, targets, indices, num_boxes, **kwargs)
 
-    def forward(self, outputs, targets, return_indices=False):
+    def forward(self, outputs, targets, mask_dict=None):
         """This performs the loss computation.
         Parameters:
              outputs: dict of tensors, see the output specification of the model for the format
              targets: list of dicts, such that len(targets) == batch_size.
                       The expected keys in each dict depends on the losses applied, see each loss' doc
-
-             return_indices: used for vis. if True, the layer0-5 indices will be returned as well.
-
         """
-
-        outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
+        outputs_without_aux = {
+            k: v for k, v in outputs.items() if k != "aux_outputs" and k != "enc_outputs"
+        }
 
         # Retrieve the matching between the outputs of the last layer and the targets
         indices = self.matcher(outputs_without_aux, targets)
-        if return_indices:
-            indices0_copy = indices
-            indices_list = []
 
         # Compute the average number of target boxes accross all nodes, for normalization purposes
         num_boxes = sum(len(t["labels"]) for t in targets)
@@ -188,14 +191,13 @@ class SetCriterion(nn.Module):
         # Compute all the requested losses
         losses = {}
         for loss in self.losses:
-            losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes))
+            kwargs = {}
+            losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes, **kwargs))
 
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if "aux_outputs" in outputs:
             for i, aux_outputs in enumerate(outputs["aux_outputs"]):
                 indices = self.matcher(aux_outputs, targets)
-                if return_indices:
-                    indices_list.append(indices)
                 for loss in self.losses:
                     if loss == "masks":
                         # Intermediate masks losses are too costly to compute, we ignore them.
@@ -203,13 +205,33 @@ class SetCriterion(nn.Module):
                     kwargs = {}
                     if loss == "labels":
                         # Logging is enabled only for the last layer
-                        kwargs = {"log": False}
+                        kwargs["log"] = False
                     l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes, **kwargs)
                     l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
                     losses.update(l_dict)
 
-        if return_indices:
-            indices_list.append(indices0_copy)
-            return losses, indices_list
+        if "enc_outputs" in outputs:
+            enc_outputs = outputs["enc_outputs"]
+            for bt in targets:
+                bt["labels"] = torch.zeros_like(bt["labels"])
+            indices = self.matcher(enc_outputs, targets)
+            for loss in self.losses:
+                if loss == "masks":
+                    # Intermediate masks losses are too costly to compute, we ignore them.
+                    continue
+                kwargs = {}
+                if loss == "labels":
+                    # Logging is enabled only for the last layer
+                    kwargs["log"] = False
+                l_dict = self.get_loss(loss, enc_outputs, targets, indices, num_boxes, **kwargs)
+                l_dict = {k + f"_enc": v for k, v in l_dict.items()}
+                losses.update(l_dict)
+
+        # dn loss computation
+        aux_num = 0
+        if "aux_outputs" in outputs:
+            aux_num = len(outputs["aux_outputs"])
+        dn_losses = compute_dn_loss(mask_dict, self.training, aux_num, self.focal_alpha)
+        losses.update(dn_losses)
 
         return losses

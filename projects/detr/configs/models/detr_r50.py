@@ -9,7 +9,7 @@ from ideadet.layers import (
     FFN,
     MultiheadAttention,
 )
-from ideadet.modeling.matcher.matcher import HungarianMatcher
+from ideadet.modeling.matcher import HungarianMatcher
 from ideadet.modeling.criterion.criterion import SetCriterion
 from ideadet.layers.position_embedding import PositionEmbeddingSine
 
@@ -87,6 +87,7 @@ model = L(DETR)(
             cost_class=1,
             cost_bbox=5.0,
             cost_giou=2.0,
+            cost_class_type="ce_cost",
         ),
         weight_dict={
             "loss_ce": 1,

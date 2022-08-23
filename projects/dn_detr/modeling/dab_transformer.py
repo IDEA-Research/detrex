@@ -13,55 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
 import torch
 import torch.nn as nn
 
-from ideadet.layers import (
-    FFN,
-    MLP,
-    BaseTransformerLayer,
-    ConditionalCrossAttention,
-    ConditionalSelfAttention,
-    MultiheadAttention,
-    TransformerLayerSequence,
-    get_sine_pos_embed,
-)
-from ideadet.utils import inverse_sigmoid
+from ideadet.layers import MLP, BaseTransformerLayer, TransformerLayerSequence, get_sine_pos_embed
+from ideadet.utils.misc import inverse_sigmoid
 
 
 class DabDetrTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
-        embed_dim: int = 256,
-        num_heads: int = 8,
-        attn_dropout: float = 0.1,
-        feedforward_dim: int = 2048,
-        ffn_dropout: float = 0.1,
-        activation: nn.Module = nn.PReLU(),
-        operation_order: Tuple = ("self_attn", "norm", "ffn", "norm"),
-        post_norm: bool = False,
-        num_layers: int = 6,
-        batch_first: bool = False,
+        transformer_layers: BaseTransformerLayer = None,
+        post_norm: bool = True,
+        num_layers: int = None,
     ):
         super(DabDetrTransformerEncoder, self).__init__(
-            transformer_layers=BaseTransformerLayer(
-                attn=MultiheadAttention(
-                    embed_dim=embed_dim,
-                    num_heads=num_heads,
-                    attn_drop=attn_dropout,
-                    batch_first=batch_first,
-                ),
-                ffn=FFN(
-                    embed_dim=embed_dim,
-                    feedforward_dim=feedforward_dim,
-                    ffn_drop=ffn_dropout,
-                    activation=activation,
-                ),
-                norm=nn.LayerNorm(normalized_shape=embed_dim),
-                operation_order=operation_order,
-            ),
-            num_layers=num_layers,
+            transformer_layers=transformer_layers, num_layers=num_layers
         )
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
@@ -106,58 +73,23 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
 class DabDetrTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
-        embed_dim: int = 256,
-        num_heads: int = 8,
-        attn_dropout: float = 0.0,
-        feedforward_dim: int = 2048,
-        ffn_dropout: float = 0.0,
-        activation: nn.Module = nn.PReLU(),
-        operation_order: Tuple = ("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
+        transformer_layers: BaseTransformerLayer = None,
         num_layers: int = None,
         query_dim: int = 4,
         modulate_hw_attn: bool = True,
-        batch_first: bool = False,
         post_norm: bool = True,
         return_intermediate: bool = True,
     ):
-        super(DabDetrTransformerDecoder, self).__init__(
-            transformer_layers=BaseTransformerLayer(
-                attn=[
-                    ConditionalSelfAttention(
-                        embed_dim=embed_dim,
-                        num_heads=num_heads,
-                        attn_drop=attn_dropout,
-                        batch_first=batch_first,
-                    ),
-                    ConditionalCrossAttention(
-                        embed_dim=embed_dim,
-                        num_heads=num_heads,
-                        attn_drop=attn_dropout,
-                        batch_first=batch_first,
-                    ),
-                ],
-                ffn=FFN(
-                    embed_dim=embed_dim,
-                    feedforward_dim=feedforward_dim,
-                    ffn_drop=ffn_dropout,
-                    activation=activation,
-                ),
-                norm=nn.LayerNorm(
-                    normalized_shape=embed_dim,
-                ),
-                operation_order=operation_order,
-            ),
-            num_layers=num_layers,
-        )
+        super().__init__(transformer_layers, num_layers)
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim
+
         self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
         self.ref_point_head = MLP(
             query_dim // 2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
         )
 
         self.bbox_embed = None
-
         if modulate_hw_attn:
             self.ref_anchor_head = MLP(self.embed_dim, self.embed_dim, 2, 2)
         self.modulate_hw_attn = modulate_hw_attn
@@ -276,11 +208,12 @@ class DabDetrTransformer(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, x, mask, refpoints_embed, pos_embed):
+    def forward(self, x, mask, refpoints_embed, pos_embed, target=None, attn_mask=None):
         bs, c, h, w = x.shape
         x = x.view(bs, c, -1).permute(2, 0, 1)
         pos_embed = pos_embed.view(bs, c, -1).permute(2, 0, 1)
-        refpoints_embed = refpoints_embed.unsqueeze(1).repeat(1, bs, 1)
+
+        # refpoints_embed = refpoints_embed.unsqueeze(1).repeat(1, bs, 1)
         mask = mask.view(bs, -1)
         memory = self.encoder(
             query=x,
@@ -289,14 +222,15 @@ class DabDetrTransformer(nn.Module):
             query_pos=pos_embed,
             query_key_padding_mask=mask,
         )
-        num_queries = refpoints_embed.shape[0]
-        target = torch.zeros(num_queries, bs, self.embed_dim, device=refpoints_embed.device)
+        # num_queries = refpoints_embed.shape[0]
+        # target = torch.zeros(num_queries, bs, self.embed_dim, device=refpoints_embed.device)
 
         hidden_state, references = self.decoder(
             query=target,
             key=memory,
             value=memory,
             key_pos=pos_embed,
+            attn_masks=attn_mask,
             refpoints_embed=refpoints_embed,
         )
 

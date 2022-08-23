@@ -29,7 +29,7 @@ import torch
 import torch.nn.functional as F
 from torch.autograd import gradcheck
 
-from ideadet.layers.ms_deform_attn import MSDeformAttnFunction
+from ideadet.layers.multi_scale_deform_attn import MultiScaleDeformableAttnFunction
 
 N, M, D = 1, 2, 2
 Lq, L, P = 2, 2, 2
@@ -80,7 +80,7 @@ class TestMsDeformAttn(unittest.TestCase):
         attention_weights = torch.rand(N, Lq, M, L, P).cuda() + 1e-5
         attention_weights /= attention_weights.sum(-1, keepdim=True).sum(-2, keepdim=True)
         im2col_step = 2
-        func = MSDeformAttnFunction.apply
+        func = MultiScaleDeformableAttnFunction.apply
 
         value.requires_grad = grad_value
         sampling_locations.requires_grad = grad_sampling_loc
@@ -115,7 +115,7 @@ class TestMsDeformAttn(unittest.TestCase):
             .cpu()
         )
         output_cuda = (
-            MSDeformAttnFunction.apply(
+            MultiScaleDeformableAttnFunction.apply(
                 value.double(),
                 shapes,
                 level_start_index,

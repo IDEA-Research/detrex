@@ -14,4 +14,9 @@
 # limitations under the License.
 
 
-from .dab_detr import DABDETR
+from .dab_deformable_transformer import (
+    DeformableDetrEncoder,
+    DabDeformableDetrTransformerDecoder,
+    DabDeformableDetrTransformer,
+)
+from .dab_deformable_detr import DabDeformableDETR
