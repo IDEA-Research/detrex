@@ -32,7 +32,7 @@ from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
 
-class DABDETR(nn.Module):
+class DNDETR(nn.Module):
     def __init__(
         self,
         backbone,
@@ -52,7 +52,7 @@ class DABDETR(nn.Module):
         label_noise_scale=0.0,
         box_noise_scale=0.0,
     ):
-        super(DABDETR, self).__init__()
+        super(DNDETR, self).__init__()
         self.backbone = backbone
         self.transformer = transformer
         hidden_dim = 256

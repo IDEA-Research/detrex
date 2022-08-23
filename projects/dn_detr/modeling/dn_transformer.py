@@ -41,7 +41,7 @@ class DNDetrTransformerEncoder(TransformerLayerSequence):
         ffn_dropout: float = 0.0,
         activation: nn.Module = nn.PReLU(),
         operation_order: Tuple = ("self_attn", "norm", "ffn", "norm"),
-        post_norm: bool = True,
+        post_norm: bool = False,
         num_layers: int = 6,
         batch_first: bool = False,
     ):
