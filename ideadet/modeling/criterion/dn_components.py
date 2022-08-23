@@ -1,34 +1,28 @@
-# ------------------------------------------------------------------------
-# DN-DETR
-# Copyright (c) 2022 IDEA. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 [see LICENSE for details]
-# ------------------------------------------------------------------------
-
-
-# import torch
-# from util.misc import (NestedTensor, nested_tensor_from_tensor_list,
-#                        accuracy, get_world_size, interpolate,
-#                        is_dist_avail_and_initialized, inverse_sigmoid)
-# # from .DABDETR import sigmoid_focal_loss
-# from util import box_ops
-# import torch.nn.functional as F
-# from ..losses import dice_loss, sigmoid_focal_loss
+# coding=utf-8
+# Copyright 2022 The IDEA Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 
-from ideadet.layers import box_ops
-from ideadet.utils import (
-    accuracy,
-    get_world_size,
-    interpolate,
-    is_dist_avail_and_initialized,
-    nested_tensor_from_tensor_list,
+from ideadet.layers import (
+    generalized_box_iou,
+    box_cxcywh_to_xyxy,
 )
-from ideadet.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
+from ideadet.utils import accuracy, inverse_sigmoid
 
-from ..losses import dice_loss, sigmoid_focal_loss
+from ..losses import sigmoid_focal_loss
 
 
 def prepare_for_dn(
@@ -234,15 +228,16 @@ def tgt_loss_boxes(
     losses["tgt_loss_bbox"] = loss_bbox.sum() / num_tgt
 
     loss_giou = 1 - torch.diag(
-        box_ops.generalized_box_iou(
-            box_ops.box_cxcywh_to_xyxy(src_boxes), box_ops.box_cxcywh_to_xyxy(tgt_boxes)
+        generalized_box_iou(
+            box_cxcywh_to_xyxy(src_boxes), 
+            box_cxcywh_to_xyxy(tgt_boxes),
         )
     )
     losses["tgt_loss_giou"] = loss_giou.sum() / num_tgt
     return losses
 
 
-def tgt_loss_labels(src_logits_, tgt_labels_, num_tgt, focal_alpha, log=True):
+def tgt_loss_labels(src_logits_, tgt_labels_, num_tgt, focal_alpha):
     """Classification loss (NLL)
     targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
     """

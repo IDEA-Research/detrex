@@ -15,6 +15,7 @@
 
 
 from .misc import (
+    accuracy,
     _max_by_axis,
     NestedTensor,
     nested_tensor_from_tensor_list,
