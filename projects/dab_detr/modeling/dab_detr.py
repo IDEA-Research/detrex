@@ -90,6 +90,7 @@ class DABDETR(nn.Module):
             )
             self.refpoint_embed.weight.data[:, :2].requires_grad = False
 
+        # init prior_prob setting for focal loss
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         self.class_embed.bias.data = torch.ones(self.num_classes) * bias_value

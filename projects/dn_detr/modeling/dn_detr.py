@@ -22,9 +22,10 @@
 import math
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
-from ideadet.layers.mlp import MLP
+from ideadet.layers import MLP
 from ideadet.modeling.criterion.dn_components import dn_post_process, prepare_for_dn
 from ideadet.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
 
@@ -37,89 +38,107 @@ class DNDETR(nn.Module):
         self,
         backbone,
         transformer,
+        criterion,
+        position_embedding,
         num_classes,
         num_queries,
-        criterion,
         pixel_mean,
         pixel_std,
+        in_channels=2048,
+        embed_dim=256,
         aux_loss=True,
         iter_update=True,
         query_dim=4,
         random_refpoints_xy=True,
-        device="cuda",
-        use_dn=True,
         scalar=5,
         label_noise_scale=0.0,
         box_noise_scale=0.0,
+        device="cuda",
     ):
         super(DNDETR, self).__init__()
         self.backbone = backbone
         self.transformer = transformer
-        hidden_dim = 256
-        self.class_embed = nn.Linear(hidden_dim, num_classes)
-        self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
+        self.class_embed = nn.Linear(embed_dim, num_classes)
+        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.query_dim = query_dim
         self.aux_loss = aux_loss
         self.iter_update = iter_update
-        ####################
-        self.hidden_dim = hidden_dim
         self.num_queries = num_queries
         self.num_classes = num_classes
-        self.use_dn = use_dn
+        self.random_refpoints_xy = random_refpoints_xy
         self.dn_args = (scalar, label_noise_scale, box_noise_scale)
+        
         # leave one dim for indicator
-        self.label_enc = nn.Embedding(num_classes + 1, hidden_dim - 1)
+        self.label_enc = nn.Embedding(num_classes + 1, embed_dim - 1)
 
         assert self.query_dim in [2, 4]
 
         self.refpoint_embed = nn.Embedding(num_queries, query_dim)
-        self.random_refpoints_xy = random_refpoints_xy
-        if random_refpoints_xy:
-            # import ipdb; ipdb.set_trace()
+        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
+        
+        if self.iter_update:
+            self.transformer.decoder.bbox_embed = self.bbox_embed
+
+        self.criterion = criterion
+
+        # normalizer for input raw images
+        self.device = device
+        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
+        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
+        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
+
+        self.init_weights()
+
+    def init_weights(self):
+        if self.random_refpoints_xy:
             self.refpoint_embed.weight.data[:, :2].uniform_(0, 1)
             self.refpoint_embed.weight.data[:, :2] = inverse_sigmoid(
                 self.refpoint_embed.weight.data[:, :2]
             )
             self.refpoint_embed.weight.data[:, :2].requires_grad = False
 
-        self.input_proj = nn.Conv2d(2048, hidden_dim, kernel_size=1)
-        if self.iter_update:
-            self.transformer.decoder.bbox_embed = self.bbox_embed
-
-        self.criterion = criterion
-        self.device = device
-        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
-        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
-        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
-
         # init prior_prob setting for focal loss
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
-        self.class_embed.bias.data = torch.ones(num_classes) * bias_value
+        self.class_embed.bias.data = torch.ones(self.num_classes) * bias_value
         nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
         nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
     def forward(self, batched_inputs):
+
         images = self.preprocess_image(batched_inputs)
+
+        if self.training:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_ones(batch_size, H, W)
+            for img_id in range(batch_size):
+                img_h, img_w = batched_inputs[img_id]["instances"].image_size
+                img_masks[img_id, :img_h, :img_w] = 0
+        else:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_zeros(batch_size, H, W)
 
         if isinstance(images, (list, torch.Tensor)):
             images = nested_tensor_from_tensor_list(images)
         features, pos = self.backbone(images)
 
-        src, mask = features[-1].decompose()
-        assert mask is not None
-        embedweight = self.refpoint_embed.weight  # TODO this should be moved to the Transformer
-
+        # only use last level feature in DAB-DETR
+        features = self.backbone(images.tensor)["res5"]
+        features = self.input_proj(features)
+        img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
+        pos_embed = self.position_embedding(img_masks)
+        embed_weight = self.refpoint_embed.weight
         ####### prepare for dn
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
         else:
             targets = None
+        
         input_query_label, input_query_bbox, attn_mask, mask_dict = prepare_for_dn(
             targets,
             self.dn_args,
-            embedweight,
+            embed_weight,
             src.size(0),
             self.training,
             self.num_queries,

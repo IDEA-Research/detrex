@@ -52,11 +52,10 @@ def prepare_for_dn(
     """
     scalar, label_noise_scale, box_noise_scale = dn_args
 
-    num_patterns = 1
-    indicator0 = torch.zeros([num_queries * num_patterns, 1]).cuda()
-    tgt = label_enc(torch.tensor(num_classes).cuda()).repeat(num_queries * num_patterns, 1)
+    indicator0 = torch.zeros([num_queries, 1]).cuda()
+    tgt = label_enc(torch.tensor(num_classes).cuda()).repeat(num_queries, 1)
     tgt = torch.cat([tgt, indicator0], dim=1)
-    refpoint_emb = embedweight.repeat(num_patterns, 1)
+    refpoint_emb = embedweight
     if training:
         known = [(torch.ones_like(t["labels"])).cuda() for t in targets]
         know_idx = [torch.nonzero(t) for t in known]
@@ -131,7 +130,7 @@ def prepare_for_dn(
             input_query_label[(known_bid.long(), map_known_indice)] = input_label_embed
             input_query_bbox[(known_bid.long(), map_known_indice)] = input_bbox_embed
 
-        tgt_size = pad_size + num_queries * num_patterns
+        tgt_size = pad_size + num_queries
         attn_mask = torch.ones(tgt_size, tgt_size).to("cuda") < 0
         # match query cannot see the reconstruct
         attn_mask[pad_size:, :pad_size] = True
