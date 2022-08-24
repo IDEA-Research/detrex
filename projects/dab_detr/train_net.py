@@ -37,15 +37,16 @@ class Trainer(SimpleTrainer):
     We've combine Simple and AMP Trainer together.
     """
 
-    def __init__(self, 
-                 model, 
-                 dataloader, 
-                 optimizer, 
-                 amp=False, 
-                 clip_grad_max_norm=0.1,
-                 clip_grad_norm_type=2.0,
-                 grad_scaler=None
-            ):
+    def __init__(
+        self,
+        model,
+        dataloader,
+        optimizer,
+        amp=False,
+        clip_grad_max_norm=0.1,
+        clip_grad_norm_type=2.0,
+        grad_scaler=None,
+    ):
         super().__init__(model=model, data_loader=dataloader, optimizer=optimizer)
 
         unsupported = "AMPTrainer does not support single-process multi-device training!"
@@ -102,23 +103,24 @@ class Trainer(SimpleTrainer):
         if self.amp:
             self.grad_scaler.scale(losses).backward()
             self.grad_scaler.unscale_(self.optimizer)
-            torch.nn.utils.clip_grad_norm_(
-                self.model.parameters(), 
-                max_norm=self.clip_grad_max_norm,
-                norm_type=self.clip_grad_norm_type,
-            )
+            self.clip_grads(self.model.parameters())
             self.grad_scaler.step(self.optimizer)
             self.grad_scaler.update()
         else:
             losses.backward()
-            torch.nn.utils.clip_grad_norm_(
-                self.model.parameters(), 
-                max_norm=self.clip_grad_max_norm,
-                norm_type=self.clip_grad_norm_type,
-            )
+            self.clip_grads(self.model.parameters())
             self.optimizer.step()
 
         self._write_metrics(loss_dict, data_time)
+
+    def clip_grads(self, params):
+        params = list(filter(lambda p: p.requires_grad and p.grad is not None, params))
+        if len(params) > 0:
+            return torch.nn.utils.clip_grad_norm_(
+                parameters=params,
+                max_norm=self.clip_grad_max_norm,
+                norm_type=self.clip_grad_norm_type,
+            )
 
 
 def do_test(cfg, model):
@@ -160,22 +162,22 @@ def do_train(args, cfg):
     train_loader = instantiate(cfg.dataloader.train)
 
     model = create_ddp_model(model, **cfg.train.ddp)
-    
+
     trainer = Trainer(
-        model=model, 
-        dataloader=train_loader, 
-        optimizer=optim, 
+        model=model,
+        dataloader=train_loader,
+        optimizer=optim,
         amp=cfg.train.amp.enabled,
         clip_grad_max_norm=cfg.train.clip_grad_max_norm,
         clip_grad_norm_type=cfg.train.clip_grad_norm_type,
     )
-    
+
     checkpointer = DetectionCheckpointer(
         model,
         cfg.train.output_dir,
         trainer=trainer,
     )
-    
+
     trainer.register_hooks(
         [
             hooks.IterationTimer(),
