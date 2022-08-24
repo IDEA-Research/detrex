@@ -1,4 +1,3 @@
-from ideadet.modeling.utils import Joiner, MaskedBackbone
 from ideadet.modeling.matcher import HungarianMatcher
 from ideadet.modeling.criterion import SetCriterion
 from ideadet.layers import PositionEmbeddingSine
@@ -16,25 +15,21 @@ from modeling import (
 num_feature_levels = 4
 
 model = L(DabDeformableDETR)(
-    backbone=L(Joiner)(
-        backbone=L(MaskedBackbone)(
-            backbone=L(ResNet)(
-                stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
-                stages=L(ResNet.make_default_stages)(
-                    depth=50,
-                    stride_in_1x1=False,
-                    norm="FrozenBN",
-                ),
-                out_features=["res3", "res4", "res5"],
-                freeze_at=1,
-            )
+    backbone=L(ResNet)(
+        stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
+        stages=L(ResNet.make_default_stages)(
+            depth=50,
+            stride_in_1x1=False,
+            norm="FrozenBN",
         ),
-        position_embedding=L(PositionEmbeddingSine)(
-            num_pos_feats=128,
-            temperature=10000,
-            normalize=True,
-            offset=-0.5,
-        ),
+        out_features=["res3", "res4", "res5"],
+        freeze_at=1,
+    ),
+    position_embedding=L(PositionEmbeddingSine)(
+        num_pos_feats=128,
+        temperature=10000,
+        normalize=True,
+        offset=-0.5,
     ),
     transformer=L(DabDeformableDetrTransformer)(
         encoder=L(DabDeformableDetrTransformerEncoder)(

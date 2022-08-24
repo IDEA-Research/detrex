@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .criterion import SetCriterion, DabCriterion
 from .matcher import HungarianMatcher
 from .utils import (
     Joiner,

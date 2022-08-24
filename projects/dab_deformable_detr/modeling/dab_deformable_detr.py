@@ -21,14 +21,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ideadet.layers import MLP, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
-from ideadet.utils import NestedTensor, inverse_sigmoid, nested_tensor_from_tensor_list
+from ideadet.utils import inverse_sigmoid, nested_tensor_from_tensor_list
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
-
-
-def _get_clones(module, N):
-    return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
 
 class DabDeformableDETR(nn.Module):
@@ -36,103 +32,115 @@ class DabDeformableDETR(nn.Module):
         self,
         backbone,
         transformer,
+        position_embedding,
         num_classes,
         num_queries,
-        num_feature_levels,
         criterion,
+        num_feature_levels,
         pixel_mean,
         pixel_std,
+        in_channels=2048,
+        embed_dim=256,
         aux_loss=True,
         as_two_stage=False,
-        use_dab=True,
         device="cuda",
     ):
         super().__init__()
-        self.num_queries = num_queries
+        self.backbone = backbone
         self.transformer = transformer
-        hidden_dim = 256
-        self.class_embed = nn.Linear(hidden_dim, num_classes)
-        self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
+        self.position_embedding = position_embedding
+        self.num_queries = num_queries
+        self.class_embed = nn.Linear(embed_dim, num_classes)
+        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.num_feature_levels = num_feature_levels
-        self.use_dab = use_dab
+        self.num_classes = num_classes
+        
         if not as_two_stage:
-            if not use_dab:
-                self.query_embed = nn.Embedding(num_queries, hidden_dim * 2)
-            else:
-                self.tgt_embed = nn.Embedding(num_queries, hidden_dim)
-                self.refpoint_embed = nn.Embedding(num_queries, 4)
+            self.tgt_embed = nn.Embedding(num_queries, embed_dim)
+            self.refpoint_embed = nn.Embedding(num_queries, 4)
 
-        feature_shapes = backbone[0].backbone.output_shape()
-        num_channels = [feature_shapes[k].channels for k in feature_shapes.keys()]
+        backbone_output_feature_shapes = backbone.output_shape()
+        num_channels = [backbone_output_feature_shapes[k].channels for k in backbone_output_feature_shapes.keys()]
 
         if num_feature_levels > 1:
-            num_backbone_outputs = len(feature_shapes)
+            num_backbone_outputs = len(backbone_output_feature_shapes)
             input_proj_list = []
             for _ in range(num_backbone_outputs):
                 in_channels = num_channels[_]
                 input_proj_list.append(
                     nn.Sequential(
-                        nn.Conv2d(in_channels, hidden_dim, kernel_size=1),
-                        nn.GroupNorm(32, hidden_dim),
+                        nn.Conv2d(in_channels, embed_dim, kernel_size=1),
+                        nn.GroupNorm(32, embed_dim),
                     )
                 )
             for _ in range(num_feature_levels - num_backbone_outputs):
                 input_proj_list.append(
                     nn.Sequential(
-                        nn.Conv2d(in_channels, hidden_dim, kernel_size=3, stride=2, padding=1),
-                        nn.GroupNorm(32, hidden_dim),
+                        nn.Conv2d(in_channels, embed_dim, kernel_size=3, stride=2, padding=1),
+                        nn.GroupNorm(32, embed_dim),
                     )
                 )
-                in_channels = hidden_dim
+                in_channels = embed_dim
             self.input_proj = nn.ModuleList(input_proj_list)
         else:
             self.input_proj = nn.ModuleList(
                 [
                     nn.Sequential(
-                        nn.Conv2d(num_channels[0], hidden_dim, kernel_size=1),
-                        nn.GroupNorm(32, hidden_dim),
+                        nn.Conv2d(num_channels[0], embed_dim, kernel_size=1),
+                        nn.GroupNorm(32, embed_dim),
                     )
                 ]
             )
 
-        self.backbone = backbone
         self.aux_loss = aux_loss
         self.as_two_stage = as_two_stage
-
         self.criterion = criterion
+
+        # normalizer for input raw images
         self.device = device
         pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
-        prior_prob = 0.01
-        bias_value = -math.log((1 - prior_prob) / prior_prob)
-        self.class_embed.bias.data = torch.ones(num_classes) * bias_value
-        nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
-        nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
-        for proj in self.input_proj:
-            nn.init.xavier_uniform_(proj[0].weight, gain=1)
-            nn.init.constant_(proj[0].bias, 0)
 
         # if two-stage, the last class_embed and bbox_embed is for region proposal generation
         num_pred = (
             (transformer.decoder.num_layers + 1) if as_two_stage else transformer.decoder.num_layers
         )
-        self.class_embed = _get_clones(self.class_embed, num_pred)
-        self.bbox_embed = _get_clones(self.bbox_embed, num_pred)
-        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
+        self.class_embed = nn.ModuleList([copy.deepcopy(self.class_embed) for i in range(num_pred)])
+        self.bbox_embed = nn.ModuleList([copy.deepcopy(self.bbox_embed) for i in range(num_pred)])
+
         # hack implementation for iterative bounding box refinement
         self.transformer.decoder.bbox_embed = self.bbox_embed
-
-        if as_two_stage:
-            # hack implementation for two-stage
+        
+        # hack implementation for two-stage
+        if self.as_two_stage:
             self.transformer.decoder.class_embed = self.class_embed
-            for box_embed in self.bbox_embed:
-                nn.init.constant_(box_embed.layers[-1].bias.data[2:], 0.0)
+
+        self.init_weights()
+
+    def init_weights(self):
+        prior_prob = 0.01
+        bias_value = -math.log((1 - prior_prob) / prior_prob)
+
+        for class_embed_layer in self.class_embed:
+            class_embed_layer.bias.data = torch.ones(self.num_classes) * bias_value
+
+        for bbox_embed_layer in self.bbox_embed:
+            nn.init.constant_(bbox_embed_layer.layers[-1].weight.data, 0)
+            nn.init.constant_(bbox_embed_layer.layers[-1].bias.data, 0)
+
+        for proj in self.input_proj:
+            nn.init.xavier_uniform_(proj[0].weight, gain=1)
+            nn.init.constant_(proj[0].bias, 0)
+        
+        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
+
+        if self.as_two_stage:
+            for bbox_embed_layer in self.bbox_embed:
+                nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
 
     def forward(self, batched_inputs):
-
-        # [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
 
         images = self.preprocess_image(batched_inputs)
 
@@ -144,37 +152,34 @@ class DabDeformableDETR(nn.Module):
                 img_masks[img_id, :img_h, :img_w] = 0
         else:
             batch_size, _, H, W = images.tensor.shape
-            img_masks = images.tensor.new_ones(batch_size, H, W)
-            img_masks[:, :H, :W] = 0
+            img_masks = images.tensor.new_zeros(batch_size, H, W)
 
-        if isinstance(images, (list, torch.Tensor)):
-            images = nested_tensor_from_tensor_list(images)
-        features, pos = self.backbone(images)
+        # original features
+        features = self.backbone(images.tensor)  # output feature dict
 
+        # features preprocess
         multi_level_feats = []
         multi_level_masks = []
-        for idx, feature in enumerate(features):
-            feat, mask = feature.decompose()
+        multi_level_position_embeddings = []
+        for idx, (stage, feat) in enumerate(features.items()):
+            multi_level_masks.append(F.interpolate(
+                img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0))
             multi_level_feats.append(self.input_proj[idx](feat))
-            multi_level_masks.append(mask)
-            assert mask is not None
+            multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
+
 
         if self.num_feature_levels > len(multi_level_feats):
             len_feats = len(multi_level_feats)
             for idx in range(len_feats, self.num_feature_levels):
                 if idx == len_feats:
-                    feat = self.input_proj[idx](features[-1].tensors)
+                    feat = self.input_proj[idx](list(features.values())[-1])  # last level feature
                 else:
                     feat = self.input_proj[idx](multi_level_feats[-1])
 
-                # m = images.mask  # 原图的mask
-                mask = F.interpolate(img_masks[None].float(), size=feat.shape[-2:]).to(torch.bool)[
-                    0
-                ]
-                pos_l = self.backbone[1](mask).to(feat.dtype)
+                mask = F.interpolate(img_masks[None].float(), size=feat.shape[-2:]).to(torch.bool).squeeze(0)
                 multi_level_feats.append(feat)
                 multi_level_masks.append(mask)
-                pos.append(pos_l)
+                multi_level_position_embeddings.append(self.position_embedding(mask))
 
         tgt_embed = self.tgt_embed.weight  # nq, 256
         refanchor = self.refpoint_embed.weight  # nq, 4
@@ -186,7 +191,7 @@ class DabDeformableDETR(nn.Module):
             inter_references,
             enc_outputs_class,
             enc_outputs_coord_unact,
-        ) = self.transformer(multi_level_feats, multi_level_masks, pos, query_embeds)
+        ) = self.transformer(multi_level_feats, multi_level_masks, multi_level_position_embeddings, query_embeds)
 
         outputs_classes = []
         outputs_coords = []
