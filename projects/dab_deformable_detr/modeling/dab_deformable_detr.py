@@ -54,13 +54,16 @@ class DabDeformableDETR(nn.Module):
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.num_feature_levels = num_feature_levels
         self.num_classes = num_classes
-        
+
         if not as_two_stage:
             self.tgt_embed = nn.Embedding(num_queries, embed_dim)
             self.refpoint_embed = nn.Embedding(num_queries, 4)
 
         backbone_output_feature_shapes = backbone.output_shape()
-        num_channels = [backbone_output_feature_shapes[k].channels for k in backbone_output_feature_shapes.keys()]
+        num_channels = [
+            backbone_output_feature_shapes[k].channels
+            for k in backbone_output_feature_shapes.keys()
+        ]
 
         if num_feature_levels > 1:
             num_backbone_outputs = len(backbone_output_feature_shapes)
@@ -102,7 +105,6 @@ class DabDeformableDETR(nn.Module):
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
-
         # if two-stage, the last class_embed and bbox_embed is for region proposal generation
         num_pred = (
             (transformer.decoder.num_layers + 1) if as_two_stage else transformer.decoder.num_layers
@@ -112,7 +114,7 @@ class DabDeformableDETR(nn.Module):
 
         # hack implementation for iterative bounding box refinement
         self.transformer.decoder.bbox_embed = self.bbox_embed
-        
+
         # hack implementation for two-stage
         if self.as_two_stage:
             self.transformer.decoder.class_embed = self.class_embed
@@ -133,7 +135,7 @@ class DabDeformableDETR(nn.Module):
         for proj in self.input_proj:
             nn.init.xavier_uniform_(proj[0].weight, gain=1)
             nn.init.constant_(proj[0].bias, 0)
-        
+
         nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
 
         if self.as_two_stage:
@@ -162,11 +164,11 @@ class DabDeformableDETR(nn.Module):
         multi_level_masks = []
         multi_level_position_embeddings = []
         for idx, (stage, feat) in enumerate(features.items()):
-            multi_level_masks.append(F.interpolate(
-                img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0))
+            multi_level_masks.append(
+                F.interpolate(img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0)
+            )
             multi_level_feats.append(self.input_proj[idx](feat))
             multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
-
 
         if self.num_feature_levels > len(multi_level_feats):
             len_feats = len(multi_level_feats)
@@ -176,7 +178,11 @@ class DabDeformableDETR(nn.Module):
                 else:
                     feat = self.input_proj[idx](multi_level_feats[-1])
 
-                mask = F.interpolate(img_masks[None].float(), size=feat.shape[-2:]).to(torch.bool).squeeze(0)
+                mask = (
+                    F.interpolate(img_masks[None].float(), size=feat.shape[-2:])
+                    .to(torch.bool)
+                    .squeeze(0)
+                )
                 multi_level_feats.append(feat)
                 multi_level_masks.append(mask)
                 multi_level_position_embeddings.append(self.position_embedding(mask))
@@ -191,7 +197,9 @@ class DabDeformableDETR(nn.Module):
             inter_references,
             enc_outputs_class,
             enc_outputs_coord_unact,
-        ) = self.transformer(multi_level_feats, multi_level_masks, multi_level_position_embeddings, query_embeds)
+        ) = self.transformer(
+            multi_level_feats, multi_level_masks, multi_level_position_embeddings, query_embeds
+        )
 
         outputs_classes = []
         outputs_coords = []
