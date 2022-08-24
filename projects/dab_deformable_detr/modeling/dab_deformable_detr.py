@@ -171,7 +171,7 @@ class DabDeformableDETR(nn.Module):
                 mask = F.interpolate(img_masks[None].float(), size=feat.shape[-2:]).to(torch.bool)[
                     0
                 ]
-                pos_l = self.backbone[1](NestedTensor(feat, mask)).to(feat.dtype)
+                pos_l = self.backbone[1](mask).to(feat.dtype)
                 multi_level_feats.append(feat)
                 multi_level_masks.append(mask)
                 pos.append(pos_l)

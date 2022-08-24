@@ -19,3 +19,8 @@ from .transformer import (
     OriginalConditionalAttentionEncoder,
     OriginalConditionalAttentionDecoder,
 )
+from .potision_embedding import (
+    DeformablePositionEmbeddingSine,
+    DABPositionEmbeddingSine,
+    DABPositionEmbeddingLearned,
+)
