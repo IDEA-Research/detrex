@@ -4,3 +4,4 @@ from .dab_transformer import (
     DabDetrTransformerDecoder,
     DabDetrTransformer,
 )
+from .dn_criterion import SetCriterion as DNCriterion
