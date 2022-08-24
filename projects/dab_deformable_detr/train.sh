@@ -4,4 +4,4 @@
 # export DETECTRON2_DATASETS=/comp_robot/rentianhe/code/IDEADet/datasets
 # CUDA_VISIBLE_DEVICES=4 python train_net.py --config-file configs/dab_deformable_detr_12epoch.py --num-gpus 1 --resume
 
-srun python train_net.py --config-file configs/dab_deformable_detr_12epoch.py --num-gpus 8
+srun python train_net.py --config-file configs/dab_deformable_detr_50epoch.py --num-gpus 8

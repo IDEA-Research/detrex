@@ -120,7 +120,7 @@ class DabDeformableDETR(nn.Module):
         )
         self.class_embed = _get_clones(self.class_embed, num_pred)
         self.bbox_embed = _get_clones(self.bbox_embed, num_pred)
-        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], 0.0)
+        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
         # hack implementation for iterative bounding box refinement
         self.transformer.decoder.bbox_embed = self.bbox_embed
 
