@@ -4,7 +4,6 @@ import torch.nn.functional as F
 
 from ideadet.layers import box_ops
 from ideadet.utils import (
-    accuracy,
     get_world_size,
     interpolate,
     is_dist_avail_and_initialized,
@@ -13,6 +12,7 @@ from ideadet.utils import (
 
 from ..losses import dice_loss, sigmoid_focal_loss
 from .dn_components import compute_dn_loss
+from .dab_criterion import SetCriterion as DABCriterion
 
 
 class SetCriterion(nn.Module):
@@ -69,23 +69,6 @@ class SetCriterion(nn.Module):
         )
         losses = {"loss_ce": loss_ce}
 
-        if log:
-            # TODO this should probably be a separate loss, not hacked in this one here
-            losses["class_error"] = 100 - accuracy(src_logits[idx], target_classes_o)[0]
-        return losses
-
-    @torch.no_grad()
-    def loss_cardinality(self, outputs, targets, indices, num_boxes):
-        """Compute the cardinality error, ie the absolute error in the number of predicted non-empty boxes
-        This is not really a loss, it is intended for logging purposes only. It doesn't propagate gradients
-        """
-        pred_logits = outputs["pred_logits"]
-        device = pred_logits.device
-        tgt_lengths = torch.as_tensor([len(v["labels"]) for v in targets], device=device)
-        # Count the number of predictions that are NOT "no-object" (which is the last class)
-        card_pred = (pred_logits.argmax(-1) != pred_logits.shape[-1] - 1).sum(1)
-        card_err = F.l1_loss(card_pred.float(), tgt_lengths.float())
-        losses = {"cardinality_error": card_err}
         return losses
 
     def loss_boxes(self, outputs, targets, indices, num_boxes):
@@ -111,38 +94,6 @@ class SetCriterion(nn.Module):
         losses["loss_giou"] = loss_giou.sum() / num_boxes
         return losses
 
-    def loss_masks(self, outputs, targets, indices, num_boxes):
-        """Compute the losses related to the masks: the focal loss and the dice loss.
-        targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
-        """
-        assert "pred_masks" in outputs
-
-        src_idx = self._get_src_permutation_idx(indices)
-        tgt_idx = self._get_tgt_permutation_idx(indices)
-
-        src_masks = outputs["pred_masks"]
-
-        # TODO use valid to mask invalid areas due to padding in loss
-        target_masks, valid = nested_tensor_from_tensor_list(
-            [t["masks"] for t in targets]
-        ).decompose()
-        target_masks = target_masks.to(src_masks)
-
-        src_masks = src_masks[src_idx]
-        # upsample predictions to the target size
-        src_masks = interpolate(
-            src_masks[:, None], size=target_masks.shape[-2:], mode="bilinear", align_corners=False
-        )
-        src_masks = src_masks[:, 0].flatten(1)
-
-        target_masks = target_masks[tgt_idx].flatten(1)
-
-        losses = {
-            "loss_mask": sigmoid_focal_loss(src_masks, target_masks, num_boxes),
-            "loss_dice": dice_loss(src_masks, target_masks, num_boxes),
-        }
-        return losses
-
     def _get_src_permutation_idx(self, indices):
         # permute predictions following indices
         batch_idx = torch.cat([torch.full_like(src, i) for i, (src, _) in enumerate(indices)])
@@ -158,14 +109,12 @@ class SetCriterion(nn.Module):
     def get_loss(self, loss, outputs, targets, indices, num_boxes, **kwargs):
         loss_map = {
             "labels": self.loss_labels,
-            "cardinality": self.loss_cardinality,
             "boxes": self.loss_boxes,
-            "masks": self.loss_masks,
         }
         assert loss in loss_map, f"do you really want to compute {loss} loss?"
         return loss_map[loss](outputs, targets, indices, num_boxes, **kwargs)
 
-    def forward(self, outputs, targets, mask_dict=None):
+    def forward(self, outputs, targets, dn_metas=None):
         """This performs the loss computation.
         Parameters:
              outputs: dict of tensors, see the output specification of the model for the format
@@ -231,7 +180,69 @@ class SetCriterion(nn.Module):
         aux_num = 0
         if "aux_outputs" in outputs:
             aux_num = len(outputs["aux_outputs"])
-        dn_losses = compute_dn_loss(mask_dict, self.training, aux_num, self.focal_alpha)
+        # import pdb;pdb.set_trace()
+        dn_losses = self.compute_dn_loss(dn_metas, targets, aux_num, num_boxes)
         losses.update(dn_losses)
 
+        return losses
+
+    def compute_dn_loss(self, dn_metas, targets, aux_num, num_boxes):
+        """
+        compute dn loss in criterion
+        Args:
+            dn_metas: a dict for dn information
+            training: training or inference flag
+            aux_num: aux loss number
+            focal_alpha:  for focal loss
+        """
+        losses = {}
+        if dn_metas and "output_known_lbs_bboxes" in dn_metas:
+            output_known_lbs_bboxes,dn_num,single_pad= dn_metas['output_known_lbs_bboxes'], \
+                                                       dn_metas['dn_num'], dn_metas['single_pad']
+            dn_idx = []
+            for i in range(len(targets)):
+                if len(targets[i]['labels']) > 0:
+                    t = torch.arange(0, len(targets[i]['labels'])).long().cuda()
+                    t = t.unsqueeze(0).repeat(dn_num, 1)
+                    tgt_idx = t.flatten()
+                    output_idx = (torch.tensor(range(dn_num)) * single_pad).long().cuda().unsqueeze(1) + t
+                    output_idx = output_idx.flatten()
+                else:
+                    output_idx = tgt_idx = torch.tensor([]).long().cuda()
+
+                dn_idx.append((output_idx, tgt_idx))
+            l_dict = {}
+            for loss in self.losses:
+                kwargs = {}
+                if 'labels' in loss:
+                    kwargs = {'log': False}
+                l_dict.update(self.get_loss(loss, output_known_lbs_bboxes, targets, dn_idx, num_boxes * dn_num,
+                                            **kwargs))
+
+            l_dict = {k + f'_dn': v for k, v in l_dict.items()}
+            losses.update(l_dict)
+        else:
+            losses["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
+            losses["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
+            losses["loss_ce_dn"] = torch.as_tensor(0.0).to("cuda")
+
+        for i in range(aux_num):
+            # dn aux loss
+            l_dict = {}
+            if dn_metas and "output_known_lbs_bboxes" in dn_metas:
+                output_known_lbs_bboxes_aux=output_known_lbs_bboxes['aux_outputs'][i]
+                for loss in self.losses:
+                    kwargs = {}
+                    if 'labels' in loss:
+                        kwargs = {'log': False}
+                    l_dict.update(self.get_loss(loss, output_known_lbs_bboxes_aux, targets, dn_idx, num_boxes * dn_num,
+                                                **kwargs))
+                l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
+                l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
+            else:
+                l_dict["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
+                l_dict["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
+                l_dict["loss_ce_dn"] = torch.as_tensor(0.0).to("cuda")
+                l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
+            losses.update(l_dict)
         return losses

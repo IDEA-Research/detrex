@@ -1,6 +1,6 @@
 from ideadet.config import get_config
 
-from .models.dab_detr_r50 import model
+from .models.dn_detr_r50 import model
 from .common.coco_loader import dataloader
 from .common.schedule import lr_multiplier
 
