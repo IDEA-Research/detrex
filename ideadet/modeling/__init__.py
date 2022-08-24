@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .criterion import SetCriterion, DabCriterion
+from .criterion import SetCriterion
 from .matcher import HungarianMatcher
-from .utils import (
-    Joiner,
-    MaskedBackbone,
-)
 from .losses import dice_loss, sigmoid_focal_loss

@@ -26,7 +26,7 @@ import torch.nn.functional as F
 
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from ideadet.layers.mlp import MLP
-from ideadet.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
+from ideadet.utils.misc import inverse_sigmoid
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances

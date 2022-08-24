@@ -1,13 +1,13 @@
 from ideadet.config import get_config
 
-from .models.dab_detr_r50 import model
+from .models.dab_deformable_detr_r50 import model
 from .common.coco_loader import dataloader
 from .common.schedule import lr_multiplier_50x as lr_multiplier
 
 optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
-train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+train.init_checkpoint = "/comp_robot/rentianhe/code/IDEADet/test_dab_deformable.pth"
 train.output_dir = "./output/dab_deformable_r50_50epochs"
 train.max_iter = 375000
 
