@@ -8,7 +8,7 @@ optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/r50_deformable_refine_init"
+train.output_dir = "./output/dab_deformable_r50_50epochs"
 train.max_iter = 375000
 
 
