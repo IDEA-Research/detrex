@@ -1,18 +1,16 @@
 from ideadet.modeling.utils import Joiner, MaskedBackbone
-from ideadet.modeling.matcher import DabMatcher
-from ideadet.modeling.criterion import DabCriterion
-from ideadet.layers import (
-    PositionEmbeddingSine,
-)
+from ideadet.modeling.matcher import HungarianMatcher
+from ideadet.modeling.criterion import SetCriterion
+from ideadet.layers import PositionEmbeddingSine
 
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
 
 from modeling import (
     DabDeformableDETR,
-    DabDeformableDetrTransformer,
-    DeformableDetrEncoder,
+    DabDeformableDetrTransformerEncoder,
     DabDeformableDetrTransformerDecoder,
+    DabDeformableDetrTransformer,
 )
 
 num_feature_levels = 4
@@ -39,7 +37,7 @@ model = L(DabDeformableDETR)(
         ),
     ),
     transformer=L(DabDeformableDetrTransformer)(
-        encoder=L(DeformableDetrEncoder)(
+        encoder=L(DabDeformableDetrTransformerEncoder)(
             embed_dim=256,
             num_heads=8,
             feedforward_dim=2048,
@@ -68,20 +66,28 @@ model = L(DabDeformableDETR)(
     num_queries=300,
     aux_loss=True,
     num_feature_levels=num_feature_levels,
-    criterion=L(DabCriterion)(
+    criterion=L(SetCriterion)(
         num_classes=80,
-        matcher=L(DabMatcher)(
+        matcher=L(HungarianMatcher)(
             cost_class=2.0,
             cost_bbox=5.0,
             cost_giou=2.0,
+            cost_class_type="focal_loss_cost",
+            alpha=0.25,
+            gamma=2.0,
         ),
         weight_dict={
-            "loss_ce": 1,
+            "loss_class": 1,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
-        focal_alpha=0.25,
-        losses=["labels", "boxes"],
+        losses=[
+            "class",
+            "boxes",
+        ],
+        loss_class_type="focal_loss",
+        alpha=0.25,
+        gamma=2.0,
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
