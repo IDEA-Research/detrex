@@ -11,7 +11,6 @@ from ideadet.utils import (
 )
 
 from ..losses import dice_loss, sigmoid_focal_loss
-from .dn_components import compute_dn_loss
 from .dab_criterion import SetCriterion as DABCriterion
 
 

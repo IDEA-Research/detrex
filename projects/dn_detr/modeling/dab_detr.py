@@ -25,7 +25,6 @@ import torch.nn as nn
 
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from ideadet.layers.mlp import MLP
-from ideadet.modeling.criterion.dn_components import dn_post_process, generate_dn_queries
 from ideadet.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
 
 from detectron2.modeling import detector_postprocess
@@ -337,13 +336,8 @@ class DABDETR(nn.Module):
                 ] = True
                 attn_mask[single_padding * i: single_padding * (i + 1), : single_padding * i] = True
         dn_metas = {
-            "known_indice": torch.as_tensor(gt_indices_for_matching).long(),
-            "batch_idx": torch.as_tensor(batch_idx).long(),
-            "map_known_indice": torch.as_tensor(dn_indices).long(),
-            "known_lbs_bboxes": (gt_labels, gt_bboxs),
-            "pad_size": padding_size,
             "dn_num": dn_num,
-            "single_pad": single_padding
+            "single_padding": single_padding,
         }
 
         input_query_label = input_query_label.transpose(0, 1)
@@ -352,11 +346,12 @@ class DABDETR(nn.Module):
         return input_query_label, input_query_bbox, attn_mask, dn_metas
 
     def dn_post_process(self, outputs_class, outputs_coord, dn_metas):
-        if dn_metas and dn_metas['pad_size'] > 0:
-            output_known_class = outputs_class[:, :, :dn_metas['pad_size'], :]
-            output_known_coord = outputs_coord[:, :, :dn_metas['pad_size'], :]
-            outputs_class = outputs_class[:, :, dn_metas['pad_size']:, :]
-            outputs_coord = outputs_coord[:, :, dn_metas['pad_size']:, :]
+        if dn_metas and dn_metas['single_padding'] > 0:
+            padding_size=dn_metas['single_padding']*dn_metas['dn_num']
+            output_known_class = outputs_class[:, :, :padding_size, :]
+            output_known_coord = outputs_coord[:, :, :padding_size, :]
+            outputs_class = outputs_class[:, :, padding_size:, :]
+            outputs_coord = outputs_coord[:, :, padding_size:, :]
 
             out = {'pred_logits': output_known_class[-1], 'pred_boxes': output_known_coord[-1]}
             if self.aux_loss:
