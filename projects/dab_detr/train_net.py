@@ -37,7 +37,15 @@ class Trainer(SimpleTrainer):
     We've combine Simple and AMP Trainer together.
     """
 
-    def __init__(self, model, dataloader, optimizer, cfg, grad_scaler=None):
+    def __init__(self, 
+                 model, 
+                 dataloader, 
+                 optimizer, 
+                 amp=False, 
+                 clip_grad_max_norm=0.1,
+                 clip_grad_norm_type=2.0,
+                 grad_scaler=None
+            ):
         super().__init__(model=model, data_loader=dataloader, optimizer=optimizer)
 
         unsupported = "AMPTrainer does not support single-process multi-device training!"
@@ -45,16 +53,19 @@ class Trainer(SimpleTrainer):
             assert not (model.device_ids and len(model.device_ids) > 1), unsupported
         assert not isinstance(model, DataParallel), unsupported
 
-        if grad_scaler is None:
-            from torch.cuda.amp import GradScaler
+        if amp:
+            if grad_scaler is None:
+                from torch.cuda.amp import GradScaler
 
-            grad_scaler = GradScaler()
-        self.grad_scaler = grad_scaler
+                grad_scaler = GradScaler()
+            self.grad_scaler = grad_scaler
 
         # set True to use amp training
-        self.amp = cfg.train.amp.enabled
+        self.amp = amp
 
-        self.cfg = cfg
+        # gradient clip hyper-params
+        self.clip_grad_max_norm = clip_grad_max_norm
+        self.clip_grad_norm_type = clip_grad_norm_type
 
     def run_step(self):
         """
@@ -92,14 +103,18 @@ class Trainer(SimpleTrainer):
             self.grad_scaler.scale(losses).backward()
             self.grad_scaler.unscale_(self.optimizer)
             torch.nn.utils.clip_grad_norm_(
-                self.model.parameters(), max_norm=self.cfg.train.clip_grad_max_norm
+                self.model.parameters(), 
+                max_norm=self.clip_grad_max_norm,
+                norm_type=self.clip_grad_norm_type,
             )
             self.grad_scaler.step(self.optimizer)
             self.grad_scaler.update()
         else:
             losses.backward()
             torch.nn.utils.clip_grad_norm_(
-                self.model.parameters(), max_norm=self.cfg.train.clip_grad_max_norm
+                self.model.parameters(), 
+                max_norm=self.clip_grad_max_norm,
+                norm_type=self.clip_grad_norm_type,
             )
             self.optimizer.step()
 
@@ -145,12 +160,22 @@ def do_train(args, cfg):
     train_loader = instantiate(cfg.dataloader.train)
 
     model = create_ddp_model(model, **cfg.train.ddp)
-    trainer = Trainer(model, train_loader, optim, cfg)
+    
+    trainer = Trainer(
+        model=model, 
+        dataloader=train_loader, 
+        optimizer=optim, 
+        amp=cfg.train.amp.enabled,
+        clip_grad_max_norm=cfg.train.clip_grad_max_norm,
+        clip_grad_norm_type=cfg.train.clip_grad_norm_type,
+    )
+    
     checkpointer = DetectionCheckpointer(
         model,
         cfg.train.output_dir,
         trainer=trainer,
     )
+    
     trainer.register_hooks(
         [
             hooks.IterationTimer(),

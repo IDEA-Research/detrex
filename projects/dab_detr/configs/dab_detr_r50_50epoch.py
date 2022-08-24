@@ -10,9 +10,14 @@ train = get_config("common/train.py").train
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output"
+train.output_dir = "./output/dab_r50_50epochs"
 train.max_iter = 375000
+
+# clip gradient config
 train.clip_grad_max_norm = 0.1
+train.clip_grad_norm_type = 2.0
+
+# amp training
 train.amp.enabled = True
 
 
