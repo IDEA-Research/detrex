@@ -29,7 +29,7 @@ from ideadet.layers import (
 from ideadet.utils import inverse_sigmoid
 
 
-class DeformableDetrEncoder(TransformerLayerSequence):
+class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -42,7 +42,7 @@ class DeformableDetrEncoder(TransformerLayerSequence):
         post_norm: bool = False,
         num_feature_levels: int = 4,
     ):
-        super(DeformableDetrEncoder, self).__init__(
+        super(DabDeformableDetrTransformerEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=MultiScaleDeformableAttention(
                     embed_dim=embed_dim,

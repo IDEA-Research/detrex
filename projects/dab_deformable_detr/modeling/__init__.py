@@ -15,7 +15,7 @@
 
 
 from .dab_deformable_transformer import (
-    DeformableDetrEncoder,
+    DabDeformableDetrTransformerEncoder,
     DabDeformableDetrTransformerDecoder,
     DabDeformableDetrTransformer,
 )
