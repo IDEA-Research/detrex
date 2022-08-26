@@ -75,7 +75,6 @@ model = L(DabDeformableDETR)(
     num_classes=80,
     num_queries=300,
     aux_loss=True,
-    num_feature_levels=num_feature_levels,
     criterion=L(SetCriterion)(
         num_classes=80,
         matcher=L(HungarianMatcher)(

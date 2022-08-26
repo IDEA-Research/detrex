@@ -37,7 +37,6 @@ class DabDeformableDETR(nn.Module):
         num_classes,
         num_queries,
         criterion,
-        num_feature_levels,
         pixel_mean,
         pixel_std,
         embed_dim=256,
@@ -53,48 +52,11 @@ class DabDeformableDETR(nn.Module):
         self.num_queries = num_queries
         self.class_embed = nn.Linear(embed_dim, num_classes)
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
-        self.num_feature_levels = num_feature_levels
         self.num_classes = num_classes
 
         if not as_two_stage:
             self.tgt_embed = nn.Embedding(num_queries, embed_dim)
             self.refpoint_embed = nn.Embedding(num_queries, 4)
-
-        # backbone_output_feature_shapes = backbone.output_shape()
-        # num_channels = [
-        #     backbone_output_feature_shapes[k].channels
-        #     for k in backbone_output_feature_shapes.keys()
-        # ]
-
-        # if num_feature_levels > 1:
-        #     num_backbone_outputs = len(backbone_output_feature_shapes)
-        #     input_proj_list = []
-        #     for _ in range(num_backbone_outputs):
-        #         in_channels = num_channels[_]
-        #         input_proj_list.append(
-        #             nn.Sequential(
-        #                 nn.Conv2d(in_channels, embed_dim, kernel_size=1),
-        #                 nn.GroupNorm(32, embed_dim),
-        #             )
-        #         )
-        #     for _ in range(num_feature_levels - num_backbone_outputs):
-        #         input_proj_list.append(
-        #             nn.Sequential(
-        #                 nn.Conv2d(in_channels, embed_dim, kernel_size=3, stride=2, padding=1),
-        #                 nn.GroupNorm(32, embed_dim),
-        #             )
-        #         )
-        #         in_channels = embed_dim
-        #     self.input_proj = nn.ModuleList(input_proj_list)
-        # else:
-        #     self.input_proj = nn.ModuleList(
-        #         [
-        #             nn.Sequential(
-        #                 nn.Conv2d(num_channels[0], embed_dim, kernel_size=1),
-        #                 nn.GroupNorm(32, embed_dim),
-        #             )
-        #         ]
-        #     )
 
         self.aux_loss = aux_loss
         self.as_two_stage = as_two_stage
