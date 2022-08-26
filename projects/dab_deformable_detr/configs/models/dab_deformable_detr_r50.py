@@ -1,9 +1,13 @@
-from ideadet.modeling.matcher import HungarianMatcher
-from ideadet.modeling.criterion import SetCriterion
-from ideadet.layers import PositionEmbeddingSine
+import torch.nn as nn
 
 from detectron2.modeling.backbone import ResNet, BasicStem
+from detectron2.layers import ShapeSpec
 from detectron2.config import LazyCall as L
+
+from ideadet.modeling.matcher import HungarianMatcher
+from ideadet.modeling.criterion import SetCriterion
+from ideadet.modeling.neck import ChannelMapper
+from ideadet.layers import PositionEmbeddingSine
 
 from modeling import (
     DabDeformableDETR,
@@ -30,6 +34,17 @@ model = L(DabDeformableDETR)(
         temperature=10000,
         normalize=True,
         offset=-0.5,
+    ),
+    neck=L(ChannelMapper)(
+        input_shapes={
+            "res3": ShapeSpec(channels=512),
+            "res4": ShapeSpec(channels=1024),
+            "res5": ShapeSpec(channels=2048),
+        },
+        in_features=["res3", "res4", "res5"],
+        out_channels=256,
+        num_outs=4,
+        norm_layer=L(nn.GroupNorm)(num_groups=32, num_channels=256),
     ),
     transformer=L(DabDeformableDetrTransformer)(
         encoder=L(DabDeformableDetrTransformerEncoder)(

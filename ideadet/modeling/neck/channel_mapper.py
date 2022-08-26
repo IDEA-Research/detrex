@@ -20,35 +20,37 @@
 # ------------------------------------------------------------------------------------------------
 
 from typing import Dict, List
-
 import torch.nn as nn
-from detectron2.modeling import ShapeSpec
 
 from ideadet.layers import ConvNormAct
 
+from detectron2.modeling import ShapeSpec
+
+
 class ChannelMapper(nn.Module):
-    def __init__(self,
-                 input_shapes: Dict[str, ShapeSpec],
-                 in_features: List[str],
-                 out_channels: int,
-                 kernel_size: int = 1,
-                 stride: int = 1,
-                 bias: bool = True,
-                 groups: int = 1,
-                 dilation: int = 1,
-                 norm_layer: nn.Module = None,
-                 activation: nn.Module = None,
-                 num_outs: int = None,
-                 **kwargs,
-                ):
+    def __init__(
+        self,
+        input_shapes: Dict[str, ShapeSpec],
+        in_features: List[str],
+        out_channels: int,
+        kernel_size: int = 1,
+        stride: int = 1,
+        bias: bool = True,
+        groups: int = 1,
+        dilation: int = 1,
+        norm_layer: nn.Module = None,
+        activation: nn.Module = None,
+        num_outs: int = None,
+        **kwargs,
+    ):
         super(ChannelMapper, self).__init__()
         self.extra_convs = None
-        
+
         in_channels_per_feature = [input_shapes[f].channels for f in in_features]
 
         if num_outs is None:
             num_outs = len(input_shapes)
-        
+
         self.convs = nn.ModuleList()
         for in_channel in in_channels_per_feature:
             self.convs.append(
@@ -87,11 +89,11 @@ class ChannelMapper(nn.Module):
                         activation=activation,
                     )
                 )
-    
+
         self.input_shapes = input_shapes
         self.in_features = in_features
         self.out_channels = out_channels
-    
+
     def forward(self, inputs):
         # inputs: key, value
         assert len(inputs) == len(self.convs)
