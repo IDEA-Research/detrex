@@ -8,7 +8,7 @@ optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
 train.init_checkpoint = "/comp_robot/rentianhe/code/IDEADet/test_dab_deformable.pth"
-train.output_dir = "./output/dab_deformable_r50_50epochs"
+train.output_dir = "./test"
 train.max_iter = 375000
 
 

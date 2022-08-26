@@ -13,7 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .criterion import SetCriterion
-from .matcher import HungarianMatcher
-from .losses import dice_loss, sigmoid_focal_loss
-from .neck import ChannelMapper
+from .channel_mapper import ChannelMapper
