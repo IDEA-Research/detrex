@@ -99,8 +99,7 @@ class SetCriterion(Criterion):
                         kwargs = {'log': False}
                     l_dict.update(self.get_loss(loss, output_known_lbs_bboxes_aux, targets, dn_idx, num_boxes * dn_num,
                                                 **kwargs))
-                l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
-                l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
+                l_dict = {k + f"_dn_{i}": v for k, v in l_dict.items()}
             else:
                 l_dict["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
                 l_dict["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
