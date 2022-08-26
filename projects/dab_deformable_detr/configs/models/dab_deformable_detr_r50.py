@@ -68,13 +68,14 @@ model = L(DabDeformableDETR)(
             use_dab=True,
             num_feature_levels=num_feature_levels,
         ),
-        as_two_stage=False,
+        as_two_stage="${..as_two_stage}",
         num_feature_levels=num_feature_levels,
         two_stage_num_proposals=300,
     ),
     num_classes=80,
     num_queries=300,
     aux_loss=True,
+    as_two_stage=False,
     criterion=L(SetCriterion)(
         num_classes=80,
         matcher=L(HungarianMatcher)(

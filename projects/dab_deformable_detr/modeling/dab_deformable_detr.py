@@ -53,6 +53,7 @@ class DabDeformableDETR(nn.Module):
         self.class_embed = nn.Linear(embed_dim, num_classes)
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.num_classes = num_classes
+        self.as_two_stage = as_two_stage
 
         if not as_two_stage:
             self.tgt_embed = nn.Embedding(num_queries, embed_dim)
@@ -132,17 +133,19 @@ class DabDeformableDETR(nn.Module):
                 F.interpolate(img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0)
             )
             multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
-
-        tgt_embed = self.tgt_embed.weight  # nq, 256
-        refanchor = self.refpoint_embed.weight  # nq, 4
-        query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
+        if not self.as_two_stage:
+            tgt_embed = self.tgt_embed.weight  # nq, 256
+            refanchor = self.refpoint_embed.weight  # nq, 4
+            query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
+        else:
+            query_embeds = None
 
         (
             inter_states,
             init_reference,
             inter_references,
-            enc_outputs_class,
-            enc_outputs_coord_unact,
+            enc_state,
+            enc_reference, # [0..1]
         ) = self.transformer(
             multi_level_feats, multi_level_masks, multi_level_position_embeddings, query_embeds
         )
@@ -171,6 +174,12 @@ class DabDeformableDETR(nn.Module):
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
+
+        # prepare two stage output
+        if self.as_two_stage:
+            interm_coord = enc_reference
+            interm_class = self.class_embed[-1](enc_state)
+            output['interm_outputs'] = {'pred_logits': interm_class, 'pred_boxes': interm_coord}
 
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]

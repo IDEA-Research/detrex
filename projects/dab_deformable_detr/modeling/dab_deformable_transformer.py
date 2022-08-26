@@ -168,7 +168,8 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
     ):
         output = query
         bs, num_queries, _ = output.size()
-        reference_points = reference_points.unsqueeze(0).repeat(bs, 1, 1)  # bs, num_queries, 4
+        if reference_points.dim() == 2:
+            reference_points = reference_points.unsqueeze(0).repeat(bs, 1, 1)  # bs, num_queries, 4
 
         intermediate = []
         intermediate_reference_points = []
@@ -247,7 +248,7 @@ class DabDeformableDetrTransformer(nn.Module):
 
         if self.as_two_stage:
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
-            self.enc_outpout_norm = nn.LayerNorm(self.embed_dim)
+            self.enc_output_norm = nn.LayerNorm(self.embed_dim)
             self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
             self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
 
@@ -340,19 +341,6 @@ class DabDeformableDetrTransformer(nn.Module):
         valid_ratio = torch.stack([valid_ratio_w, valid_ratio_h], -1)
         return valid_ratio
 
-    def get_proposal_pos_embed(self, proposals, num_pos_feats=128, temperature=10000):
-        """Get the position embedding of proposal."""
-        scale = 2 * math.pi
-        dim_t = torch.arange(num_pos_feats, dtype=torch.float32, device=proposals.device)
-        dim_t = temperature ** (2 * (dim_t // 2) / num_pos_feats)
-        # N, L, 4
-        proposals = proposals.sigmoid() * scale
-        # N, L, 4, 128
-        pos = proposals[:, :, :, None] / dim_t
-        # N, L, 4, 64, 2
-        pos = torch.stack((pos[:, :, :, 0::2].sin(), pos[:, :, :, 1::2].cos()), dim=4).flatten(2)
-        return pos
-
     def forward(
         self,
         multi_level_feats,
@@ -414,10 +402,11 @@ class DabDeformableDetrTransformer(nn.Module):
 
         bs, _, c = memory.shape
         if self.as_two_stage:
-            # TODO: to support two stage
             output_memory, output_proposals = self.gen_encoder_output_proposals(
                 memory, mask_flatten, spatial_shapes
-            )
+            ) 
+            # output_memory: bs, num_tokens, c
+            # output_proposals: bs, num_tokens, 4
 
             enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
             enc_outputs_coord_unact = (
@@ -426,16 +415,20 @@ class DabDeformableDetrTransformer(nn.Module):
 
             topk = self.two_stage_num_proposals
             topk_proposals = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
+            # extract region proposal boxes
             topk_coords_unact = torch.gather(
                 enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
             )
             topk_coords_unact = topk_coords_unact.detach()
             reference_points = topk_coords_unact.sigmoid()
             init_reference_out = reference_points
-            pos_trans_out = self.pos_trans_norm(
-                self.pos_trans(self.get_proposal_pos_embed(topk_coords_unact))
+
+            # extract region features
+            target_unact = torch.gather(
+                output_memory, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, output_memory.shape[-1])
             )
-            query_embed, target = torch.split(pos_trans_out, c, dim=2)
+            target = target_unact.detach()
+
         elif self.use_dab:
             reference_points = query_embed[..., self.embed_dim :].sigmoid()
             target = query_embed[..., : self.embed_dim]
@@ -463,7 +456,7 @@ class DabDeformableDetrTransformer(nn.Module):
                 inter_states,
                 init_reference_out,
                 inter_references_out,
-                enc_outputs_class,
-                enc_outputs_coord_unact,
+                target_unact,
+                topk_coords_unact.sigmoid(),
             )
         return inter_states, init_reference_out, inter_references_out, None, None
