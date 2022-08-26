@@ -21,7 +21,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ideadet.layers import MLP, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
-from ideadet.utils import inverse_sigmoid, nested_tensor_from_tensor_list
+from ideadet.utils import inverse_sigmoid
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
@@ -31,15 +31,14 @@ class DabDeformableDETR(nn.Module):
     def __init__(
         self,
         backbone,
-        transformer,
         position_embedding,
+        neck,
+        transformer,
         num_classes,
         num_queries,
         criterion,
-        num_feature_levels,
         pixel_mean,
         pixel_std,
-        in_channels=2048,
         embed_dim=256,
         aux_loss=True,
         as_two_stage=False,
@@ -47,53 +46,17 @@ class DabDeformableDETR(nn.Module):
     ):
         super().__init__()
         self.backbone = backbone
-        self.transformer = transformer
+        self.neck = neck
         self.position_embedding = position_embedding
+        self.transformer = transformer
         self.num_queries = num_queries
         self.class_embed = nn.Linear(embed_dim, num_classes)
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
-        self.num_feature_levels = num_feature_levels
         self.num_classes = num_classes
 
         if not as_two_stage:
             self.tgt_embed = nn.Embedding(num_queries, embed_dim)
             self.refpoint_embed = nn.Embedding(num_queries, 4)
-
-        backbone_output_feature_shapes = backbone.output_shape()
-        num_channels = [
-            backbone_output_feature_shapes[k].channels
-            for k in backbone_output_feature_shapes.keys()
-        ]
-
-        if num_feature_levels > 1:
-            num_backbone_outputs = len(backbone_output_feature_shapes)
-            input_proj_list = []
-            for _ in range(num_backbone_outputs):
-                in_channels = num_channels[_]
-                input_proj_list.append(
-                    nn.Sequential(
-                        nn.Conv2d(in_channels, embed_dim, kernel_size=1),
-                        nn.GroupNorm(32, embed_dim),
-                    )
-                )
-            for _ in range(num_feature_levels - num_backbone_outputs):
-                input_proj_list.append(
-                    nn.Sequential(
-                        nn.Conv2d(in_channels, embed_dim, kernel_size=3, stride=2, padding=1),
-                        nn.GroupNorm(32, embed_dim),
-                    )
-                )
-                in_channels = embed_dim
-            self.input_proj = nn.ModuleList(input_proj_list)
-        else:
-            self.input_proj = nn.ModuleList(
-                [
-                    nn.Sequential(
-                        nn.Conv2d(num_channels[0], embed_dim, kernel_size=1),
-                        nn.GroupNorm(32, embed_dim),
-                    )
-                ]
-            )
 
         self.aux_loss = aux_loss
         self.as_two_stage = as_two_stage
@@ -132,9 +95,10 @@ class DabDeformableDETR(nn.Module):
             nn.init.constant_(bbox_embed_layer.layers[-1].weight.data, 0)
             nn.init.constant_(bbox_embed_layer.layers[-1].bias.data, 0)
 
-        for proj in self.input_proj:
-            nn.init.xavier_uniform_(proj[0].weight, gain=1)
-            nn.init.constant_(proj[0].bias, 0)
+        for _, neck_layer in self.neck.named_modules():
+            if isinstance(neck_layer, nn.Conv2d):
+                nn.init.xavier_uniform_(neck_layer.weight, gain=1)
+                nn.init.constant_(neck_layer.bias, 0)
 
         nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
 
@@ -159,33 +123,15 @@ class DabDeformableDETR(nn.Module):
         # original features
         features = self.backbone(images.tensor)  # output feature dict
 
-        # features preprocess
-        multi_level_feats = []
+        multi_level_feats = self.neck(features)
         multi_level_masks = []
         multi_level_position_embeddings = []
-        for idx, (stage, feat) in enumerate(features.items()):
+
+        for feat in multi_level_feats:
             multi_level_masks.append(
                 F.interpolate(img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0)
             )
-            multi_level_feats.append(self.input_proj[idx](feat))
             multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
-
-        if self.num_feature_levels > len(multi_level_feats):
-            len_feats = len(multi_level_feats)
-            for idx in range(len_feats, self.num_feature_levels):
-                if idx == len_feats:
-                    feat = self.input_proj[idx](list(features.values())[-1])  # last level feature
-                else:
-                    feat = self.input_proj[idx](multi_level_feats[-1])
-
-                mask = (
-                    F.interpolate(img_masks[None].float(), size=feat.shape[-2:])
-                    .to(torch.bool)
-                    .squeeze(0)
-                )
-                multi_level_feats.append(feat)
-                multi_level_masks.append(mask)
-                multi_level_position_embeddings.append(self.position_embedding(mask))
 
         tgt_embed = self.tgt_embed.weight  # nq, 256
         refanchor = self.refpoint_embed.weight  # nq, 4
