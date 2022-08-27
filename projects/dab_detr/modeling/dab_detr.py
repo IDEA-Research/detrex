@@ -25,7 +25,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
-from ideadet.layers.mlp import MLP
+from ideadet.layers.mlp import FFN
 from ideadet.utils.misc import inverse_sigmoid
 
 from detectron2.modeling import detector_postprocess
@@ -56,7 +56,13 @@ class DABDETR(nn.Module):
         self.transformer = transformer
         self.position_embedding = position_embedding
         self.class_embed = nn.Linear(embed_dim, num_classes)
-        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
+        self.bbox_embed = FFN(
+            embed_dim=embed_dim, 
+            feedforward_dim=embed_dim, 
+            output_dim=4, 
+            num_fcs=3,
+            add_identity=False,
+        )
         self.refpoint_embed = nn.Embedding(num_queries, query_dim)
         self.query_dim = query_dim
         self.aux_loss = aux_loss

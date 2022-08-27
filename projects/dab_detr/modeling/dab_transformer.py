@@ -19,7 +19,6 @@ import torch.nn as nn
 
 from ideadet.layers import (
     FFN,
-    MLP,
     BaseTransformerLayer,
     ConditionalCrossAttention,
     ConditionalSelfAttention,
@@ -65,7 +64,7 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
         )
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
-        self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
+        self.query_scale = FFN(self.embed_dim, self.embed_dim, self.embed_dim, 2, add_identity=False)
 
         if post_norm:
             self.post_norm_layer = nn.LayerNorm(self.embed_dim)
@@ -151,15 +150,15 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         )
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim
-        self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
-        self.ref_point_head = MLP(
-            query_dim // 2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
+        self.query_scale = FFN(self.embed_dim, self.embed_dim, self.embed_dim, 2, add_identity=False)
+        self.ref_point_head = FFN(
+            query_dim // 2 * self.embed_dim, self.embed_dim, self.embed_dim, 2, add_identity=False
         )
 
         self.bbox_embed = None
 
         if modulate_hw_attn:
-            self.ref_anchor_head = MLP(self.embed_dim, self.embed_dim, 2, 2)
+            self.ref_anchor_head = FFN(self.embed_dim, self.embed_dim, 2, 2, add_identity=False)
         self.modulate_hw_attn = modulate_hw_attn
 
         if post_norm:
