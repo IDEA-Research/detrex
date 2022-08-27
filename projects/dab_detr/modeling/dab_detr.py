@@ -19,6 +19,7 @@
 # https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
 # ------------------------------------------------------------------------------------------------
 
+from typing import List
 import math
 import torch
 import torch.nn as nn
@@ -35,24 +36,26 @@ from detectron2.structures import Boxes, ImageList, Instances
 class DABDETR(nn.Module):
     def __init__(
         self,
-        backbone,
-        transformer,
-        position_embedding,
-        num_classes,
-        num_queries,
-        criterion,
-        pixel_mean,
-        pixel_std,
+        backbone: nn.Module,
+        in_features: List[str],
+        transformer: nn.Module,
+        position_embedding: nn.Module,
+        num_classes: int,
+        num_queries: int,
+        criterion: nn.Module,
+        pixel_mean: List[float],
+        pixel_std: List[float],
         in_channels=2048,
         embed_dim=256,
-        aux_loss=True,
-        iter_update=True,
-        query_dim=4,
-        random_refpoints_xy=True,
-        device="cuda",
+        aux_loss: bool = True,
+        iter_update: bool = True,
+        query_dim: int = 4,
+        random_refpoints_xy: bool = True,
+        device: str = "cuda",
     ):
         super(DABDETR, self).__init__()
         self.backbone = backbone
+        self.in_features = in_features
         self.transformer = transformer
         self.position_embedding = position_embedding
         self.class_embed = nn.Linear(embed_dim, num_classes)
@@ -111,7 +114,7 @@ class DABDETR(nn.Module):
             img_masks = images.tensor.new_zeros(batch_size, H, W)
 
         # only use last level feature in DAB-DETR
-        features = self.backbone(images.tensor)["res5"]
+        features = self.backbone(images.tensor)[self.in_features[-1]]
         features = self.input_proj(features)
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
         pos_embed = self.position_embedding(img_masks)
