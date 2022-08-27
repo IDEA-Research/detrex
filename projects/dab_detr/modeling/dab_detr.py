@@ -19,8 +19,8 @@
 # https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
 # ------------------------------------------------------------------------------------------------
 
-from typing import List
 import math
+from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

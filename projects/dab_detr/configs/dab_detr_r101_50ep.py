@@ -1,10 +1,4 @@
-from .dab_detr_r50_50ep import (
-    model,
-    dataloader,
-    lr_multiplier,
-    optimizer,
-    train
-)
+from .dab_detr_r50_50ep import model, dataloader, lr_multiplier, optimizer, train
 
 # modify training config
 train.init_checkpoint = "./pretrained_weights/r101.pkl"

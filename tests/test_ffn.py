@@ -17,6 +17,7 @@ import pytest
 import torch
 
 from ideadet.layers import FFN
+
 from utils import MLP
 
 
@@ -27,12 +28,9 @@ def test_ffn_output():
     num_fcs = 3
 
     mlp_layer = MLP(
-        input_dim=embed_dim,
-        hidden_dim=feedforward_dim,
-        output_dim=output_dim,
-        num_layers=num_fcs
+        input_dim=embed_dim, hidden_dim=feedforward_dim, output_dim=output_dim, num_layers=num_fcs
     )
-    
+
     ffn_layer = FFN(
         embed_dim=embed_dim,
         feedforward_dim=feedforward_dim,
