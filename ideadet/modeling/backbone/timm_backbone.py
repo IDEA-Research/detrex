@@ -23,13 +23,14 @@
 # ------------------------------------------------------------------------------------------------
 
 import warnings
+from typing import Tuple
+import torch.nn as nn
 
 from detectron2.modeling.backbone import Backbone
 from detectron2.utils.logger import setup_logger
 
 try:
     import timm
-    from timm.utils.model import freeze_batch_norm_2d
 except ImportError:
     timm = None
 
@@ -59,17 +60,17 @@ def log_timm_feature_info(feature_info):
 class TimmBackbone(Backbone):
     def __init__(
         self,
-        model_name,
-        features_only=True,
-        pretrained=False,
-        checkpoint_path="",
-        in_channels=3,
-        out_indices=(0, 1, 2, 3),
-        out_features=("p0", "p1", "p2", "p3"),
-        freeze_at=None,
-        **kwargs,
+        model_name: str,
+        features_only: bool = True,
+        pretrained: bool = False,
+        checkpoint_path: str = "",
+        in_channels: int = 3,
+        out_indices: Tuple[int] = (0, 1, 2, 3),
+        out_features: Tuple[str] = ("p0", "p1", "p2", "p3"),
+        norm_layer: nn.Module = None,
     ):
         super().__init__()
+        logger = setup_logger(name="timm backbone")
         if timm is None:
             raise RuntimeError('Failed to import timm. Please run "pip install timm". ')
         if not isinstance(pretrained, bool):
@@ -81,28 +82,45 @@ class TimmBackbone(Backbone):
                 "https://github.com/rwightman/pytorch-image-models/issues/488"
             )
 
-        self.timm_model = timm.create_model(
-            model_name=model_name,
-            features_only=features_only,
-            pretrained=pretrained,
-            in_chans=in_channels,
-            out_indices=out_indices,
-            checkpoint_path=checkpoint_path,
-            **kwargs,
-        )
+        try:
+            self.timm_model = timm.create_model(
+                model_name=model_name,
+                features_only=features_only,
+                pretrained=pretrained,
+                in_chans=in_channels,
+                out_indices=out_indices,
+                checkpoint_path=checkpoint_path,
+                norm_layer=norm_layer,
+            )
+        except Exception as error:
+            if "feature_info" in str(error):
+                raise AttributeError(
+                    "Using features_only may cause attribute error"
+                    " in timm, cause there's no feature_info attribute in some models. See "
+                    "https://github.com/rwightman/pytorch-image-models/issues/1438"
+                )
+            else:
+                logger.info(error)
+
+        self.out_indices = out_indices
+        self.out_features = out_features
 
         feature_info = getattr(self.timm_model, "feature_info", None)
         log_timm_feature_info(feature_info)
 
-        output_feature_channels = {"p{}".format(i): feature_info.channels()[i] for i in out_indices}
-        out_feature_strides = {"p{}".format(i): feature_info.reduction()[i] for i in out_indices}
+        if feature_info is not None:
+            output_feature_channels = {
+                "p{}".format(i): feature_info.channels()[i] for i in out_indices
+            }
+            out_feature_strides = {
+                "p{}".format(i): feature_info.reduction()[i] for i in out_indices
+            }
 
-        self._out_features = out_features
-        self._out_feature_channels = {feat: output_feature_channels[feat] for feat in out_features}
-        self._out_feature_strides = {feat: out_feature_strides[feat] for feat in out_features}
-
-        self.out_indices = out_indices
-        self.out_features = out_features
+            self._out_features = out_features
+            self._out_feature_channels = {
+                feat: output_feature_channels[feat] for feat in out_features
+            }
+            self._out_feature_strides = {feat: out_feature_strides[feat] for feat in out_features}
 
     def forward(self, x):
         features = self.timm_model(x)
