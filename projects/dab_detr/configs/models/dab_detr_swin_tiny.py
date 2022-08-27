@@ -9,6 +9,7 @@ model.backbone = L(SwinTransformer)(
     depths=(2, 2, 6, 2),
     num_heads=(3, 6, 12, 24),
     drop_path_rate=0.1,
+    out_indices=(3,)
 )
 model.in_features = ["p3"]
 model.in_channels = 768
