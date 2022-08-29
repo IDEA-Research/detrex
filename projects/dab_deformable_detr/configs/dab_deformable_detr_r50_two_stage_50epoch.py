@@ -1,6 +1,7 @@
 import copy
 from ideadet.config import get_config
 from ideadet.modeling.matcher import HungarianMatcher
+from ideadet.modeling.criterion.two_stage_criterion import TwoStageCriterion
 
 from detectron2.config import LazyCall as L
 
@@ -8,7 +9,7 @@ from .models.dab_deformable_detr_r50 import model
 from .common.coco_loader import dataloader
 from .common.schedule import lr_multiplier_50x as lr_multiplier
 
-from ..modeling.two_stage_criterion import TwoStageCriterion
+
 
 # set model
 model.as_two_stage = True
@@ -34,6 +35,7 @@ model.criterion = L(TwoStageCriterion)(
         loss_class_type="focal_loss",
         alpha=0.25,
         gamma=2.0,
+        two_stage_binary_cls=False,
     )
 
 

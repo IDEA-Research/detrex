@@ -179,7 +179,7 @@ class DabDeformableDETR(nn.Module):
         if self.as_two_stage:
             interm_coord = enc_reference
             interm_class = self.class_embed[-1](enc_state)
-            output['interm_outputs'] = {'pred_logits': interm_class, 'pred_boxes': interm_coord}
+            output['enc_outputs'] = {'pred_logits': interm_class, 'pred_boxes': interm_coord}
 
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]

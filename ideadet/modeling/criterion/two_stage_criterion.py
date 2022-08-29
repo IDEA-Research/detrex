@@ -10,6 +10,9 @@ from ideadet.utils import (
 
 
 class TwoStageCriterion(SetCriterion):
+    def __init__(self, num_classes, matcher, weight_dict, losses, eos_coef=None, loss_class_type="focal_loss", alpha: float = 0.25, gamma: float = 2, two_stage_binary_cls=False):
+        super().__init__(num_classes, matcher, weight_dict, losses, eos_coef, loss_class_type, alpha, gamma)
+        self.two_stage_binary_cls = two_stage_binary_cls
 
     def forward(self, outputs, targets, return_indices=False):
         """This performs the loss computation.
@@ -56,11 +59,12 @@ class TwoStageCriterion(SetCriterion):
                     losses.update(l_dict)
 
         # for two stage
-        if "interm_outputs" in outputs:
-            aux_outputs = outputs["interm_outputs"]
-            indices = self.matcher(aux_outputs, targets)
-            if return_indices:
-                indices_list.append(indices)
+        if "enc_outputs" in outputs:
+            enc_outputs = outputs["enc_outputs"]
+            if self.two_stage_binary_cls:
+                for bt in targets:
+                    bt["labels"] = torch.zeros_like(bt["labels"])
+            indices = self.matcher(enc_outputs, targets)
             for loss in self.losses:
                 if loss == "masks":
                     # Intermediate masks losses are too costly to compute, we ignore them.
@@ -68,8 +72,8 @@ class TwoStageCriterion(SetCriterion):
                 kwargs = {}
                 if loss == "labels":
                     # Logging is enabled only for the last layer
-                    kwargs = {"log": False}
-                l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes, **kwargs)
+                    kwargs["log"] = False
+                l_dict = self.get_loss(loss, enc_outputs, targets, indices, num_boxes, **kwargs)
                 l_dict = {k + f"_enc": v for k, v in l_dict.items()}
                 losses.update(l_dict)
 
