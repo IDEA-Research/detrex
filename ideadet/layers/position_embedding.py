@@ -15,6 +15,7 @@
 # ------------------------------------------------------------------------------------------------
 # Various positional encodings for the transformer.
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) OpenMMLab. All rights reserved.
 # ------------------------------------------------------------------------------------------------
 # Modified from:
 # https://github.com/facebookresearch/detr/blob/main/models/position_encoding.py
@@ -27,19 +28,35 @@ import torch.nn as nn
 
 
 class PositionEmbeddingSine(nn.Module):
-    """
-    This is a more standard version of the position embedding, very similar to the one
-    used by the Attention is all you need paper, generalized to work on images.
+    """Sinusoidal position embedding used in DETR model.
+
+    Please see `End-to-End Object Detection with Transformers
+    <https://arxiv.org/pdf/2005.12872>`_ for more details.
+
+    Args:
+        num_pos_feats (int): The feature dimension for each position along
+            x-axis or y-axis. The final returned dimension for each position
+            is 2 times of the input value.
+        temperature (int, optional): The temperature used for scaling
+            the position embedding. Default: 10000.
+        scale (float, optional): A scale factor that scales the position
+            embedding. The scale will be used only when `normalize` is True.
+            Default: 2*pi.
+        eps (float, optional): A value added to the denominator for numerical
+            stability. Default: 1e-6.
+        offset (float): An offset added to embed when doing normalization.
+        normalize (bool, optional): Whether to normalize the position embedding.
+            Default: False.
     """
 
     def __init__(
         self,
-        num_pos_feats=64,
-        temperature=10000,
-        scale=2 * math.pi,
-        eps=1e-6,
-        offset=0.0,
-        normalize=False,
+        num_pos_feats: int = 64,
+        temperature: int = 10000,
+        scale: float = 2 * math.pi,
+        eps: float = 1e-6,
+        offset: float = 0.0,
+        normalize: bool = False,
     ):
         super().__init__()
         if normalize:
@@ -55,9 +72,21 @@ class PositionEmbeddingSine(nn.Module):
         self.eps = eps
         self.offset = offset
 
-    def forward(self, mask):
-
-        # TODO: support to export to ONNX as mmdet
+    def forward(
+        self, 
+        mask: torch.Tensor,
+        **kwargs) -> torch.Tensor:
+        """Forward function for `PositionEmbeddingSine`.
+        
+        Args:
+            mask (Tensor): ByteTensor mask. Non-zero values representing
+                ignored positions, while zero values means valid positions
+                for the input tensor. Shape as `(bs, h, w)`.
+        
+        Returns:
+            pos (Tensor): Returned position embedding with
+            shape `(bs, num_pos_feats * 2, h, w)`
+        """
         assert mask is not None
         not_mask = ~mask
         y_embed = not_mask.cumsum(1, dtype=torch.float32)
@@ -86,14 +115,23 @@ class PositionEmbeddingSine(nn.Module):
 
 class PositionEmbeddingLearned(nn.Module):
     """
-    Absolute pos embedding, learned.
+    Position embedding with learnable embedding weights.
+
+    Args:
+        num_pos_feats (int): The feature dimension for each position along
+            x-axis or y-axis. The final returned dimension for each position
+            is 2 times of the input value.
+        row_num_embed (int, optional): The dictionary size of row embeddings.
+            Default: 50.
+        col_num_embed (int, optional): The dictionary size of column embeddings.
+            Default: 50. 
     """
 
     def __init__(
         self,
-        num_pos_feats=256,
-        row_num_embed=50,
-        col_num_embed=50,
+        num_pos_feats: int = 256,
+        row_num_embed: int = 50,
+        col_num_embed: int = 50,
     ):
         super().__init__()
         self.row_embed = nn.Embedding(row_num_embed, num_pos_feats)
@@ -109,6 +147,17 @@ class PositionEmbeddingLearned(nn.Module):
         nn.init.uniform_(self.col_embed.weight)
 
     def forward(self, mask):
+        """Forward function for `PositionEmbeddingLearned`.
+        
+        Args:
+            mask (Tensor): ByteTensor mask. Non-zero values representing
+                ignored positions, while zero values means valid positions
+                for the input tensor. Shape as `(bs, h, w)`.
+        
+        Returns:
+            pos (Tensor): Returned position embedding with
+            shape `(bs, num_pos_feats * 2, h, w)`
+        """
         h, w = mask.shape[-2:]
         x = torch.arange(w, device=mask.device)
         y = torch.arange(h, device=mask.device)
@@ -134,18 +183,21 @@ def get_sine_pos_embed(
     num_pos_feats: int = 128,
     temperature: int = 10000,
     exchange_xy: bool = True,
-):
+) -> torch.Tensor:
     """generate sine position embedding from a position tensor
 
     Args:
-        pos_tensor (torch.Tensor): shape: [..., n].
-        num_pos_feats (int): projected shape for each float in the tensor.
-        temperature (int): temperature in the sine/cosine function.
+        pos_tensor (torch.Tensor): Shape as `(None, n)`.
+        num_pos_feats (int): projected shape for each float in the tensor. Default: 128
+        temperature (int): The temperature used for scaling
+            the position embedding. Default: 10000.
         exchange_xy (bool, optional): exchange pos x and pos y. \
-            For example, input tensor is [x,y], the results will be [pos(y), pos(x)]. Defaults to True.
+            For example, input tensor is `[x, y]`, the results will 
+            be `[pos(y), pos(x)]`. Defaults: True.
 
     Returns:
-        pos_embed (torch.Tensor): shape: [..., n*num_pos_feats].
+        pos_embed (torch.Tensor): Returned position embedding 
+        with shape `(None, n * num_pos_feats)`.
     """
     scale = 2 * math.pi
     dim_t = torch.arange(num_pos_feats, dtype=torch.float32, device=pos_tensor.device)
