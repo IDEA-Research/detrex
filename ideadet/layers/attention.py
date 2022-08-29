@@ -207,8 +207,8 @@ class ConditionalSelfAttention(nn.Module):
             value (torch.Tensor): Value embeddings with the same shape as `key`.
                 Same in `torch.nn.MultiheadAttention.forward`. Default: None.
                 If None, the `key` will be used.
-            identity (torch.Tensor): The tensor, with the same shape as x, will
-                be used for identity addition. Default: None.
+            identity (torch.Tensor): The tensor, with the same shape as `query``,
+                which will be used for identity addition. Default: None.
                 If None, `query` will be used.
             query_pos (torch.Tensor): The position embedding for query, with the
                 same shape as `query`. Default: None.

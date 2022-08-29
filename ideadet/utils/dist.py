@@ -26,7 +26,7 @@ import torch.distributed as dist
 
 def is_dist_avail_and_initialized() -> bool:
     """
-    Checking if the distributed package is available and 
+    Checking if the distributed package is available and
     the default process group has been initialized.
     """
     if not dist.is_available():
