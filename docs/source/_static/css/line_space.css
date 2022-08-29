@@ -3,6 +3,11 @@
   margin-bottom: 0px;
 }
 
+.rst-content .section ol li>*, .rst-content .section li ul>* {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
 .rst-content .section ol li>*, .rst-content .section ul li ul {
   margin-top: 0px;
   margin-bottom: 0px;
