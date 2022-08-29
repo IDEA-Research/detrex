@@ -1,5 +1,5 @@
-ideadet.modeling
+detrex.modeling
 ##############################
 
-.. currentmodule:: ideadet.modeling
-.. automodule:: ideadet.modeling
+.. currentmodule:: detrex.modeling
+.. automodule:: detrex.modeling

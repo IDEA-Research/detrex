@@ -16,7 +16,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-namespace ideadet {
+namespace detrex {
 
 at::Tensor ms_deform_attn_cuda_forward(
     const at::Tensor &value, 
@@ -153,4 +153,4 @@ std::vector<at::Tensor> ms_deform_attn_cuda_backward(
     };
 }
 
-} // namespace ideadet
+} // namespace detrex

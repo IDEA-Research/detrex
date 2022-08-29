@@ -17,8 +17,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ideadet.layers import box_cxcywh_to_xyxy, generalized_box_iou
-from ideadet.utils import get_world_size, is_dist_avail_and_initialized
+from detrex.layers import box_cxcywh_to_xyxy, generalized_box_iou
+from detrex.utils import get_world_size, is_dist_avail_and_initialized
 
 from ..losses import sigmoid_focal_loss
 

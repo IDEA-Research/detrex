@@ -17,7 +17,7 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 
-from ideadet.layers import (
+from detrex.layers import (
     FFN,
     MLP,
     BaseTransformerLayer,
@@ -27,7 +27,7 @@ from ideadet.layers import (
     TransformerLayerSequence,
     get_sine_pos_embed,
 )
-from ideadet.utils import inverse_sigmoid
+from detrex.utils import inverse_sigmoid
 
 
 class DabDetrTransformerEncoder(TransformerLayerSequence):

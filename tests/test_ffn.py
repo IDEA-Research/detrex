@@ -16,7 +16,7 @@
 import pytest
 import torch
 
-from ideadet.layers import FFN
+from detrex.layers import FFN
 
 from utils import MLP
 

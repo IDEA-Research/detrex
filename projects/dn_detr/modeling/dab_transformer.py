@@ -16,8 +16,8 @@
 import torch
 import torch.nn as nn
 
-from ideadet.layers import MLP, BaseTransformerLayer, TransformerLayerSequence, get_sine_pos_embed
-from ideadet.utils.misc import inverse_sigmoid
+from detrex.layers import MLP, BaseTransformerLayer, TransformerLayerSequence, get_sine_pos_embed
+from detrex.utils.misc import inverse_sigmoid
 
 
 class DabDetrTransformerEncoder(TransformerLayerSequence):

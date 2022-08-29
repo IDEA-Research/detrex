@@ -33,7 +33,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.init import constant_, xavier_uniform_
 
-from ideadet import _C
+from detrex import _C
 
 
 # helpers

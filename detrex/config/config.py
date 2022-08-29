@@ -38,14 +38,14 @@ def get_config(config_path):
     Returns a config object from a config_path.
 
     Args:
-        config_path (str): config file name relative to ideadet's "configs/"
+        config_path (str): config file name relative to detrex's "configs/"
             directory, e.g., "common/train.py"
 
     Returns:
         omegaconf.DictConfig: a config object
     """
     cfg_file = pkg_resources.resource_filename(
-        "ideadet.config", os.path.join("configs", config_path)
+        "detrex.config", os.path.join("configs", config_path)
     )
     if not os.path.exists(cfg_file):
         raise RuntimeError("{} not available in IDEADet configs!".format(config_path))

@@ -24,7 +24,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from ideadet.layers import FFN, BaseTransformerLayer, MultiheadAttention, TransformerLayerSequence
+from detrex.layers import FFN, BaseTransformerLayer, MultiheadAttention, TransformerLayerSequence
 
 
 def test_ffn():

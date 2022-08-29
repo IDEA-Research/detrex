@@ -13,13 +13,13 @@
 import os
 import sys
 
-import ideadet  # noqa
+import detrex  # noqa
 
 sys.path.insert(0, os.path.abspath("."))
 
 # -- Project information -----------------------------------------------------
 
-project = "ideadet"
+project = "detrex"
 copyright = "2022, IDEACVR"
 author = "IDEACVR Authors"
 

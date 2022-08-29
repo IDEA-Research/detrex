@@ -1,8 +1,8 @@
-ideadet.data
+detrex.data
 ##############################
 
-.. currentmodule:: ideadet.data
-.. automodule:: ideadet.data
+.. currentmodule:: detrex.data
+.. automodule:: detrex.data
     :members: 
         DetrDatasetMapper,
         

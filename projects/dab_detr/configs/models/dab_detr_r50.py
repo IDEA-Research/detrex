@@ -1,8 +1,8 @@
 import torch.nn as nn
 
-from ideadet.modeling.matcher import HungarianMatcher
-from ideadet.modeling.criterion import SetCriterion
-from ideadet.layers import PositionEmbeddingSine
+from detrex.modeling.matcher import HungarianMatcher
+from detrex.modeling.criterion import SetCriterion
+from detrex.layers import PositionEmbeddingSine
 
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L

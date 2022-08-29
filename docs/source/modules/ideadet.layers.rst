@@ -1,8 +1,8 @@
-ideadet.layers
+detrex.layers
 ##############################
 
-.. currentmodule:: ideadet.layers
-.. automodule:: ideadet.layers
+.. currentmodule:: detrex.layers
+.. automodule:: detrex.layers
     :members: 
         MultiheadAttention,
         MultiScaleDeformableAttention,

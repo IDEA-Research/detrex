@@ -18,15 +18,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ideadet.layers import box_ops
-from ideadet.utils import (
+from detrex.layers import box_ops
+from detrex.utils import (
     accuracy,
     get_world_size,
     interpolate,
     is_dist_avail_and_initialized,
     nested_tensor_from_tensor_list,
 )
-from ideadet.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
+from detrex.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
 
 from ..losses import dice_loss, sigmoid_focal_loss
 

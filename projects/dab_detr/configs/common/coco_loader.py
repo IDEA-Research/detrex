@@ -9,7 +9,7 @@ from detectron2.data import (
 )
 from detectron2.evaluation import COCOEvaluator
 
-from ideadet.data import DetrDatasetMapper
+from detrex.data import DetrDatasetMapper
 
 dataloader = OmegaConf.create()
 

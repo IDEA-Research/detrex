@@ -22,7 +22,7 @@
 from typing import Dict, List
 import torch.nn as nn
 
-from ideadet.layers import ConvNormAct
+from detrex.layers import ConvNormAct
 
 from detectron2.modeling import ShapeSpec
 
