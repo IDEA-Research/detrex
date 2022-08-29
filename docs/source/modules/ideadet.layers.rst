@@ -10,5 +10,5 @@ ideadet.layers
         ConditionalCrossAttention,
         PositionEmbeddingSine,
         PositionEmbeddingLearned,
-        get_sine_pos_embed,
         LayerNorm,
+        get_sine_pos_embed,
