@@ -23,8 +23,6 @@ from .box_ops import (
     box_xyxy_to_cxcywh,
     box_iou,
     generalized_box_iou,
-    generalized_box_iou_pairwise,
-    box_iou_pairwise,
     masks_to_boxes,
 )
 from .transformer import (
