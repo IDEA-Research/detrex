@@ -168,17 +168,24 @@ def _onnx_nested_tensor_from_tensor_list(tensor_list: List[Tensor]) -> NestedTen
     return NestedTensor(tensor, mask=mask)
 
 
-def interpolate(input, size=None, scale_factor=None, mode="nearest", align_corners=None):
+def interpolate(
+    input, 
+    size=None, 
+    scale_factor=None, 
+    mode="nearest", 
+    align_corners=None
+):
     # type: (Tensor, Optional[List[int]], Optional[float], str, Optional[bool]) -> Tensor
     """
-    Equivalent to nn.functional.interpolate, but with support for empty batch sizes.
-    This will eventually be supported natively by PyTorch, and this
-    class can go away.
+    Equivalent to ``torch.nn.functional.interpolate``.
     """
     return torchvision.ops.misc.interpolate(input, size, scale_factor, mode, align_corners)
 
 
 def inverse_sigmoid(x, eps=1e-3):
+    """
+    The inverse function for sigmoid activation function.
+    """
     x = x.clamp(min=0, max=1)
     x1 = x.clamp(min=eps)
     x2 = (1 - x).clamp(min=eps)
