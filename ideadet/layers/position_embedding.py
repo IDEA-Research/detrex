@@ -76,12 +76,12 @@ class PositionEmbeddingSine(nn.Module):
         """Forward function for `PositionEmbeddingSine`.
 
         Args:
-            mask (Tensor): ByteTensor mask. Non-zero values representing
+            mask (torch.Tensor): ByteTensor mask. Non-zero values representing
                 ignored positions, while zero values means valid positions
                 for the input tensor. Shape as `(bs, h, w)`.
 
         Returns:
-            pos (Tensor): Returned position embedding with
+            torch.Tensor: Returned position embedding with
             shape `(bs, num_pos_feats * 2, h, w)`
         """
         assert mask is not None
@@ -147,12 +147,12 @@ class PositionEmbeddingLearned(nn.Module):
         """Forward function for `PositionEmbeddingLearned`.
 
         Args:
-            mask (Tensor): ByteTensor mask. Non-zero values representing
+            mask (torch.Tensor): ByteTensor mask. Non-zero values representing
                 ignored positions, while zero values means valid positions
                 for the input tensor. Shape as `(bs, h, w)`.
 
         Returns:
-            pos (Tensor): Returned position embedding with
+            torch.Tensor: Returned position embedding with
             shape `(bs, num_pos_feats * 2, h, w)`
         """
         h, w = mask.shape[-2:]
@@ -193,7 +193,7 @@ def get_sine_pos_embed(
             be `[pos(y), pos(x)]`. Defaults: True.
 
     Returns:
-        pos_embed (torch.Tensor): Returned position embedding 
+        torch.Tensor: Returned position embedding 
         with shape `(None, n * num_pos_feats)`.
     """
     scale = 2 * math.pi

@@ -13,14 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class MLP(nn.Module):
-    """Very simple multi-layer perceptron layer"""
+    """The implementation of simple multi-layer perceptron layer
+    without dropout and identity connection.
 
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
+    The feature process order follows `Linear -> ReLU -> Linear -> ReLU -> ...`.
+
+    Args:
+        input_dim (int): The input feature dimension.
+        hidden_dim (int): The hidden dimension of MLPs.
+        output_dim (int): the output feature dimension of MLPs.
+        num_layer (int): The number of FC layer used in MLPs.
+    """
+
+    def __init__(
+        self, input_dim: int, hidden_dim: int, output_dim: int, num_layers: int
+    ) -> torch.Tensor:
         super().__init__()
         self.num_layers = num_layers
         h = [hidden_dim] * (num_layers - 1)
@@ -29,12 +42,40 @@ class MLP(nn.Module):
         )
 
     def forward(self, x):
+        """Forward function of `MLP`.
+
+        Args:
+            x (torch.Tensor): the input tensor used in `MLP` layers.
+
+        Returns:
+            torch.Tensor: the forward results of `MLP` layer
+        """
         for i, layer in enumerate(self.layers):
             x = F.relu(layer(x)) if i < self.num_layers - 1 else layer(x)
         return x
 
 
 class FFN(nn.Module):
+    """The implementation of feed-forward networks (FFNs)
+    with identity connection.
+
+    Args:
+        embed_dim (int): The feature dimension. Same as
+            `MultiheadAttention`. Defaults: 256.
+        feedforward_dim (int): The hidden dimension of FFNs.
+            Defaults: 1024.
+        output_dim (int): The output feature dimension of FFNs.
+            Default: None. If None, the `embed_dim` will be used.
+        num_fcs (int, optional): The number of fully-connected layers in
+            FFNs. Default: 2.
+        activation (nn.Module): The activation layer used in FFNs.
+            Default: nn.ReLU(inplace=True).
+        ffn_drop (float, optional): Probability of an element to be
+            zeroed in FFN. Default 0.0.
+        add_identity (bool, optional): Whether to add the
+            identity connection. Default: `True`.
+    """
+
     def __init__(
         self,
         embed_dim=256,
@@ -71,7 +112,18 @@ class FFN(nn.Module):
         self.layers = nn.Sequential(*layers)
         self.add_identity = add_identity
 
-    def forward(self, x, identity=None):
+    def forward(self, x, identity=None) -> torch.Tensor:
+        """Forward function of `FFN`.
+
+        Args:
+            x (torch.Tensor): the input tensor used in `FFN` layers.
+            identity (torch.Tensor): the tensor with the same shape as `x`,
+                which will be used for identity addition. Default: None.
+                if None, `x` will be used.
+
+        Returns:
+            torch.Tensor: the forward results of `FFN` layer
+        """
         out = self.layers(x)
         if not self.add_identity:
             return out

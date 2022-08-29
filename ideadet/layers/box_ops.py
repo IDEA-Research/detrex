@@ -20,12 +20,12 @@
 # https://github.com/facebookresearch/detr/blob/main/util/box_ops.py
 # ------------------------------------------------------------------------------------------------
 
-
+from typing import Tuple
 import torch
 from torchvision.ops.boxes import box_area
 
 
-def box_cxcywh_to_xyxy(bbox):
+def box_cxcywh_to_xyxy(bbox) -> torch.Tensor:
     """Convert bbox coordinates from (cx, cy, w, h) to (x1, y1, x2, y2)
 
     Args:
@@ -39,7 +39,7 @@ def box_cxcywh_to_xyxy(bbox):
     return torch.stack(new_bbox, dim=-1)
 
 
-def box_xyxy_to_cxcywh(bbox):
+def box_xyxy_to_cxcywh(bbox) -> torch.Tensor:
     """Convert bbox coordinates from (x1, y1, x2, y2) to (cx, cy, w, h)
 
     Args:
@@ -53,7 +53,7 @@ def box_xyxy_to_cxcywh(bbox):
     return torch.stack(new_bbox, dim=-1)
 
 
-def box_iou(boxes1, boxes2):
+def box_iou(boxes1, boxes2) -> Tuple[torch.Tensor]:
     """Modified from ``torchvision.ops.box_iou``
 
     Return both intersection-over-union (Jaccard index) and union between
@@ -83,7 +83,7 @@ def box_iou(boxes1, boxes2):
     return iou, union
 
 
-def generalized_box_iou(boxes1, boxes2):
+def generalized_box_iou(boxes1, boxes2) -> torch.Tensor:
     """
     Generalized IoU from https://giou.stanford.edu/
 
@@ -113,7 +113,7 @@ def generalized_box_iou(boxes1, boxes2):
     return iou - (area - union) / (area + 1e-6)
 
 
-def masks_to_boxes(masks):
+def masks_to_boxes(masks) -> torch.Tensor:
     """Compute the bounding boxes around the provided masks
 
     The masks should be in format [N, H, W] where N is
