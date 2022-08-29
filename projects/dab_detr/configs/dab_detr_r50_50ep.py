@@ -9,7 +9,7 @@ optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "/comp_robot/rentianhe/code/IDEADet/test_dab_detr.pth"
+# train.init_checkpoint = "/comp_robot/rentianhe/code/IDEADet/test_dab_detr.pth"
 train.output_dir = "./test"
 train.max_iter = 375000
 

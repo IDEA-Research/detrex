@@ -263,11 +263,19 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
 
 
 class DabDetrTransformer(nn.Module):
-    def __init__(self, encoder=None, decoder=None):
+    def __init__(self, encoder=None, decoder=None, as_two_stage=False, two_stage_num_proposals=300):
         super(DabDetrTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.embed_dim = self.encoder.embed_dim
+        self.as_two_stage = as_two_stage
+        self.two_stage_num_proposals = two_stage_num_proposals
+
+        if self.as_two_stage:
+            self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
+            self.enc_output_norm = nn.LayerNorm(self.embed_dim)
+            self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
+            self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
 
         self.init_weights()
 
@@ -276,11 +284,52 @@ class DabDetrTransformer(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
+    def gen_encoder_output_proposals(self, memory, memory_padding_mask, spatial_shapes):
+        """generate proposals from encoder output
+
+        """
+        memory = memory.transpose(0, 1) # bs, num_token, dim
+                                        # memory_padding_mask: bs, dim
+
+        N, S, C = memory.shape
+        H, W = spatial_shapes
+        proposals = []
+        mask_flatten_ = memory_padding_mask.view(N, H, W, 1)
+        valid_H = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
+        valid_W = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
+
+        grid_y, grid_x = torch.meshgrid(
+            torch.linspace(0, H - 1, H, dtype=torch.float32, device=memory.device),
+            torch.linspace(0, W - 1, W, dtype=torch.float32, device=memory.device),
+        )
+        grid = torch.cat([grid_x.unsqueeze(-1), grid_y.unsqueeze(-1)], -1)
+
+        scale = torch.cat([valid_W.unsqueeze(-1), valid_H.unsqueeze(-1)], 1).view(N, 1, 1, 2)
+        grid = (grid.unsqueeze(0).expand(N, -1, -1, -1) + 0.5) / scale
+        wh = torch.ones_like(grid) * 0.05
+        proposal = torch.cat((grid, wh), -1).view(N, -1, 4)
+        proposals.append(proposal)
+
+        output_proposals = torch.cat(proposals, 1)
+        output_proposals_valid = ((output_proposals > 0.01) & (output_proposals < 0.99)).all(
+            -1, keepdim=True
+        )
+        output_proposals = torch.log(output_proposals / (1 - output_proposals))
+        output_proposals = output_proposals.masked_fill(
+            memory_padding_mask.unsqueeze(-1), float("inf")
+        )
+        output_proposals = output_proposals.masked_fill(~output_proposals_valid, float("inf"))
+
+        output_memory = memory
+        output_memory = output_memory.masked_fill(memory_padding_mask.unsqueeze(-1), float(0))
+        output_memory = output_memory.masked_fill(~output_proposals_valid, float(0))
+        output_memory = self.enc_output_norm(self.enc_output(output_memory))
+        return output_memory, output_proposals
+
     def forward(self, x, mask, refpoints_embed, pos_embed):
         bs, c, h, w = x.shape
         x = x.view(bs, c, -1).permute(2, 0, 1)
         pos_embed = pos_embed.view(bs, c, -1).permute(2, 0, 1)
-        refpoints_embed = refpoints_embed.unsqueeze(1).repeat(1, bs, 1)
         mask = mask.view(bs, -1)
         memory = self.encoder(
             query=x,
@@ -289,8 +338,57 @@ class DabDetrTransformer(nn.Module):
             query_pos=pos_embed,
             query_key_padding_mask=mask,
         )
-        num_queries = refpoints_embed.shape[0]
-        target = torch.zeros(num_queries, bs, self.embed_dim, device=refpoints_embed.device)
+
+        if self.as_two_stage:
+            output_memory, output_proposals = self.gen_encoder_output_proposals(
+                memory, mask, (h, w)
+            ) 
+
+            enc_outputs_class = self.enc_class_embed(output_memory)
+            enc_outputs_coord_unact = (
+                self.enc_bbox_embed(output_memory) + output_proposals
+            )
+            # output_memory: bs, num_tokens, c
+            # output_proposals: bs, num_tokens, 4
+
+            topk = self.two_stage_num_proposals
+            if topk > (h*w):
+                topk_coords_unact = enc_outputs_coord_unact
+                reference_points = topk_coords_unact.sigmoid()
+                refpoints_embed = topk_coords_unact.transpose(0, 1).detach() # num_queries, bs, 4. unsigmoid.
+                target = output_memory.transpose(0, 1).detach() # num_queries, bs, embed_dim
+
+                # pad to num_queries
+                pad_num = self.two_stage_num_proposals - refpoints_embed.shape[0]
+                pad_anchors = inverse_sigmoid(torch.rand(pad_num, bs, 4, device=refpoints_embed.device))
+                pad_tgt = torch.zeros(pad_num, bs, self.embed_dim, device=refpoints_embed.device)
+
+                # init states for decoder
+                refpoints_embed = torch.cat([refpoints_embed, pad_anchors], 0)
+                target = torch.cat([target, pad_tgt], 0)
+
+                # states for return
+                target_unact = torch.cat((output_memory, pad_tgt.transpose(0, 1)), 1) # bs, num_tokens, embed_dim
+                reference_points = torch.cat((reference_points, pad_anchors.sigmoid().transpose(0, 1)), 1) # bs, num_tokens, 4
+
+            else:
+                topk_proposals = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
+                # extract region proposal boxes
+                topk_coords_unact = torch.gather(
+                    enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
+                )
+                reference_points = topk_coords_unact.sigmoid()
+                refpoints_embed = topk_coords_unact.transpose(0, 1).detach() # num_queries, bs, 4. unsigmoid.
+
+                # extract region features
+                target_unact = torch.gather(
+                    output_memory, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, output_memory.shape[-1])
+                )
+                target = target_unact.transpose(0, 1).detach() # num_queries, bs, embed_dim
+        else:
+            refpoints_embed = refpoints_embed.unsqueeze(1).repeat(1, bs, 1) # num_queries, bs, 4. unsigmoid.
+            num_queries = refpoints_embed.shape[0]
+            target = torch.zeros(num_queries, bs, self.embed_dim, device=refpoints_embed.device)
 
         hidden_state, references = self.decoder(
             query=target,
@@ -300,4 +398,7 @@ class DabDetrTransformer(nn.Module):
             refpoints_embed=refpoints_embed,
         )
 
-        return hidden_state, references
+        if self.as_two_stage:
+            return hidden_state, references, target_unact, reference_points
+
+        return hidden_state, references, None, None

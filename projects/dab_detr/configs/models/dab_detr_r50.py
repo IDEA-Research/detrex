@@ -60,6 +60,8 @@ model = L(DABDETR)(
             return_intermediate=True,
             batch_first=False,
         ),
+        as_two_stage="${..as_two_stage}",
+        two_stage_num_proposals="${..num_queries}",
     ),
     embed_dim=256,
     in_channels=2048,
@@ -69,6 +71,7 @@ model = L(DABDETR)(
     query_dim=4,
     iter_update=True,
     random_refpoints_xy=True,
+    as_two_stage=False,
     criterion=L(SetCriterion)(
         num_classes=80,
         matcher=L(HungarianMatcher)(

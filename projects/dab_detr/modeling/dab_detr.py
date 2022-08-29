@@ -19,6 +19,7 @@
 # https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
 # ------------------------------------------------------------------------------------------------
 
+import copy
 import math
 from typing import List
 import torch
@@ -51,6 +52,7 @@ class DABDETR(nn.Module):
         iter_update: bool = True,
         query_dim: int = 4,
         random_refpoints_xy: bool = True,
+        as_two_stage: bool = False,
         device: str = "cuda",
     ):
         super(DABDETR, self).__init__()
@@ -64,6 +66,7 @@ class DABDETR(nn.Module):
         self.query_dim = query_dim
         self.aux_loss = aux_loss
         self.iter_update = iter_update
+        self.as_two_stage = as_two_stage
 
         assert self.query_dim in [2, 4]
 
@@ -73,6 +76,7 @@ class DABDETR(nn.Module):
 
         if self.iter_update:
             self.transformer.decoder.bbox_embed = self.bbox_embed
+            
 
         self.num_classes = num_classes
         self.criterion = criterion
@@ -83,7 +87,14 @@ class DABDETR(nn.Module):
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
+        # two stage
+        if self.as_two_stage:
+            self.transformer.enc_class_embed = copy.deepcopy(self.class_embed)
+            self.transformer.enc_bbox_embed = copy.deepcopy(self.bbox_embed)
+
         self.init_weights()
+
+
 
     def init_weights(self):
         if self.random_refpoints_xy:
@@ -120,7 +131,7 @@ class DABDETR(nn.Module):
         pos_embed = self.position_embedding(img_masks)
         embed_weight = self.refpoint_embed.weight
 
-        hidden_states, reference = self.transformer(features, img_masks, embed_weight, pos_embed)
+        hidden_states, reference, enc_state, enc_reference = self.transformer(features, img_masks, embed_weight, pos_embed)
 
         reference_before_sigmoid = inverse_sigmoid(reference)
         temp = self.bbox_embed(hidden_states)
@@ -131,6 +142,12 @@ class DABDETR(nn.Module):
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
+
+        # prepare two stage output
+        if self.as_two_stage:
+            interm_coord = enc_reference
+            interm_class = self.transformer.enc_class_embed(enc_state)
+            output['enc_outputs'] = {'pred_logits': interm_class, 'pred_boxes': interm_coord}
 
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
