@@ -171,8 +171,6 @@ class DABDETR(nn.Module):
         assert len(box_cls) == len(image_sizes)
         results = []
 
-        # box_cls.shape: 1, 300, 80
-        # box_pred.shape: 1, 300, 4
         prob = box_cls.sigmoid()
         topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 100, dim=1)
         scores = topk_values
@@ -181,15 +179,11 @@ class DABDETR(nn.Module):
 
         boxes = torch.gather(box_pred, 1, topk_boxes.unsqueeze(-1).repeat(1, 1, 4))
 
-        # For each box we assign the best class or the second best if the best on is `no_object`.
-        # scores, labels = F.softmax(box_cls, dim=-1)[:, :, :-1].max(-1)
-
         for i, (scores_per_image, labels_per_image, box_pred_per_image, image_size) in enumerate(
             zip(scores, labels, boxes, image_sizes)
         ):
             result = Instances(image_size)
             result.pred_boxes = Boxes(box_cxcywh_to_xyxy(box_pred_per_image))
-
             result.pred_boxes.scale(scale_x=image_size[1], scale_y=image_size[0])
             result.scores = scores_per_image
             result.pred_classes = labels_per_image
