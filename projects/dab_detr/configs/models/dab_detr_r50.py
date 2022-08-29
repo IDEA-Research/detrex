@@ -26,6 +26,7 @@ model = L(DABDETR)(
         out_features=["res2", "res3", "res4", "res5"],
         freeze_at=1,
     ),
+    in_features=["res5"],  # only use last level feature in DAB-DETR
     position_embedding=L(PositionEmbeddingSine)(
         num_pos_feats=128,
         temperature=20,
