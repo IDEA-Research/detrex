@@ -23,9 +23,9 @@
 # https://github.com/open-mmlab/mmcv/blob/master/mmcv/ops/multi_scale_deform_attn.py
 # ------------------------------------------------------------------------------------------------
 
-from typing import Optional
 import math
 import warnings
+from typing import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -139,22 +139,23 @@ def multi_scale_deformable_attn_pytorch(
 
 
 class MultiScaleDeformableAttention(nn.Module):
-    """Multi-Scale Deformable Attention Module used in Deformable-Detr
+    """Multi-Scale Deformable Attention Module used in Deformable-DETR
 
     `Deformable DETR: Deformable Transformers for End-to-End Object Detection.
     <https://arxiv.org/pdf/2010.04159.pdf>`_.
-    
+
     Args:
         embed_dim (int): The embedding dimension of Attention. Default: 256.
         num_heads (int): The number of attention heads. Default: 8.
         num_levels (int): The number of feature map used in Attention. Default: 4.
-        num_points (int): The number of sampling points for each query 
+        num_points (int): The number of sampling points for each query
             in each head. Default: 4.
         img2col_steps (int): The step used in image_to_column. Defualt: 64.
             dropout (float): Dropout layer used in output. Default: 0.1.
         batch_first (bool): if ``True``, then the input and output tensor will be
             provided as `(bs, n, embed_dim)`. Default: False. `(n, bs, embed_dim)`
     """
+
     def __init__(
         self,
         embed_dim: int = 256,
@@ -233,35 +234,36 @@ class MultiScaleDeformableAttention(nn.Module):
         reference_points: Optional[torch.Tensor] = None,
         spatial_shapes: Optional[torch.Tensor] = None,
         level_start_index: Optional[torch.Tensor] = None,
-        **kwargs) -> torch.Tensor:
-        
+        **kwargs
+    ) -> torch.Tensor:
+
         """Forward Function of MultiScaleDeformableAttention
 
         Args:
-            query (torch.Tensor): Query embeddings with shape 
+            query (torch.Tensor): Query embeddings with shape
                 `(num_query, bs, embed_dim)`
-            key (torch.Tensor): Key embeddings with shape 
+            key (torch.Tensor): Key embeddings with shape
                 `(num_key, bs, embed_dim)`
             value (torch.Tensor): Value embeddings with shape
                 `(num_key, bs, embed_dim)`
-            identity (torch.Tensor): The tensor used for addition, with the 
+            identity (torch.Tensor): The tensor used for addition, with the
                 same shape as `query`. Default: None. If None, `query` will be
                 used.
             query_pos (torch.Tensor): The position embedding for `query`. Default: None.
-            key_padding_mask (torch.Tensor): ByteTensor for `query`, with shape `(bs, num_key)`, 
+            key_padding_mask (torch.Tensor): ByteTensor for `query`, with shape `(bs, num_key)`,
                 indicating which elements within `key` to be ignored in attention.
-            reference_points (torch.Tensor): The normalized reference points 
-                with shape `(bs, num_query, num_levels, 2)`, 
+            reference_points (torch.Tensor): The normalized reference points
+                with shape `(bs, num_query, num_levels, 2)`,
                 all elements is range in [0, 1], top-left (0, 0),
-                bottom-right (1, 1), including padding are. 
-                or `(N, Length_{query}, num_levels, 4)`, add additional 
+                bottom-right (1, 1), including padding are.
+                or `(N, Length_{query}, num_levels, 4)`, add additional
                 two dimensions `(h, w)` to form reference boxes.
             spatial_shapes (torch.Tensor): Spatial shape of features in different levels.
                 With shape `(num_levels, 2)`, last dimension represents `(h, w)`.
             level_start_index (torch.Tensor): The start index of each level. A tensor with
-                shape `(num_levels, )` which can be represented as 
+                shape `(num_levels, )` which can be represented as
                 `[0, h_0 * w_0, h_0 * w_0 + h_1 * w_1, ...]`.
-        
+
         Returns:
             torch.Tensor: forward results with shape `(num_query, bs, embed_dim)`
         """
@@ -283,7 +285,6 @@ class MultiScaleDeformableAttention(nn.Module):
         bs, num_value, _ = value.shape
 
         assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_value
-
 
         value = self.value_proj(value)
         if key_padding_mask is not None:

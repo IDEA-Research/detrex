@@ -36,11 +36,11 @@ def try_get_key(cfg, *keys, default=None):
 def get_config(config_path):
     """
     Returns a config object from a config_path.
-    
+
     Args:
         config_path (str): config file name relative to ideadet's "configs/"
             directory, e.g., "common/train.py"
-    
+
     Returns:
         omegaconf.DictConfig: a config object
     """

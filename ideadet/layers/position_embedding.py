@@ -72,17 +72,14 @@ class PositionEmbeddingSine(nn.Module):
         self.eps = eps
         self.offset = offset
 
-    def forward(
-        self, 
-        mask: torch.Tensor,
-        **kwargs) -> torch.Tensor:
+    def forward(self, mask: torch.Tensor, **kwargs) -> torch.Tensor:
         """Forward function for `PositionEmbeddingSine`.
-        
+
         Args:
             mask (Tensor): ByteTensor mask. Non-zero values representing
                 ignored positions, while zero values means valid positions
                 for the input tensor. Shape as `(bs, h, w)`.
-        
+
         Returns:
             pos (Tensor): Returned position embedding with
             shape `(bs, num_pos_feats * 2, h, w)`
@@ -124,7 +121,7 @@ class PositionEmbeddingLearned(nn.Module):
         row_num_embed (int, optional): The dictionary size of row embeddings.
             Default: 50.
         col_num_embed (int, optional): The dictionary size of column embeddings.
-            Default: 50. 
+            Default: 50.
     """
 
     def __init__(
@@ -148,12 +145,12 @@ class PositionEmbeddingLearned(nn.Module):
 
     def forward(self, mask):
         """Forward function for `PositionEmbeddingLearned`.
-        
+
         Args:
             mask (Tensor): ByteTensor mask. Non-zero values representing
                 ignored positions, while zero values means valid positions
                 for the input tensor. Shape as `(bs, h, w)`.
-        
+
         Returns:
             pos (Tensor): Returned position embedding with
             shape `(bs, num_pos_feats * 2, h, w)`

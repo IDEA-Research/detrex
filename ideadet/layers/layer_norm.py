@@ -30,9 +30,9 @@ class LayerNorm(nn.Module):
 
     Args:
         normalized_shape (tuple): The size of the input feature dim.
-        eps (float): A value added to the denominator for 
+        eps (float): A value added to the denominator for
             numerical stability. Default: True.
-        channel_last (bool): Set True for `channel_last` input data 
+        channel_last (bool): Set True for `channel_last` input data
             format. Default: True.
     """
 
@@ -45,8 +45,7 @@ class LayerNorm(nn.Module):
         self.normalized_shape = (normalized_shape,)
 
     def forward(self, x):
-        """Forward function for `LayerNorm`
-        """
+        """Forward function for `LayerNorm`"""
         if self.channel_last:
             return F.layer_norm(x, self.normalized_shape, self.weight, self.bias, self.eps)
         else:

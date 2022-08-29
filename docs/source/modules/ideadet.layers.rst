@@ -6,6 +6,8 @@ ideadet.layers
     :members: 
         MultiheadAttention,
         MultiScaleDeformableAttention,
+        ConditionalSelfAttention,
+        ConditionalCrossAttention,
         PositionEmbeddingSine,
         PositionEmbeddingLearned,
         get_sine_pos_embed,
