@@ -2,7 +2,7 @@
 
 #include "MsDeformAttn/ms_deform_attn.h"
 
-namespace ideadet {
+namespace detrex {
 
 #ifdef WITH_CUDA
 extern int get_cudart_version();
@@ -55,4 +55,4 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("ms_deform_attn_backward", &ms_deform_attn_backward, "ms_deform_attn_backward");
 }
 
-} // namespace ideadet
+} // namespace detrex

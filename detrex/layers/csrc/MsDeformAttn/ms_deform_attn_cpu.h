@@ -11,7 +11,7 @@
 #pragma once
 #include <torch/extension.h>
 
-namespace ideadet {
+namespace detrex {
 
 at::Tensor
 ms_deform_attn_cpu_forward(
@@ -32,4 +32,4 @@ ms_deform_attn_cpu_backward(
     const at::Tensor &grad_output,
     const int im2col_step);
 
-} // namespace ideadet
+} // namespace detrex

@@ -11,7 +11,7 @@
 #pragma once
 #include <torch/extension.h>
 
-namespace ideadet {
+namespace detrex {
 
 at::Tensor ms_deform_attn_cuda_forward(
     const at::Tensor &value, 
@@ -30,4 +30,4 @@ std::vector<at::Tensor> ms_deform_attn_cuda_backward(
     const at::Tensor &grad_output,
     const int im2col_step);
 
-} // namespace ideadet
+} // namespace detrex

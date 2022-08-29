@@ -1,7 +1,7 @@
 #!/bin/bash -e
 # Copyright (c) Facebook, Inc. and its affiliates.
 
-# cd to ideadet project root
+# cd to detrex project root
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 {

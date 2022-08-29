@@ -13,7 +13,7 @@
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 
-namespace ideadet {
+namespace detrex {
 
 at::Tensor
 ms_deform_attn_cpu_forward(
@@ -40,4 +40,4 @@ ms_deform_attn_cpu_backward(
     AT_ERROR("Not implement on cpu");
 }
 
-} // namespace ideadet
+} // namespace detrex

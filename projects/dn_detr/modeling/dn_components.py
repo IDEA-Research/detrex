@@ -17,8 +17,8 @@
 # import torch.nn as nn
 # import torch.nn.functional as F
 #
-# from ideadet.layers import box_ops
-# from ideadet.utils import (
+# from detrex.layers import box_ops
+# from detrex.utils import (
 #     accuracy,
 #     get_world_size,
 #     interpolate,

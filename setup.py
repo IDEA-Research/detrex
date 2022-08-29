@@ -32,12 +32,12 @@ requirements = ["torch", "torchvision"]
 torch_ver = [int(x) for x in torch.__version__.split(".")[:2]]
 
 
-def get_ideadet_configs() -> List[str]:
+def get_detrex_configs() -> List[str]:
     """
     Return a list of configs to include in package for model zoo.
     """
     source_configs_dir = path.join(path.dirname(path.realpath(__file__)), "configs")
-    destination = path.join(path.dirname(path.realpath(__file__)), "ideadet", "config", "configs")
+    destination = path.join(path.dirname(path.realpath(__file__)), "detrex", "config", "configs")
     # Symlink the config directory inside package to have a cleaner pip install.
 
     # Remove stale symlink/directory from a previous build.
@@ -59,7 +59,7 @@ def get_ideadet_configs() -> List[str]:
 
 def get_extensions():
     this_dir = os.path.dirname(os.path.abspath(__file__))
-    extensions_dir = os.path.join(this_dir, "ideadet", "layers", "csrc")
+    extensions_dir = os.path.join(this_dir, "detrex", "layers", "csrc")
 
     main_source = os.path.join(extensions_dir, "vision.cpp")
     sources = glob.glob(os.path.join(extensions_dir, "**", "*.cpp"))
@@ -92,7 +92,7 @@ def get_extensions():
 
     ext_modules = [
         extension(
-            "ideadet._C",
+            "detrex._C",
             sources,
             include_dirs=include_dirs,
             define_macros=define_macros,
@@ -104,10 +104,10 @@ def get_extensions():
 
 
 setup(
-    name="IDEADet",
+    name="detrex",
     version="0.1.0",
     author="International Digital Economy Academy",
-    url="https://github.com/rentainhe/IDEADet",
+    url="https://github.com/rentainhe/detrex",
     description="IDEA open source toolbox for visual recognition tasks",
     packages=find_packages(
         exclude=(
@@ -115,7 +115,7 @@ setup(
             "tests",
         )
     ),
-    package_data={"ideadet.config": get_ideadet_configs()},
+    package_data={"detrex.config": get_detrex_configs()},
     ext_modules=get_extensions(),
     cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
 )

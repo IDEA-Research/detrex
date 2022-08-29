@@ -1,8 +1,8 @@
-ideadet.config
+detrex.config
 ##############################
 
-.. currentmodule:: ideadet.config
-.. automodule:: ideadet.config
+.. currentmodule:: detrex.config
+.. automodule:: detrex.config
     :members: 
         try_get_key,
         get_config,
