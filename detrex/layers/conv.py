@@ -68,6 +68,8 @@ class ConvNormAct(nn.Module):
         self.activation = activation
 
     def forward(self, x):
+        """Forward function for `ConvNormAct`
+        """
         x = self.conv(x)
         if self.norm is not None:
             x = self.norm(x)
