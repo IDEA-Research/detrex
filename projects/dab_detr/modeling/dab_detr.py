@@ -20,6 +20,7 @@
 # ------------------------------------------------------------------------------------------------
 
 import math
+from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -35,24 +36,26 @@ from detectron2.structures import Boxes, ImageList, Instances
 class DABDETR(nn.Module):
     def __init__(
         self,
-        backbone,
-        transformer,
-        position_embedding,
-        num_classes,
-        num_queries,
-        criterion,
-        pixel_mean,
-        pixel_std,
+        backbone: nn.Module,
+        in_features: List[str],
+        transformer: nn.Module,
+        position_embedding: nn.Module,
+        num_classes: int,
+        num_queries: int,
+        criterion: nn.Module,
+        pixel_mean: List[float],
+        pixel_std: List[float],
         in_channels=2048,
         embed_dim=256,
-        aux_loss=True,
-        iter_update=True,
-        query_dim=4,
-        random_refpoints_xy=True,
-        device="cuda",
+        aux_loss: bool = True,
+        iter_update: bool = True,
+        query_dim: int = 4,
+        random_refpoints_xy: bool = True,
+        device: str = "cuda",
     ):
         super(DABDETR, self).__init__()
         self.backbone = backbone
+        self.in_features = in_features
         self.transformer = transformer
         self.position_embedding = position_embedding
         self.class_embed = nn.Linear(embed_dim, num_classes)
@@ -111,7 +114,7 @@ class DABDETR(nn.Module):
             img_masks = images.tensor.new_zeros(batch_size, H, W)
 
         # only use last level feature in DAB-DETR
-        features = self.backbone(images.tensor)["res5"]
+        features = self.backbone(images.tensor)[self.in_features[-1]]
         features = self.input_proj(features)
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
         pos_embed = self.position_embedding(img_masks)
@@ -168,8 +171,6 @@ class DABDETR(nn.Module):
         assert len(box_cls) == len(image_sizes)
         results = []
 
-        # box_cls.shape: 1, 300, 80
-        # box_pred.shape: 1, 300, 4
         prob = box_cls.sigmoid()
         topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 100, dim=1)
         scores = topk_values
@@ -178,15 +179,11 @@ class DABDETR(nn.Module):
 
         boxes = torch.gather(box_pred, 1, topk_boxes.unsqueeze(-1).repeat(1, 1, 4))
 
-        # For each box we assign the best class or the second best if the best on is `no_object`.
-        # scores, labels = F.softmax(box_cls, dim=-1)[:, :, :-1].max(-1)
-
         for i, (scores_per_image, labels_per_image, box_pred_per_image, image_size) in enumerate(
             zip(scores, labels, boxes, image_sizes)
         ):
             result = Instances(image_size)
             result.pred_boxes = Boxes(box_cxcywh_to_xyxy(box_pred_per_image))
-
             result.pred_boxes.scale(scale_x=image_size[1], scale_y=image_size[0])
             result.scores = scores_per_image
             result.pred_classes = labels_per_image

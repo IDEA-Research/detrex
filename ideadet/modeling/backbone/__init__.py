@@ -13,15 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from .attention import MultiheadAttention
-from .transformer import (
-    OriginalConditionalAttentionEncoder,
-    OriginalConditionalAttentionDecoder,
-)
-from .potision_embedding import (
-    DeformablePositionEmbeddingSine,
-    DABPositionEmbeddingSine,
-    DABPositionEmbeddingLearned,
-)
-from .mlp import MLP
+from .timm_backbone import TimmBackbone

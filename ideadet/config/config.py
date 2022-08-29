@@ -23,7 +23,7 @@ from detectron2.config import LazyConfig
 
 def try_get_key(cfg, *keys, default=None):
     """
-    Try select keys from cfg until the first key that exists. Otherwise return default.
+    Try select keys from lazy cfg until the first key that exists. Otherwise return default.
     """
     for k in keys:
         none = object()
@@ -36,9 +36,11 @@ def try_get_key(cfg, *keys, default=None):
 def get_config(config_path):
     """
     Returns a config object from a config_path.
+
     Args:
         config_path (str): config file name relative to ideadet's "configs/"
-            directory, e.g., "common/models/bert.py"
+            directory, e.g., "common/train.py"
+
     Returns:
         omegaconf.DictConfig: a config object
     """
