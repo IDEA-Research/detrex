@@ -1,8 +1,5 @@
-libai.optim
+ideadet.utils
 ##############################
 
-.. currentmodule:: libai.optim
-.. automodule:: libai.optim
-    :members: 
-        build_optimizer,
-        get_default_optimizer_params,
+.. currentmodule:: ideadet.utils
+.. automodule:: ideadet.utils

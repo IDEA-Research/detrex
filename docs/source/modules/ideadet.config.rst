@@ -1,12 +1,9 @@
-libai.config
+ideadet.config
 ##############################
 
-.. currentmodule:: libai.config
-.. automodule:: libai.config
+.. currentmodule:: ideadet.config
+.. automodule:: ideadet.config
     :members: 
         try_get_key,
         get_config,
-        configurable,
-        instantiate,
-        LazyCall,
-        LazyConfig,
+        

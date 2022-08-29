@@ -7,9 +7,8 @@ Welcome to IDEADet's documentation!
 ======================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    tutorials/index
-   notes/index
    modules/index
    changelog.md

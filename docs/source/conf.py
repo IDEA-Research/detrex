@@ -13,15 +13,15 @@
 import os
 import sys
 
-import libai  # noqa
+import ideadet  # noqa
 
 sys.path.insert(0, os.path.abspath("."))
 
 # -- Project information -----------------------------------------------------
 
-project = "libai"
-copyright = "2021, OneFlow"
-author = "OneFlow"
+project = "ideadet"
+copyright = "2022, IDEACVR"
+author = "IDEACVR Authors"
 
 
 # -- General configuration ---------------------------------------------------

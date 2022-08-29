@@ -60,7 +60,7 @@ class DABDETR(nn.Module):
         self.position_embedding = position_embedding
         self.class_embed = nn.Linear(embed_dim, num_classes)
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
-        self.refpoint_embed = nn.Embedding(num_queries, query_dim)
+        self.refpoint_embed = nn.Embedding(num_queries, query_dim) 
         self.query_dim = query_dim
         self.aux_loss = aux_loss
         self.iter_update = iter_update

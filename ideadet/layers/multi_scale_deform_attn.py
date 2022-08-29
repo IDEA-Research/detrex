@@ -23,6 +23,7 @@
 # https://github.com/open-mmlab/mmcv/blob/master/mmcv/ops/multi_scale_deform_attn.py
 # ------------------------------------------------------------------------------------------------
 
+from typing import Optional
 import math
 import warnings
 import torch
@@ -138,6 +139,22 @@ def multi_scale_deformable_attn_pytorch(
 
 
 class MultiScaleDeformableAttention(nn.Module):
+    """Multi-Scale Deformable Attention Module used in Deformable-Detr
+
+    `Deformable DETR: Deformable Transformers for End-to-End Object Detection.
+    <https://arxiv.org/pdf/2010.04159.pdf>`_.
+    
+    Args:
+        embed_dim (int): The embedding dimension of Attention. Default: 256.
+        num_heads (int): The number of attention heads. Default: 8.
+        num_levels (int): The number of feature map used in Attention. Default: 4.
+        num_points (int): The number of sampling points for each query 
+            in each head. Default: 4.
+        img2col_steps (int): The step used in image_to_column. Defualt: 64.
+            dropout (float): Dropout layer used in output. Default: 0.1.
+        batch_first (bool): if ``True``, then the input and output tensor will be
+            provided as `(bs, n, embed_dim)`. Default: False. `(n, bs, embed_dim)`
+    """
     def __init__(
         self,
         embed_dim: int = 256,
@@ -148,14 +165,6 @@ class MultiScaleDeformableAttention(nn.Module):
         dropout: float = 0.1,
         batch_first: bool = False,
     ):
-        """Multi-Scale Deformable Attention Module
-
-        Args:
-            d_model: size of hidden state.
-            n_levels: number of feature levels.
-            n_heads: number of attention heads.
-            n_points: number of sampling points per attention head per feature level.
-        """
         super().__init__()
         if embed_dim % num_heads != 0:
             raise ValueError(
@@ -190,7 +199,7 @@ class MultiScaleDeformableAttention(nn.Module):
 
     def init_weights(self):
         """
-        Default initialization of parameters
+        Default initialization for Parameters of Module.
         """
         constant_(self.sampling_offsets.weight.data, 0.0)
         thetas = torch.arange(self.num_heads, dtype=torch.float32) * (
@@ -215,27 +224,46 @@ class MultiScaleDeformableAttention(nn.Module):
 
     def forward(
         self,
-        query,
-        key,
-        value,
-        identity,
-        query_pos,
-        key_padding_mask,
-        reference_points,
-        spatial_shapes,
-        level_start_index,
-        **kwargs,
-    ):
-        """
-        :param query                       (N, Length_{query}, C)
-        :param reference_points            (N, Length_{query}, n_levels, 2), range in [0, 1], top-left (0,0), bottom-right (1, 1), including padding area
-                                        or (N, Length_{query}, n_levels, 4), add additional (w, h) to form reference boxes
-        :param input_flatten               (N, \sum_{l=0}^{L-1} H_l \cdot W_l, C)
-        :param input_spatial_shapes        (n_levels, 2), [(H_0, W_0), (H_1, W_1), ..., (H_{L-1}, W_{L-1})]
-        :param input_level_start_index     (n_levels, ), [0, H_0*W_0, H_0*W_0+H_1*W_1, H_0*W_0+H_1*W_1+H_2*W_2, ..., H_0*W_0+H_1*W_1+...+H_{L-1}*W_{L-1}]
-        :param input_padding_mask          (N, \sum_{l=0}^{L-1} H_l \cdot W_l), True for padding elements, False for non-padding elements
+        query: torch.Tensor,
+        key: Optional[torch.Tensor] = None,
+        value: Optional[torch.Tensor] = None,
+        identity: Optional[torch.Tensor] = None,
+        query_pos: Optional[torch.Tensor] = None,
+        key_padding_mask: Optional[torch.Tensor] = None,
+        reference_points: Optional[torch.Tensor] = None,
+        spatial_shapes: Optional[torch.Tensor] = None,
+        level_start_index: Optional[torch.Tensor] = None,
+        **kwargs) -> torch.Tensor:
+        
+        """Forward Function of MultiScaleDeformableAttention
 
-        :return output                     (N, Length_{query}, C)
+        Args:
+            query (torch.Tensor): Query embeddings with shape 
+                `(num_query, bs, embed_dim)`
+            key (torch.Tensor): Key embeddings with shape 
+                `(num_key, bs, embed_dim)`
+            value (torch.Tensor): Value embeddings with shape
+                `(num_key, bs, embed_dim)`
+            identity (torch.Tensor): The tensor used for addition, with the 
+                same shape as `query`. Default: None. If None, `query` will be
+                used.
+            query_pos (torch.Tensor): The position embedding for `query`. Default: None.
+            key_padding_mask (torch.Tensor): ByteTensor for `query`, with shape `(bs, num_key)`, 
+                indicating which elements within `key` to be ignored in attention.
+            reference_points (torch.Tensor): The normalized reference points 
+                with shape `(bs, num_query, num_levels, 2)`, 
+                all elements is range in [0, 1], top-left (0, 0),
+                bottom-right (1, 1), including padding are. 
+                or `(N, Length_{query}, num_levels, 4)`, add additional 
+                two dimensions `(h, w)` to form reference boxes.
+            spatial_shapes (torch.Tensor): Spatial shape of features in different levels.
+                With shape `(num_levels, 2)`, last dimension represents `(h, w)`.
+            level_start_index (torch.Tensor): The start index of each level. A tensor with
+                shape `(num_levels, )` which can be represented as 
+                `[0, h_0 * w_0, h_0 * w_0 + h_1 * w_1, ...]`.
+        
+        Returns:
+            torch.Tensor: forward results with shape `(num_query, bs, embed_dim)`
         """
 
         if value is None:
@@ -254,12 +282,8 @@ class MultiScaleDeformableAttention(nn.Module):
         bs, num_query, _ = query.shape
         bs, num_value, _ = value.shape
 
-        try:
-            assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_value
-        except:
-            import pdb
+        assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_value
 
-            pdb.set_trace()
 
         value = self.value_proj(value)
         if key_padding_mask is not None:

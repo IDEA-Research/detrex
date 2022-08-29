@@ -6,7 +6,7 @@ Tutorials
    :maxdepth: 2
 
    Installation.md
-   quick_run.md
+   Quick_Run.md
    Model_Zoo.md
 
    
