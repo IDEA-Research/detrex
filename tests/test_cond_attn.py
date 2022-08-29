@@ -16,7 +16,7 @@
 
 import torch
 
-from ideadet.layers import ConditionalCrossAttention, ConditionalSelfAttention
+from detrex.layers import ConditionalCrossAttention, ConditionalSelfAttention
 
 from utils import OriginalConditionalAttentionDecoder, OriginalConditionalAttentionEncoder
 

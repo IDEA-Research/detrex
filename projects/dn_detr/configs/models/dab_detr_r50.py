@@ -1,9 +1,9 @@
 import torch.nn as nn
 
-from ideadet.modeling.utils import Joiner, MaskedBackbone
-from ideadet.modeling.matcher import DabMatcher
-from ideadet.modeling.criterion import DabCriterion
-from ideadet.layers import (
+from detrex.modeling.utils import Joiner, MaskedBackbone
+from detrex.modeling.matcher import DabMatcher
+from detrex.modeling.criterion import DabCriterion
+from detrex.layers import (
     MultiheadAttention,
     ConditionalSelfAttention,
     ConditionalCrossAttention,

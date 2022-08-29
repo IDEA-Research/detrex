@@ -16,7 +16,7 @@
 import torch
 import torch.nn as nn
 
-from ideadet.layers import BaseTransformerLayer, TransformerLayerSequence
+from detrex.layers import BaseTransformerLayer, TransformerLayerSequence
 
 
 class DetrTransformerEncoder(TransformerLayerSequence):

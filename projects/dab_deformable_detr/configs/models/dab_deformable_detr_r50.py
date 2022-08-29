@@ -4,10 +4,10 @@ from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.layers import ShapeSpec
 from detectron2.config import LazyCall as L
 
-from ideadet.modeling.matcher import HungarianMatcher
-from ideadet.modeling.criterion import SetCriterion
-from ideadet.modeling.neck import ChannelMapper
-from ideadet.layers import PositionEmbeddingSine
+from detrex.modeling.matcher import HungarianMatcher
+from detrex.modeling.criterion import SetCriterion
+from detrex.modeling.neck import ChannelMapper
+from detrex.layers import PositionEmbeddingSine
 
 from modeling import (
     DabDeformableDETR,

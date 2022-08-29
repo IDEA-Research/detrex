@@ -20,8 +20,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ideadet.layers import MLP, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
-from ideadet.utils import inverse_sigmoid
+from detrex.layers import MLP, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
+from detrex.utils import inverse_sigmoid
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances

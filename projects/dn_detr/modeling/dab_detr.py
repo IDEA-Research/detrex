@@ -23,10 +23,10 @@ import math
 import torch
 import torch.nn as nn
 
-from ideadet.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
-from ideadet.layers.mlp import MLP
-from ideadet.modeling.criterion.dn_components import dn_post_process, prepare_for_dn
-from ideadet.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
+from detrex.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
+from detrex.layers.mlp import MLP
+from detrex.modeling.criterion.dn_components import dn_post_process, prepare_for_dn
+from detrex.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances

@@ -29,7 +29,7 @@ import torch
 import torch.nn.functional as F
 from torch.autograd import gradcheck
 
-from ideadet.layers.multi_scale_deform_attn import MultiScaleDeformableAttnFunction
+from detrex.layers.multi_scale_deform_attn import MultiScaleDeformableAttnFunction
 
 N, M, D = 1, 2, 2
 Lq, L, P = 2, 2, 2

@@ -1,4 +1,4 @@
-from ideadet.config import get_config
+from detrex.config import get_config
 
 from .models.detr_r50 import model
 from .common.coco_loader import dataloader

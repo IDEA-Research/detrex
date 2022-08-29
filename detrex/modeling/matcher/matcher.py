@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 from scipy.optimize import linear_sum_assignment
 
-from ideadet.layers.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
+from detrex.layers.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
 
 
 class HungarianMatcher(nn.Module):

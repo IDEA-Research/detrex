@@ -23,7 +23,7 @@
 import pytest
 import torch
 
-from ideadet.layers import PositionEmbeddingLearned, PositionEmbeddingSine
+from detrex.layers import PositionEmbeddingLearned, PositionEmbeddingSine
 
 from utils import (
     DABPositionEmbeddingLearned,
