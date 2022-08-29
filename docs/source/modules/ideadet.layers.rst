@@ -16,6 +16,7 @@ ideadet.layers
         get_sine_pos_embed,
         BaseTransformerLayer,
         TransformerLayerSequence,
+        ConvNormAct,
         box_cxcywh_to_xyxy,
         box_xyxy_to_cxcywh,
         box_iou,

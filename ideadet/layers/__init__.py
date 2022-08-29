@@ -40,4 +40,7 @@ from .attention import (
     ConditionalSelfAttention,
     ConditionalCrossAttention,
 )
-from .conv import ConvNormAct
+from .conv import (
+    ConvNormAct,
+    ConvNorm,
+)
