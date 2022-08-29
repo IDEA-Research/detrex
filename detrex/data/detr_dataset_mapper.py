@@ -34,7 +34,7 @@ __all__ = ["DetrDatasetMapper"]
 class DetrDatasetMapper:
     """
     A callable which takes a dataset dict in Detectron2 Dataset format,
-    and map it into a format used by DETR.
+    and map it into the format used by DETR.
 
     The callable currently does the following:
 
@@ -42,10 +42,26 @@ class DetrDatasetMapper:
     2. Applies geometric transforms to the image and annotation
     3. Find and applies suitable cropping to the image and annotation
     4. Prepare image and annotation to Tensors
+
+    Args:
+        augmentation (list[detectron.data.Transforms]): The geometric transforms for 
+            the input raw image and annotations.
+        augmentation_with_crop (list[detectron.data.Transforms]): The geometric transforms with crop.
+        is_train (bool): Whether to load train set or val set. Default: True.
+        mask_on (bool): Whether to return the mask annotations. Default: False.
+        img_format (str): The format of the input raw images. Default: RGB.
+    
+    Because detectron2 did not implement `RandomSelect` augmentation. So we provide both `augmentation` and
+    `augmentation_with_crop` here and randomly apply one of them to the input raw images.
     """
 
     def __init__(
-        self, augmentation, augmentation_with_crop, is_train=True, mask_on=False, img_format="RGB"
+        self, 
+        augmentation, 
+        augmentation_with_crop, 
+        is_train=True, 
+        mask_on=False, 
+        img_format="RGB",
     ):
         self.mask_on = mask_on
         self.augmentation = augmentation

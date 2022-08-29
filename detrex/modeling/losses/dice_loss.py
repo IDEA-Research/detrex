@@ -23,12 +23,18 @@
 def dice_loss(inputs, targets, num_boxes):
     """
     Compute the DICE loss, similar to generalized IOU for masks
+    
     Args:
-        inputs: A float tensor of arbitrary shape.
-                The predictions for each example.
-        targets: A float tensor with the same shape as inputs. Stores the binary
-                 classification label for each element in inputs
-                (0 for the negative class and 1 for the positive class).
+        inputs (torch.Tensor): A float tensor of arbitrary shape.
+            The predictions for each example.
+        targets (torch.Tensor): 
+            A float tensor with the same shape as inputs. Stores the binary
+            classification label for each element in inputs
+            (0 for the negative class and 1 for the positive class).
+        num_boxes (int): The number of boxes.
+    
+    Return:
+        torch.Tensor: The computed dice loss.
     """
     inputs = inputs.sigmoid()
     inputs = inputs.flatten(1)
