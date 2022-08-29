@@ -9,3 +9,4 @@ ideadet.layers
         PositionEmbeddingSine,
         PositionEmbeddingLearned,
         get_sine_pos_embed,
+        LayerNorm,

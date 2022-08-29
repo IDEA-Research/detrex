@@ -25,13 +25,15 @@ import torch.nn.functional as F
 class LayerNorm(nn.Module):
     r"""LayerNorm which supports both channel_last (default) and channel_first data format.
     The inputs data format should be as follows:
-        channel_last: (batch_size, height, width, channels)
-        channel_first: (batch_size, channels, height, width)
+        - channel_last: (bs, h, w, channels)
+        - channel_first: (bs, channels, h, w)
 
     Args:
         normalized_shape (tuple): The size of the input feature dim.
-        eps (float): A value added to the denominator for numerical stability. Default: True.
-        channel_last (bool): Set True for channel_last input data format. Default: True
+        eps (float): A value added to the denominator for 
+            numerical stability. Default: True.
+        channel_last (bool): Set True for `channel_last` input data 
+            format. Default: True.
     """
 
     def __init__(self, normalized_shape, eps=1e-6, channel_last=True):
@@ -43,6 +45,8 @@ class LayerNorm(nn.Module):
         self.normalized_shape = (normalized_shape,)
 
     def forward(self, x):
+        """Forward function for `LayerNorm`
+        """
         if self.channel_last:
             return F.layer_norm(x, self.normalized_shape, self.weight, self.bias, self.eps)
         else:
