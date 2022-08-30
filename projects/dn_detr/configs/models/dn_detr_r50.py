@@ -8,38 +8,39 @@ from detrex.layers import (
     FFN,
     BaseTransformerLayer,
 )
+from detrex.modeling import HungarianMatcher
 
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
 
 from modeling import (
-    DABDETR,
-    DabDetrTransformer,
-    DabDetrTransformerDecoder,
-    DabDetrTransformerEncoder,
+    DNDETR,
+    DNDetrTransformerEncoder,
+    DNDetrTransformerDecoder,
+    DNDetrTransformer,
+    DNCriterion,
 )
 
 
-model = L(DABDETR)(
-    backbone=L(Joiner)(
-        backbone=L(MaskedBackbone)(
-            backbone=L(ResNet)(
-                stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
-                stages=L(ResNet.make_default_stages)(
-                    depth=50,
-                    stride_in_1x1=False,
-                    norm="FrozenBN",
-                ),
-                out_features=["res2", "res3", "res4", "res5"],
-                freeze_at=1,
-            )
+model = L(DNDETR)(
+    backbone=L(ResNet)(
+        stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
+        stages=L(ResNet.make_default_stages)(
+            depth=50,
+            stride_in_1x1=False,
+            norm="FrozenBN",
         ),
-        position_embedding=L(PositionEmbeddingSine)(
-            num_pos_feats=128, temperature=20, normalize=True
-        ),
+        out_features=["res2", "res3", "res4", "res5"],
+        freeze_at=1,
     ),
-    transformer=L(DabDetrTransformer)(
-        encoder=L(DabDetrTransformerEncoder)(
+    position_embedding=L(PositionEmbeddingSine)(
+        num_pos_feats=128, 
+        temperature=20, 
+        normalize=True,
+    ),
+    in_features = ["res5"], # use last level feature as DAB-DETR
+    transformer=L(DNDetrTransformer)(
+        encoder=L(DNDetrTransformerEncoder)(
             transformer_layers=L(BaseTransformerLayer)(
                 attn=L(MultiheadAttention)(
                     embed_dim=256,
@@ -59,7 +60,7 @@ model = L(DABDETR)(
             num_layers=6,
             post_norm=False,
         ),
-        decoder=L(DabDetrTransformerDecoder)(
+        decoder=L(DNDetrTransformerDecoder)(
             num_layers=6,
             return_intermediate=True,
             query_dim=4,
@@ -99,40 +100,43 @@ model = L(DABDETR)(
     query_dim=4,
     iter_update=True,
     random_refpoints_xy=True,
-    criterion=L(DabCriterion)(
+    criterion=L(DNCriterion)(
         num_classes=80,
-        matcher=L(DabMatcher)(
-            cost_class=1,
+        matcher=L(HungarianMatcher)(
+            cost_class=2.0,
             cost_bbox=5.0,
             cost_giou=2.0,
+            cost_class_type="focal_loss_cost",
+            alpha=0.25,
+            gamma=2.0,
         ),
         weight_dict={
-            "loss_ce": 1,
+            "loss_class": 1,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
-        focal_alpha=0.25,
         losses=[
-            "labels",
+            "class",
             "boxes",
         ],
+        loss_class_type="focal_loss",
+        alpha=0.25,
+        gamma=2.0,
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
-    device="cuda",
-    use_dn=True,
-    scalar=5,
+    dn_num=5,
     label_noise_scale=0.2,
     box_noise_scale=0.4,
+    device="cuda",
 )
 
 # set aux loss weight dict
 if model.aux_loss:
     weight_dict = model.criterion.weight_dict
-    if model.use_dn:
-        weight_dict["tgt_loss_ce"] = 1.0
-        weight_dict["tgt_loss_bbox"] = 5.0
-        weight_dict["tgt_loss_giou"] = 2.0
+    weight_dict["tgt_loss_ce"] = 1.0
+    weight_dict["tgt_loss_bbox"] = 5.0
+    weight_dict["tgt_loss_giou"] = 2.0
     aux_weight_dict = {}
     for i in range(model.transformer.decoder.num_layers - 1):
         aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})

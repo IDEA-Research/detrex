@@ -54,13 +54,15 @@ class DNDETR(nn.Module):
         iter_update=True,
         query_dim=4,
         random_refpoints_xy=True,
-        scalar=5,
+        dn_num=5,
         label_noise_scale=0.0,
         box_noise_scale=0.0,
         device="cuda",
     ):
         super(DNDETR, self).__init__()
         self.backbone = backbone
+        self.position_embedding = position_embedding
+        self.in_features = in_features
         self.transformer = transformer
         self.class_embed = nn.Linear(embed_dim, num_classes)
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
@@ -71,10 +73,12 @@ class DNDETR(nn.Module):
         self.num_queries = num_queries
         self.num_classes = num_classes
         self.criterion = criterion
-        self.dn_args = (scalar, label_noise_scale, box_noise_scale)
         
         # leave one dim for indicator
         self.label_encoder = nn.Embedding(num_classes + 1, embed_dim - 1)
+        self.dn_num = dn_num
+        self.label_noise_scale = label_noise_scale
+        self.box_noise_scale = box_noise_scale
 
         assert self.query_dim in [2, 4]
 
@@ -128,7 +132,6 @@ class DNDETR(nn.Module):
         features = self.input_proj(features)
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
         pos_embed = self.position_embedding(img_masks)
-        embed_weight = self.refpoint_embed.weight
 
         ####### prepare for dn
         if self.training:
@@ -137,24 +140,25 @@ class DNDETR(nn.Module):
         else:
             targets = None
         
-        input_query_label, input_query_bbox, attn_mask, mask_dict = prepare_for_dn(
+        input_query_label, input_query_bbox, attn_mask, dn_metas = self.generate_dn_queries(
             targets,
-            self.dn_args,
-            embedweight,
-            src.size(0),
-            self.training,
-            self.num_queries,
-            self.num_classes,
-            self.hidden_dim,
-            self.label_enc,
+            dn_num=self.dn_num,
+            label_noise_scale=self.label_noise_scale,
+            box_noise_scale=self.box_noise_scale,
+            refpoint_embed=self.refpoint_embed,
+            num_queries=self.num_queries,
+            num_classes=self.num_classes,
+            embed_dim=self.embed_dim,
+            label_encoder=self.label_encoder,
+            batch_size=len(batched_inputs)
         )
 
         # hs, reference = self.transformer(self.input_proj(src), mask, embedweight, pos[-1])
         hs, reference = self.transformer(
-            self.input_proj(src),
-            mask,
+            features,
+            img_masks,
             input_query_bbox,
-            pos[-1],
+            pos_embed,
             target=input_query_label,
             attn_mask=attn_mask,
         )
@@ -166,14 +170,14 @@ class DNDETR(nn.Module):
         outputs_class = self.class_embed(hs)
 
         ###### dn post process
-        outputs_class, outputs_coord = dn_post_process(outputs_class, outputs_coord, mask_dict)
+        outputs_class, outputs_coord = self.dn_post_process(outputs_class, outputs_coord, dn_metas)
 
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
 
         if self.training:
-            loss_dict = self.criterion(output, targets, mask_dict)
+            loss_dict = self.criterion(output, targets, dn_metas)
             weight_dict = self.criterion.weight_dict
             for k in loss_dict.keys():
                 if k in weight_dict:
