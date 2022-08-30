@@ -77,12 +77,12 @@ class HungarianMatcher(nn.Module):
         """Forward function for `HungarianMatcher` which performs the matching.
 
         Args:
-            outputs (dict[str, torch.Tensor]): This is a dict that contains at least these entries:
+            outputs (Dict[str, torch.Tensor]): This is a dict that contains at least these entries:
 
                 - ``"pred_logits"``: Tensor of shape (bs, num_queries, num_classes) with the classification logits.
                 - ``"pred_boxes"``: Tensor of shape (bs, num_queries, 4) with the predicted box coordinates.
 
-            targets (list[dict[str, torch.Tensor]]): This is a list of targets (len(targets) = batch_size),
+            targets (List[Dict[str, torch.Tensor]]): This is a list of targets (len(targets) = batch_size),
                 where each target is a dict containing:
 
                 - ``"labels"``: Tensor of shape (num_target_boxes, ) (where num_target_boxes is the number of ground-truth objects in the target) containing the class labels.
