@@ -92,9 +92,7 @@ def test_cond_decoder():
     detrex_cond_self_attn.out_proj.weight = cond_decoder_original.self_attn.out_proj.weight
     detrex_cond_self_attn.out_proj.bias = cond_decoder_original.self_attn.out_proj.bias
 
-    detrex_cond_cross_attn.query_content_proj.weight = (
-        cond_decoder_original.ca_qcontent_proj.weight
-    )
+    detrex_cond_cross_attn.query_content_proj.weight = cond_decoder_original.ca_qcontent_proj.weight
     detrex_cond_cross_attn.query_content_proj.bias = cond_decoder_original.ca_qcontent_proj.bias
     detrex_cond_cross_attn.query_pos_proj.weight = cond_decoder_original.ca_qpos_proj.weight
     detrex_cond_cross_attn.query_pos_proj.bias = cond_decoder_original.ca_qpos_proj.bias

@@ -27,7 +27,7 @@ from detectron2.engine.defaults import create_ddp_model
 from detectron2.evaluation import inference_on_dataset, print_csv_format
 from detectron2.utils import comm
 
-logger = logging.getLogger("ideadet")
+logger = logging.getLogger("detrex")
 
 
 def do_test(cfg, model):
