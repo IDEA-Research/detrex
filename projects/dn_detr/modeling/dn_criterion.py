@@ -25,7 +25,7 @@ class DNCriterion(SetCriterion):
     """This class computes the loss for DN-DETR.
     """
     def forward(self, outputs, targets, dn_metas=None):
-        losses=super(SetCriterion, self).forward(outputs, targets)
+        losses=super(DNCriterion, self).forward(outputs, targets)
 
         num_boxes = sum(len(t["labels"]) for t in targets)
         num_boxes = torch.as_tensor(
@@ -41,6 +41,8 @@ class DNCriterion(SetCriterion):
 
         dn_losses = self.calculate_dn_loss(dn_metas, targets, aux_num, num_boxes)
         losses.update(dn_losses)
+
+        return losses
 
     def calculate_dn_loss(self, dn_metas, targets, aux_num, num_boxes):
         """

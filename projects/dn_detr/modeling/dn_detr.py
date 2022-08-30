@@ -160,7 +160,7 @@ class DNDETR(nn.Module):
             input_query_bbox,
             pos_embed,
             target=input_query_label,
-            attn_mask=attn_mask,
+            attn_mask=[attn_mask, None],  # None mask for cross attention
         )
 
         reference_before_sigmoid = inverse_sigmoid(reference)
@@ -257,7 +257,7 @@ class DNDETR(nn.Module):
     def generate_dn_queries(
         self,
         targets,
-        dn_nums,
+        dn_num,
         label_noise_scale,
         box_noise_scale,
         refpoint_embed,
@@ -284,10 +284,10 @@ class DNDETR(nn.Module):
         unmask_label=torch.cat([torch.ones_like(t["labels"]) for t in targets])
         gt_indices_for_matching = torch.nonzero(unmask_label)
         gt_indices_for_matching = gt_indices_for_matching.view(-1)
-        gt_indices_for_matching = gt_indices_for_matching.repeat(dn_nums, 1).view(-1)
-        dn_bid = batch_idx.repeat(dn_nums, 1).view(-1)
-        gt_labels = gt_labels.repeat(dn_nums, 1).view(-1)
-        gt_bboxs = gt_boxes.repeat(dn_nums, 1)
+        gt_indices_for_matching = gt_indices_for_matching.repeat(dn_num, 1).view(-1)
+        dn_bid = batch_idx.repeat(dn_num, 1).view(-1)
+        gt_labels = gt_labels.repeat(dn_num, 1).view(-1)
+        gt_bboxs = gt_boxes.repeat(dn_num, 1)
         dn_labels = gt_labels.clone()
         dn_boxes = gt_bboxs.clone()
 
@@ -319,7 +319,7 @@ class DNDETR(nn.Module):
         input_label_embed = torch.cat([input_label_embed, indicator_dn], dim=1)
         dn_boxes = inverse_sigmoid(dn_boxes)
         single_padding = int(max(gt_num))
-        padding_size = int(single_padding * dn_nums)
+        padding_size = int(single_padding * dn_num)
         padding_for_dn_labels = torch.zeros(padding_size, embed_dim).to(self.device)
         padding_for_dn_boxes = torch.zeros(padding_size, 4).to(self.device)
 
@@ -333,7 +333,7 @@ class DNDETR(nn.Module):
                 [torch.tensor(range(num)) for num in gt_num]
             )  # [1,2, 1,2,3]
             dn_indices = torch.cat(
-                [dn_indices + single_padding * i for i in range(dn_nums)]
+                [dn_indices + single_padding * i for i in range(dn_num)]
             ).long()
         if len(dn_bid):
             input_query_label[(dn_bid.long(), dn_indices)] = input_label_embed
@@ -344,12 +344,12 @@ class DNDETR(nn.Module):
         # match query cannot see the reconstruct
         attn_mask[padding_size:, :padding_size] = True
         # reconstruct cannot see each other
-        for i in range(dn_nums):
+        for i in range(dn_num):
             if i == 0:
                 attn_mask[
                 single_padding * i: single_padding * (i + 1), single_padding * (i + 1): padding_size
                 ] = True
-            if i == dn_nums - 1:
+            if i == dn_num - 1:
                 attn_mask[single_padding * i: single_padding * (i + 1), : single_padding * i] = True
             else:
                 attn_mask[
@@ -357,7 +357,7 @@ class DNDETR(nn.Module):
                 ] = True
                 attn_mask[single_padding * i: single_padding * (i + 1), : single_padding * i] = True
         dn_metas = {
-            "dn_num": dn_nums,
+            "dn_num": dn_num,
             "single_padding": single_padding,
         }
 
