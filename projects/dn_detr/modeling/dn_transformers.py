@@ -20,14 +20,14 @@ from detrex.layers import MLP, BaseTransformerLayer, TransformerLayerSequence, g
 from detrex.utils.misc import inverse_sigmoid
 
 
-class DabDetrTransformerEncoder(TransformerLayerSequence):
+class DNDetrTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
         transformer_layers: BaseTransformerLayer = None,
         post_norm: bool = True,
         num_layers: int = None,
     ):
-        super(DabDetrTransformerEncoder, self).__init__(
+        super(DNDetrTransformerEncoder, self).__init__(
             transformer_layers=transformer_layers, num_layers=num_layers
         )
         self.embed_dim = self.layers[0].embed_dim
@@ -70,7 +70,7 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
         return query
 
 
-class DabDetrTransformerDecoder(TransformerLayerSequence):
+class DNDetrTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
         transformer_layers: BaseTransformerLayer = None,
@@ -80,7 +80,7 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         post_norm: bool = True,
         return_intermediate: bool = True,
     ):
-        super().__init__(transformer_layers, num_layers)
+        super(DNDetrTransformerDecoder, self).__init__(transformer_layers, num_layers)
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim
 
@@ -194,9 +194,9 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         return query.unsqueeze(0)
 
 
-class DabDetrTransformer(nn.Module):
+class DNDetrTransformer(nn.Module):
     def __init__(self, encoder=None, decoder=None):
-        super(DabDetrTransformer, self).__init__()
+        super(DNDetrTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.embed_dim = self.encoder.embed_dim
