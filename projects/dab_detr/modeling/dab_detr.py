@@ -45,8 +45,8 @@ class DABDETR(nn.Module):
         criterion: nn.Module,
         pixel_mean: List[float],
         pixel_std: List[float],
-        in_channels=2048,
-        embed_dim=256,
+        in_channels: int = 2048,
+        embed_dim: int = 256,
         aux_loss: bool = True,
         iter_update: bool = True,
         query_dim: int = 4,
@@ -61,6 +61,9 @@ class DABDETR(nn.Module):
         self.class_embed = nn.Linear(embed_dim, num_classes)
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.refpoint_embed = nn.Embedding(num_queries, query_dim)
+        self.num_classes = num_classes
+        self.num_queries = num_queries
+        self.criterion = criterion
         self.query_dim = query_dim
         self.aux_loss = aux_loss
         self.iter_update = iter_update
@@ -74,8 +77,6 @@ class DABDETR(nn.Module):
         if self.iter_update:
             self.transformer.decoder.bbox_embed = self.bbox_embed
 
-        self.num_classes = num_classes
-        self.criterion = criterion
 
         # normalizer for input raw images
         self.device = device

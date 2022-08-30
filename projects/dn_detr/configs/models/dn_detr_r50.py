@@ -1,8 +1,5 @@
 import torch.nn as nn
 
-from detrex.modeling.utils import Joiner, MaskedBackbone
-from detrex.modeling.matcher import DabMatcher
-from detrex.modeling.criterion import DabCriterion
 from detrex.layers import (
     MultiheadAttention,
     ConditionalSelfAttention,

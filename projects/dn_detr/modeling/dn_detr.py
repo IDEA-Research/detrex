@@ -20,95 +20,115 @@
 # ------------------------------------------------------------------------------------------------
 
 import math
+from typing import List
 import torch
 import torch.nn as nn
-
-from detrex.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
-from detrex.layers.mlp import MLP
-from detrex.modeling.criterion.dn_components import dn_post_process, prepare_for_dn
-from detrex.utils.misc import inverse_sigmoid, nested_tensor_from_tensor_list
+import torch.nn.functional as F
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
+from detrex.layers import (
+    box_cxcywh_to_xyxy,
+    box_xyxy_to_cxcywh,
+    MLP,
+)
+from detrex.utils.misc import inverse_sigmoid
 
-class DABDETR(nn.Module):
+
+class DNDETR(nn.Module):
     def __init__(
         self,
-        backbone,
-        transformer,
+        backbone: nn.Module,
+        in_features: List[str],
+        transformer: nn.Module,
+        position_embedding: nn.Module,
         num_classes,
         num_queries,
         criterion,
         pixel_mean,
         pixel_std,
-        aux_loss=True,
+        in_channels: int = 2048,
+        embed_dim: int = 256,
+        aux_loss: bool = True,
         iter_update=True,
         query_dim=4,
         random_refpoints_xy=True,
-        device="cuda",
-        use_dn=True,
         scalar=5,
         label_noise_scale=0.0,
         box_noise_scale=0.0,
+        device="cuda",
     ):
-        super(DABDETR, self).__init__()
+        super(DNDETR, self).__init__()
         self.backbone = backbone
         self.transformer = transformer
-        hidden_dim = 256
-        self.class_embed = nn.Linear(hidden_dim, num_classes)
-        self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
+        self.class_embed = nn.Linear(embed_dim, num_classes)
+        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.query_dim = query_dim
         self.aux_loss = aux_loss
         self.iter_update = iter_update
-        ####################
-        self.hidden_dim = hidden_dim
+        self.embed_dim = embed_dim
         self.num_queries = num_queries
         self.num_classes = num_classes
-        self.use_dn = use_dn
+        self.criterion = criterion
         self.dn_args = (scalar, label_noise_scale, box_noise_scale)
+        
         # leave one dim for indicator
-        self.label_enc = nn.Embedding(num_classes + 1, hidden_dim - 1)
+        self.label_encoder = nn.Embedding(num_classes + 1, embed_dim - 1)
 
         assert self.query_dim in [2, 4]
 
         self.refpoint_embed = nn.Embedding(num_queries, query_dim)
         self.random_refpoints_xy = random_refpoints_xy
-        if random_refpoints_xy:
-            # import ipdb; ipdb.set_trace()
+
+        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
+        
+        if self.iter_update:
+            self.transformer.decoder.bbox_embed = self.bbox_embed
+
+        # normalizer for input raw images
+        self.device = device
+        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
+        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
+        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
+
+        self.init_weights()
+
+    def init_weights(self):
+        if self.random_refpoints_xy:
             self.refpoint_embed.weight.data[:, :2].uniform_(0, 1)
             self.refpoint_embed.weight.data[:, :2] = inverse_sigmoid(
                 self.refpoint_embed.weight.data[:, :2]
             )
             self.refpoint_embed.weight.data[:, :2].requires_grad = False
 
-        self.input_proj = nn.Conv2d(2048, hidden_dim, kernel_size=1)
-        if self.iter_update:
-            self.transformer.decoder.bbox_embed = self.bbox_embed
-
-        self.criterion = criterion
-        self.device = device
-        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
-        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
-        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
-
         # init prior_prob setting for focal loss
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
-        self.class_embed.bias.data = torch.ones(num_classes) * bias_value
+        self.class_embed.bias.data = torch.ones(self.num_classes) * bias_value
         nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
         nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
     def forward(self, batched_inputs):
+
         images = self.preprocess_image(batched_inputs)
 
-        if isinstance(images, (list, torch.Tensor)):
-            images = nested_tensor_from_tensor_list(images)
-        features, pos = self.backbone(images)
+        if self.training:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_ones(batch_size, H, W)
+            for img_id in range(batch_size):
+                img_h, img_w = batched_inputs[img_id]["instances"].image_size
+                img_masks[img_id, :img_h, :img_w] = 0
+        else:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_zeros(batch_size, H, W)
 
-        src, mask = features[-1].decompose()
-        assert mask is not None
-        embedweight = self.refpoint_embed.weight  # TODO this should be moved to the Transformer
+        # only use last level feature in DAB-DETR
+        features = self.backbone(images.tensor)[self.in_features[-1]]
+        features = self.input_proj(features)
+        img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
+        pos_embed = self.position_embedding(img_masks)
+        embed_weight = self.refpoint_embed.weight
 
         ####### prepare for dn
         if self.training:
@@ -116,6 +136,7 @@ class DABDETR(nn.Module):
             targets = self.prepare_targets(gt_instances)
         else:
             targets = None
+        
         input_query_label, input_query_bbox, attn_mask, mask_dict = prepare_for_dn(
             targets,
             self.dn_args,
@@ -228,6 +249,131 @@ class DABDETR(nn.Module):
         images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
         images = ImageList.from_tensors(images)
         return images
+
+    def generate_dn_queries(
+        self,
+        targets,
+        dn_nums,
+        label_noise_scale,
+        box_noise_scale,
+        refpoint_embed,
+        num_queries,
+        num_classes,
+        embed_dim,
+        label_encoder,
+        batch_size,
+    ):
+        indicator_mt = torch.zeros([num_queries, 1]).to(self.device)
+        content_queries_mt = label_encoder(torch.tensor(num_classes).to(self.device)).repeat(num_queries, 1)
+        content_queries_mt = torch.cat([content_queries_mt, indicator_mt], dim=1)
+
+        if targets is None:
+            input_query_label = content_queries_mt.repeat(batch_size, 1, 1).transpose(0, 1)
+            input_query_bbox = refpoint_embed.weight.repeat(batch_size, 1, 1).transpose(0, 1)
+            return input_query_label, input_query_bbox, None, None
+        gt_labels = torch.cat([t["labels"] for t in targets])
+        gt_boxes = torch.cat([t["boxes"] for t in targets])
+        gt_num = [t["labels"].numel() for t in targets]
+        batch_idx = torch.cat(
+            [torch.full_like(t["labels"].long(), i) for i, t in enumerate(targets)]
+        )
+        unmask_label=torch.cat([torch.ones_like(t["labels"]) for t in targets])
+        gt_indices_for_matching = torch.nonzero(unmask_label)
+        gt_indices_for_matching = gt_indices_for_matching.view(-1)
+        gt_indices_for_matching = gt_indices_for_matching.repeat(dn_nums, 1).view(-1)
+        dn_bid = batch_idx.repeat(dn_nums, 1).view(-1)
+        gt_labels = gt_labels.repeat(dn_nums, 1).view(-1)
+        gt_bboxs = gt_boxes.repeat(dn_nums, 1)
+        dn_labels = gt_labels.clone()
+        dn_boxes = gt_bboxs.clone()
+
+        # noise on the label
+        if label_noise_scale > 0:
+            p = torch.rand_like(dn_labels.float())
+            chosen_indice = torch.nonzero(p < (label_noise_scale)).view(
+                -1
+            )  # usually half of bbox noise
+            new_label = torch.randint_like(
+                chosen_indice, 0, num_classes
+            )  # randomly put a new one here
+            dn_labels.scatter_(0, chosen_indice, new_label)
+        # noise on the box
+        if box_noise_scale > 0:
+            diff = torch.zeros_like(dn_boxes)
+            diff[:, :2] = dn_boxes[:, 2:] / 2
+            diff[:, 2:] = dn_boxes[:, 2:]
+            dn_boxes += (
+                    torch.mul((torch.rand_like(dn_boxes) * 2 - 1.0), diff).cuda()
+                    * box_noise_scale
+            )
+            dn_boxes = dn_boxes.clamp(min=0.0, max=1.0)
+
+        m = dn_labels.long().to(self.device)
+        input_label_embed = label_encoder(m)
+        # add dn part indicator
+        indicator_dn = torch.ones([input_label_embed.shape[0], 1]).to(self.device)
+        input_label_embed = torch.cat([input_label_embed, indicator_dn], dim=1)
+        dn_boxes = inverse_sigmoid(dn_boxes)
+        single_padding = int(max(gt_num))
+        padding_size = int(single_padding * dn_nums)
+        padding_for_dn_labels = torch.zeros(padding_size, embed_dim).to(self.device)
+        padding_for_dn_boxes = torch.zeros(padding_size, 4).to(self.device)
+
+        input_query_label = torch.cat([padding_for_dn_labels, content_queries_mt], dim=0).repeat(batch_size, 1, 1)
+        input_query_bbox = torch.cat([padding_for_dn_boxes, refpoint_embed.weight], dim=0).repeat(batch_size, 1, 1)
+
+        # map in order
+        dn_indices = torch.tensor([]).to(input_query_bbox.device)
+        if len(gt_num):
+            dn_indices = torch.cat(
+                [torch.tensor(range(num)) for num in gt_num]
+            )  # [1,2, 1,2,3]
+            dn_indices = torch.cat(
+                [dn_indices + single_padding * i for i in range(dn_nums)]
+            ).long()
+        if len(dn_bid):
+            input_query_label[(dn_bid.long(), dn_indices)] = input_label_embed
+            input_query_bbox[(dn_bid.long(), dn_indices)] = dn_boxes
+
+        tgt_size = padding_size + num_queries
+        attn_mask = torch.ones(tgt_size, tgt_size).to(input_query_bbox.device) < 0
+        # match query cannot see the reconstruct
+        attn_mask[padding_size:, :padding_size] = True
+        # reconstruct cannot see each other
+        for i in range(dn_nums):
+            if i == 0:
+                attn_mask[
+                single_padding * i: single_padding * (i + 1), single_padding * (i + 1): padding_size
+                ] = True
+            if i == dn_nums - 1:
+                attn_mask[single_padding * i: single_padding * (i + 1), : single_padding * i] = True
+            else:
+                attn_mask[
+                single_padding * i: single_padding * (i + 1), single_padding * (i + 1): padding_size
+                ] = True
+                attn_mask[single_padding * i: single_padding * (i + 1), : single_padding * i] = True
+        dn_metas = {
+            "dn_num": dn_nums,
+            "single_padding": single_padding,
+        }
+
+        input_query_label = input_query_label.transpose(0, 1)
+        input_query_bbox = input_query_bbox.transpose(0, 1)
+        return input_query_label, input_query_bbox, attn_mask, dn_metas
+
+    def dn_post_process(self, outputs_class, outputs_coord, dn_metas):
+        if dn_metas and dn_metas['single_padding'] > 0:
+            padding_size=dn_metas['single_padding']*dn_metas['dn_num']
+            output_known_class = outputs_class[:, :, :padding_size, :]
+            output_known_coord = outputs_coord[:, :, :padding_size, :]
+            outputs_class = outputs_class[:, :, padding_size:, :]
+            outputs_coord = outputs_coord[:, :, padding_size:, :]
+
+            out = {'pred_logits': output_known_class[-1], 'pred_boxes': output_known_coord[-1]}
+            if self.aux_loss:
+                out['aux_outputs'] = self._set_aux_loss(output_known_class, output_known_coord)
+            dn_metas['output_known_lbs_bboxes'] = out
+        return outputs_class, outputs_coord
 
     @torch.jit.unused
     def _set_aux_loss(self, outputs_class, outputs_coord):
