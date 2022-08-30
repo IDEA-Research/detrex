@@ -33,11 +33,12 @@ def sigmoid_focal_loss(inputs, targets, num_boxes, alpha: float = 0.25, gamma: f
         targets (torch.Tensor): A float tensor with the same shape as inputs. Stores the binary
             classification label for each element in inputs
             (0 for the negative class and 1 for the positive class).
-        alpha (float, optional): Weighting factor in range (0,1) to balance
+        num_boxes (int): The number of boxes.
+        alpha (float, optional): Weighting factor in range (0, 1) to balance
             positive vs negative examples. Default: 0.25.
         gamma (float): Exponent of the modulating factor (1 - p_t) to
             balance easy vs hard examples. Default: 2.
-    
+
     Returns:
         torch.Tensor: The computed sigmoid focal loss.
     """

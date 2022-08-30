@@ -58,6 +58,29 @@ def log_timm_feature_info(feature_info):
 
 
 class TimmBackbone(Backbone):
+    """A wrapper for using backbone from timm library.
+
+    Please see the document for `feature extraction with timm
+    <https://rwightman.github.io/pytorch-image-models/feature_extraction/>`_
+    for more details.
+
+    Args:
+        model_name (str): Name of timm model to instantiate.
+        features_only (bool): Whether to extract feature pyramid (multi-scale
+            feature maps from the deepest layer of each stage).
+        pretrained (bool): Whether to load pretrained weights. Default: False.
+        checkpoint_path (str): Whether to load pretrained weights. Default: False.
+        in_channels (int): The number of input channels. Default: 3.
+        out_indices (tuple[str]): The extracted feature indices which select
+            specific feature levels or limit the stride of the feature extractor.
+        out_features (tuple[str]): A map for the output feature dict, e.g.,
+            set ("p0", "p1") to return only the feature from indices (0, 1) as
+            ``{"p0": feature from indice 0, "p1": feature from indice 1}``.
+        norm_layer (nn.Module): Set the specified norm layer for feature extractor,
+            e.g., set ``norm_layer=FrozenBatchNorm2d`` to freeze the norm layer
+            in feature extractor.
+    """
+
     def __init__(
         self,
         model_name: str,
@@ -123,6 +146,14 @@ class TimmBackbone(Backbone):
             self._out_feature_strides = {feat: out_feature_strides[feat] for feat in out_features}
 
     def forward(self, x):
+        """Forward function of `TimmBackbone`.
+
+        Args:
+            x (torch.Tensor): the input tensor for feature extraction.
+
+        Returns:
+            dict[str->Tensor]: mapping from feature name (e.g., "p1") to tensor
+        """
         features = self.timm_model(x)
         outs = {}
         for i in self.out_indices:
