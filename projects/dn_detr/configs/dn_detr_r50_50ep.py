@@ -10,7 +10,7 @@ train = get_config("common/train.py").train
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/dn_detr_r50_50ep"
+train.output_dir = "./output/dn_detr_refine_loss_weight"
 train.max_iter = 375000
 
 
