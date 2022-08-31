@@ -14,3 +14,11 @@
 # limitations under the License.
 
 from .timm_backbone import TimmBackbone
+from .resnet import (
+    BasicStem,
+    ResNet,
+    ResNetBlockBase,
+    make_stage,
+    BottleneckBlock,
+    BasicBlock,
+)
