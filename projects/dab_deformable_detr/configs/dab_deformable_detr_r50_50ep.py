@@ -7,8 +7,8 @@ from .common.schedule import lr_multiplier_50x as lr_multiplier
 optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
-train.init_checkpoint = "/comp_robot/rentianhe/code/IDEADet/test_dab_deformable.pth"
-train.output_dir = "./test"
+train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+train.output_dir = "./output/dab_deformable_detr_r50_50ep"
 train.max_iter = 375000
 
 
