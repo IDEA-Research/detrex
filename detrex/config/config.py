@@ -48,6 +48,6 @@ def get_config(config_path):
         "detrex.config", os.path.join("configs", config_path)
     )
     if not os.path.exists(cfg_file):
-        raise RuntimeError("{} not available in IDEADet configs!".format(config_path))
+        raise RuntimeError("{} not available in detrex configs!".format(config_path))
     cfg = LazyConfig.load(cfg_file)
     return cfg

@@ -12,7 +12,9 @@ train = get_config("common/train.py").train
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
 train.output_dir = "./output/dab_detr_r50_50ep"
 train.max_iter = 375000
-
+train.clip_grad.enabled = True
+train.clip_grad.params.max_norm = 0.1
+train.clip_grad.params.norm_type = 2
 
 # modify optimizer config
 optimizer.weight_decay = 1e-4
