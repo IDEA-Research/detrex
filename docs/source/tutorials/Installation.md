@@ -37,7 +37,7 @@ Click each issue for its solutions:
 <details>
 <summary> NotImplementedError: Cuda is not availabel </summary>
 
-If you're running with `slurm`, this usually happens when there's no `CUDA_HOME`
+If you're running with `slurm`, make sure that [CUDA runtime](https://developer.nvidia.com/cuda-downloads) has been installed. Please specify the environment `CUDA_HOME` to the path of `CUDA` dir, e.g., `CUDA_HOME=/usr/local/cuda-11.3` which is the default path to the installed CUDA runtime.
 
 </details>
 
