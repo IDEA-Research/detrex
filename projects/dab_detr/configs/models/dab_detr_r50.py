@@ -7,7 +7,7 @@ from detrex.layers import PositionEmbeddingSine
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
 
-from modeling import (
+from projects.dab_detr.modeling import (
     DABDETR,
     DabDetrTransformer,
     DabDetrTransformerDecoder,
