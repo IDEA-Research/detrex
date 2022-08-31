@@ -11,11 +11,13 @@ To add more complicated training logic, you can easily add other configs
 in the config file and implement a new train_net.py to handle them.
 """
 import logging
+import time
+import torch
+from torch.nn.parallel import DataParallel, DistributedDataParallel
 
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import LazyConfig, instantiate
 from detectron2.engine import (
-    AMPTrainer,
     SimpleTrainer,
     default_argument_parser,
     default_setup,
@@ -27,7 +29,98 @@ from detectron2.engine.defaults import create_ddp_model
 from detectron2.evaluation import inference_on_dataset, print_csv_format
 from detectron2.utils import comm
 
-logger = logging.getLogger("detrex")
+logger = logging.getLogger("ideadet")
+
+
+class Trainer(SimpleTrainer):
+    """
+    We've combine Simple and AMP Trainer together.
+    """
+
+    def __init__(
+        self,
+        model,
+        dataloader,
+        optimizer,
+        amp=False,
+        clip_grad_max_norm=0.1,
+        clip_grad_norm_type=2.0,
+        grad_scaler=None,
+    ):
+        super().__init__(model=model, data_loader=dataloader, optimizer=optimizer)
+
+        unsupported = "AMPTrainer does not support single-process multi-device training!"
+        if isinstance(model, DistributedDataParallel):
+            assert not (model.device_ids and len(model.device_ids) > 1), unsupported
+        assert not isinstance(model, DataParallel), unsupported
+
+        if amp:
+            if grad_scaler is None:
+                from torch.cuda.amp import GradScaler
+
+                grad_scaler = GradScaler()
+            self.grad_scaler = grad_scaler
+
+        # set True to use amp training
+        self.amp = amp
+
+        # gradient clip hyper-params
+        self.clip_grad_max_norm = clip_grad_max_norm
+        self.clip_grad_norm_type = clip_grad_norm_type
+
+    def run_step(self):
+        """
+        Implement the standard training logic described above.
+        """
+        assert self.model.training, "[Trainer] model was changed to eval mode!"
+        assert torch.cuda.is_available(), "[Trainer] CUDA is required for AMP training!"
+        from torch.cuda.amp import autocast
+
+        start = time.perf_counter()
+        """
+        If you want to do something with the data, you can wrap the dataloader.
+        """
+        data = next(self._data_loader_iter)
+        data_time = time.perf_counter() - start
+
+        """
+        If you want to do something with the losses, you can wrap the model.
+        """
+        loss_dict = self.model(data)
+        with autocast(enabled=self.amp):
+            if isinstance(loss_dict, torch.Tensor):
+                losses = loss_dict
+                loss_dict = {"total_loss": loss_dict}
+            else:
+                losses = sum(loss_dict.values())
+
+        """
+        If you need to accumulate gradients or do something similar, you can
+        wrap the optimizer with your custom `zero_grad()` method.
+        """
+        self.optimizer.zero_grad()
+
+        if self.amp:
+            self.grad_scaler.scale(losses).backward()
+            self.grad_scaler.unscale_(self.optimizer)
+            self.clip_grads(self.model.parameters())
+            self.grad_scaler.step(self.optimizer)
+            self.grad_scaler.update()
+        else:
+            losses.backward()
+            self.clip_grads(self.model.parameters())
+            self.optimizer.step()
+
+        self._write_metrics(loss_dict, data_time)
+
+    def clip_grads(self, params):
+        params = list(filter(lambda p: p.requires_grad and p.grad is not None, params))
+        if len(params) > 0:
+            return torch.nn.utils.clip_grad_norm_(
+                parameters=params,
+                max_norm=self.clip_grad_max_norm,
+                norm_type=self.clip_grad_norm_type,
+            )
 
 
 def do_test(cfg, model):
@@ -69,12 +162,22 @@ def do_train(args, cfg):
     train_loader = instantiate(cfg.dataloader.train)
 
     model = create_ddp_model(model, **cfg.train.ddp)
-    trainer = (AMPTrainer if cfg.train.amp.enabled else SimpleTrainer)(model, train_loader, optim)
+
+    trainer = Trainer(
+        model=model,
+        dataloader=train_loader,
+        optimizer=optim,
+        amp=cfg.train.amp.enabled,
+        clip_grad_max_norm=cfg.train.clip_grad_max_norm,
+        clip_grad_norm_type=cfg.train.clip_grad_norm_type,
+    )
+
     checkpointer = DetectionCheckpointer(
         model,
         cfg.train.output_dir,
         trainer=trainer,
     )
+
     trainer.register_hooks(
         [
             hooks.IterationTimer(),
