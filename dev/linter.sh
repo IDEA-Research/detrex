@@ -26,7 +26,7 @@ echo "Running isort ..."
 isort -y -sp . --atomic
 
 echo "Running black ..."
-black -l 100 .
+black -l 100 . --exclude=detectron2
 
 echo "Running flake8 ..."
 if [ -x "$(command -v flake8)" ]; then
