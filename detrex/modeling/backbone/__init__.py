@@ -24,3 +24,4 @@ from .resnet import (
     DeformBottleneckBlock,
 )
 from .convnext import ConvNeXt
+from .focalnet import FocalNet
