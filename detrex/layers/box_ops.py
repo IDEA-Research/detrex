@@ -120,8 +120,8 @@ def masks_to_boxes(masks) -> torch.Tensor:
     the number of masks, (H, W) are the spatial dimensions.
 
     Returns:
-        torch.Tensor: a [N, 4] tensors, with
-        the boxes in (x0, y0, x1, y1) format
+        torch.Tensor: a [N, 4] tensor with
+        the boxes in (x0, y0, x1, y1) format.
     """
     if masks.numel() == 0:
         return torch.zeros((0, 4), device=masks.device)
