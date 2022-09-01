@@ -21,4 +21,5 @@ from .resnet import (
     make_stage,
     BottleneckBlock,
     BasicBlock,
+    DeformBottleneckBlock,
 )

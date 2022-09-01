@@ -51,17 +51,16 @@ class BasicBlock(CNNBlockBase):
     """
     The basic residual block for ResNet-18 and ResNet-34 defined in :paper:`ResNet`,
     with two 3x3 conv layers and a projection shortcut if needed.
+
+    Args:
+        in_channels (int): Number of input channels.
+        out_channels (int): Number of output channels.
+        stride (int): Stride for the first conv.
+        norm (str or callable): normalization for all conv layers.
+            See :func:`detectron2.layers.get_norm` for supported format.
     """
 
     def __init__(self, in_channels, out_channels, *, stride=1, norm="BN"):
-        """
-        Args:
-            in_channels (int): Number of input channels.
-            out_channels (int): Number of output channels.
-            stride (int): Stride for the first conv.
-            norm (str or callable): normalization for all conv layers.
-                See :func:`layers.get_norm` for supported format.
-        """
         super().__init__(in_channels, out_channels, stride)
 
         if in_channels != out_channels:
@@ -120,6 +119,16 @@ class BottleneckBlock(CNNBlockBase):
     The standard bottleneck residual block used by ResNet-50, 101 and 152
     defined in :paper:`ResNet`.  It contains 3 conv layers with kernels
     1x1, 3x3, 1x1, and a projection shortcut if needed.
+
+    Args:
+        bottleneck_channels (int): number of output channels for the 3x3
+            "bottleneck" conv layers.
+        num_groups (int): number of groups for the 3x3 conv layer.
+        norm (str or callable): normalization for all conv layers.
+            See :func:`layers.get_norm` for supported format.
+        stride_in_1x1 (bool): when stride>1, whether to put stride in the
+            first 1x1 convolution or the bottleneck 3x3 convolution.
+        dilation (int): the dilation rate of the 3x3 conv layer.
     """
 
     def __init__(
@@ -134,17 +143,6 @@ class BottleneckBlock(CNNBlockBase):
         stride_in_1x1=False,
         dilation=1,
     ):
-        """
-        Args:
-            bottleneck_channels (int): number of output channels for the 3x3
-                "bottleneck" conv layers.
-            num_groups (int): number of groups for the 3x3 conv layer.
-            norm (str or callable): normalization for all conv layers.
-                See :func:`layers.get_norm` for supported format.
-            stride_in_1x1 (bool): when stride>1, whether to put stride in the
-                first 1x1 convolution or the bottleneck 3x3 convolution.
-            dilation (int): the dilation rate of the 3x3 conv layer.
-        """
         super().__init__(in_channels, out_channels, stride)
 
         if in_channels != out_channels:
@@ -210,6 +208,8 @@ class BottleneckBlock(CNNBlockBase):
         # Add it as an option when we need to use this code to train a backbone.
 
     def forward(self, x):
+        """Forward function of `BottleneckBlock`.
+        """
         out = self.conv1(x)
         out = F.relu_(out)
 
@@ -230,8 +230,9 @@ class BottleneckBlock(CNNBlockBase):
 
 class DeformBottleneckBlock(CNNBlockBase):
     """
-    Similar to :class:`BottleneckBlock`, but with :paper:`deformable conv <deformconv>`
-    in the 3x3 convolution.
+    Similar to :class:`BottleneckBlock`, but with 
+    paper `Deformable Convolutional Networks 
+    <https://arxiv.org/pdf/1703.06211.pdf>`_ in the 3x3 convolution.
     """
 
     def __init__(
@@ -319,6 +320,8 @@ class DeformBottleneckBlock(CNNBlockBase):
         nn.init.constant_(self.conv2_offset.bias, 0)
 
     def forward(self, x):
+        """Forward function of `DeformBottleneckBlock`.
+        """
         out = self.conv1(x)
         out = F.relu_(out)
 
@@ -349,14 +352,13 @@ class BasicStem(CNNBlockBase):
     """
     The standard ResNet stem (layers before the first residual block),
     with a conv, relu and max_pool.
+
+    Args:
+        norm (str or callable): norm after the first conv layer.
+            See :func:`detectron2.layers.get_norm` for supported format.
     """
 
     def __init__(self, in_channels=3, out_channels=64, norm="BN"):
-        """
-        Args:
-            norm (str or callable): norm after the first conv layer.
-                See :func:`layers.get_norm` for supported format.
-        """
         super().__init__(in_channels, out_channels, 4)
         self.in_channels = in_channels
         self.conv1 = Conv2d(
@@ -371,6 +373,8 @@ class BasicStem(CNNBlockBase):
         weight_init.c2_msra_fill(self.conv1)
 
     def forward(self, x):
+        """Forward function of `BasicStem`.
+        """
         x = self.conv1(x)
         x = F.relu_(x)
         x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
@@ -379,23 +383,23 @@ class BasicStem(CNNBlockBase):
 
 class ResNet(Backbone):
     """
-    Implement :paper:`ResNet`.
+    Implement paper `Deep Residual Learning for Image Recognition 
+    <https://arxiv.org/pdf/1512.03385.pdf>`_.
+
+    Args:
+        stem (nn.Module): a stem module.
+        stages (list[list[detectron2.layers.CNNBlockBase]]): several (typically 4) stages,
+            each contains multiple :class:`detectron2.layers.CNNBlockBase`.
+        num_classes (None or int): if None, will not perform classification.
+            Otherwise, will create a linear layer.
+        out_features (list[str]): name of the layers whose outputs should
+            be returned in forward. Can be anything in "stem", "linear", or "res2" ...
+            If None, will return the output of the last layer.
+        freeze_at (int): The number of stages at the beginning to freeze.
+            see :meth:`freeze` for detailed explanation.
     """
 
     def __init__(self, stem, stages, num_classes=None, out_features=None, freeze_at=0):
-        """
-        Args:
-            stem (nn.Module): a stem module
-            stages (list[list[CNNBlockBase]]): several (typically 4) stages,
-                each contains multiple :class:`CNNBlockBase`.
-            num_classes (None or int): if None, will not perform classification.
-                Otherwise, will create a linear layer.
-            out_features (list[str]): name of the layers whose outputs should
-                be returned in forward. Can be anything in "stem", "linear", or "res2" ...
-                If None, will return the output of the last layer.
-            freeze_at (int): The number of stages at the beginning to freeze.
-                see :meth:`freeze` for detailed explanation.
-        """
         super().__init__()
         self.stem = stem
         self.num_classes = num_classes
@@ -454,6 +458,7 @@ class ResNet(Backbone):
         """
         Args:
             x: Tensor of shape (N,C,H,W). H, W must be a multiple of ``self.size_divisibility``.
+        
         Returns:
             dict[str->Tensor]: names and the corresponding features
         """
@@ -487,11 +492,14 @@ class ResNet(Backbone):
         Freeze the first several stages of the ResNet. Commonly used in
         fine-tuning.
         Layers that produce the same feature map spatial size are defined as one
-        "stage" by :paper:`FPN`.
+        "stage" by paper `Feature Pyramid Networks for Object Detection 
+        <https://arxiv.org/pdf/1612.03144.pdf>`_.
+        
         Args:
             freeze_at (int): number of stages to freeze.
                 `1` means freezing the stem. `2` means freezing the stem and
                 one residual stage, etc.
+        
         Returns:
             nn.Module: this ResNet itself
         """
@@ -509,9 +517,9 @@ class ResNet(Backbone):
         Create a list of blocks of the same type that forms one ResNet stage.
         
         Args:
-            block_class (type): a subclass of CNNBlockBase that's used to create all blocks in this
-                stage. A module of this type must not change spatial resolution of inputs unless its
-                stride != 1.
+            block_class (type): a subclass of ``detectron2.layers.CNNBlockBase`` that's 
+                used to create all blocks in this stage. A module of this type 
+                must not change spatial resolution of inputs unless its stride != 1.
             num_blocks (int): number of blocks in this stage
             in_channels (int): input channels of the entire stage.
             out_channels (int): output channels of **every block** in the stage.
@@ -522,7 +530,7 @@ class ResNet(Backbone):
                 in the stage.
         
         Returns:
-            list[CNNBlockBase]: a list of block module.
+            list[detectron2.layers.CNNBlockBase]: a list of block module.
         
         Examples:
         ::
@@ -532,9 +540,11 @@ class ResNet(Backbone):
                 stride_per_block=[2, 1, 1],
                 dilations_per_block=[1, 1, 2]
             )
+        
         Usually, layers that produce the same feature map spatial size are defined as one
-        "stage" (in :paper:`FPN`). Under such definition, ``stride_per_block[1:]`` should
-        all be 1.
+        "stage" (in paper `Feature Pyramid Networks for Object Detection
+        <https://arxiv.org/pdf/1612.03144.pdf>`_). 
+        Under such definition, ``stride_per_block[1:]`` should all be 1.
         """
         blocks = []
         for i in range(num_blocks):
@@ -563,6 +573,7 @@ class ResNet(Backbone):
         Created list of ResNet stages from pre-defined depth (one of 18, 34, 50, 101, 152).
         If it doesn't create the ResNet variant you need, please use :meth:`make_stage`
         instead for fine-grained customization.
+        
         Args:
             depth (int): depth of ResNet
             block_class (type): the CNN block class. Has to accept
@@ -572,9 +583,10 @@ class ResNet(Backbone):
             kwargs:
                 other arguments to pass to `make_stage`. Should not contain
                 stride and channels, as they are predefined for each depth.
+        
         Returns:
-            list[list[CNNBlockBase]]: modules in all stages; see arguments of
-                :class:`ResNet.__init__`.
+            list[list[detectron2.layers.CNNBlockBase]]: modules in all stages; see arguments of
+            :class:`ResNet`.
         """
         num_blocks_per_stage = {
             18: [2, 2, 2, 2],
@@ -621,12 +633,63 @@ def make_stage(
     width_per_group: int = 64,
     in_channels: int = 64,
     out_channels: int = 256,
-    stride_in_1x1: bool = True,
+    stride_in_1x1: bool = False,
     res5_dilation: int = 1,
     deform_on_per_stage: List[bool] = [False, False, False, False],
     deform_modulated: bool = False,
     deform_num_groups: int = 1,
 ):
+    """
+    Modified from `detectron2.modeling.backbone.build_resnet_backbone 
+    <https://github.com/facebookresearch/detectron2/blob/717ab9f0aeca216a2f800e43d705766251ba3a55/detectron2/modeling/backbone/resnet.py#L614>`_
+
+    Create a list of blocks of the same type that forms one ResNet stage.
+    
+    Args:
+        depth (int): The depth of ResNet. Default: 50.
+        norm (str or callable): Normalization for all conv layers.
+            See :func:`detectron2.layers.get_norm` for supported format.
+            Default: `FrozenBN`.
+        num_groups (int): The number of groups for the 3x3 conv layer. Default: 1.
+        width_per_group (int): Baseline width of each group.
+            Scaling this parameters will scale the width of all bottleneck layers.
+            Default: 64.
+        in_channels (int): Output feature channels of the `Stem` Block. Needs
+            to be set to 64 for R18 and R34. Default: 64.
+        out_channels (int): Output width of res2. Scaling this parameters 
+            will scale the width of all 1x1 convs in ResNet. Default: 256.
+        stride_in_1x1 (bool): Place the stride 2 conv on the 1x1 filter. 
+            Use True only for the original MSRA ResNet; 
+            use False for C2 and Torch models. Default: False.
+        res5_dilation (int): Apply dilation in stage "res5". Default: 1.
+        deform_on_per_stage (List[bool]): Apply Deformable Convolution in stages.
+            Specify if apply `deform_conv` on Res2, Res3, Res4, Res5.
+            Default: `[False, False, False, False]`.
+        deform_modulated: Use True to use modulated deform_conv
+            (DeformableV2, https://arxiv.org/abs/1811.11168); Use False for DeformableV1.
+            Default: False.
+        deform_num_groups (int): Number of groups in deformable conv. Default: 1.
+    
+    Returns:
+        list[detectron2.layers.CNNBlockBase]: a list of block module.
+    
+    Examples:
+    ::
+        from detrex.modeling.backbone import make_stage, ResNet, BasicStem
+
+        resnet50_dc5 = ResNet(
+            stem=BasicStem(in_channels=3, out_channels=64, norm="FrozenBN"),
+            stages=make_stage(
+                depth=50,
+                norm="FrozenBN",
+                in_channels=64,
+                out_channels=256,
+                res5_dilation=2,
+            ),
+            out_features=["res2", "res3", "res4", "res5"],
+            freeze_at=1,
+        )
+    """
     bottleneck_channels = num_groups * width_per_group
     assert res5_dilation in {1, 2}, "res5_dilation cannot be {}.".format(res5_dilation)
     num_blocks_per_stage = {
