@@ -15,7 +15,9 @@
 # ------------------------------------------------------------------------------------------------
 # Copyright (c) Facebook, Inc. and its affiliates.
 # ------------------------------------------------------------------------------------------------
-
+# Modified from:
+# https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/resnet.py
+# ------------------------------------------------------------------------------------------------
 
 import numpy as np
 from typing import List
@@ -42,7 +44,6 @@ __all__ = [
     "BasicStem",
     "ResNet",
     "make_stage",
-    "build_resnet_backbone",
 ]
 
 
@@ -506,6 +507,7 @@ class ResNet(Backbone):
     def make_stage(block_class, num_blocks, *, in_channels, out_channels, **kwargs):
         """
         Create a list of blocks of the same type that forms one ResNet stage.
+        
         Args:
             block_class (type): a subclass of CNNBlockBase that's used to create all blocks in this
                 stage. A module of this type must not change spatial resolution of inputs unless its
@@ -518,8 +520,10 @@ class ResNet(Backbone):
                 argument is a list of values to be passed to each block in the
                 stage. Otherwise, the same argument is passed to every block
                 in the stage.
+        
         Returns:
             list[CNNBlockBase]: a list of block module.
+        
         Examples:
         ::
             stage = ResNet.make_stage(
