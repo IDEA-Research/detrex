@@ -10,6 +10,7 @@ backbone
         ResNet,
         make_stage,
         ConvNeXt,
+        FocalNet,
         TimmBackbone,
 
 neck
