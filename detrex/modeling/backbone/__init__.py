@@ -23,3 +23,4 @@ from .resnet import (
     BasicBlock,
     DeformBottleneckBlock,
 )
+from .convnext import ConvNeXt

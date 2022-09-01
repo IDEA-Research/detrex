@@ -9,6 +9,7 @@ backbone
     :members:
         ResNet,
         make_stage,
+        ConvNeXt,
         TimmBackbone,
 
 neck
