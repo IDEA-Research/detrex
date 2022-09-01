@@ -95,7 +95,7 @@ class ConvNeXt(Backbone):
         dims=[96, 192, 384, 768],
         drop_path_rate=0.0,
         layer_scale_init_value=1e-6,
-        out_indices=[0, 1, 2, 3],
+        out_indices=(0, 1, 2, 3),
         frozen_stages=-1,
     ):
         super().__init__()

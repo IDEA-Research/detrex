@@ -25,5 +25,6 @@ from .backbone import (
     BottleneckBlock,
     BasicBlock,
     ConvNeXt,
+    FocalNet,
     TimmBackbone,
 )
