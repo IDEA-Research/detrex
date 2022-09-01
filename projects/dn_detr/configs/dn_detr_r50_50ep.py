@@ -8,7 +8,7 @@ train = get_config("common/train.py").train
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/dn_detr_refine_loss_weight"
+train.output_dir = "/comp_robot/rentianhe/code/detrex/projects/dn_detr/output/dn_detr_refine_loss_weight"
 train.max_iter = 375000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1
