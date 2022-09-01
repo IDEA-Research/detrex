@@ -9,7 +9,7 @@ from detrex.modeling.criterion import SetCriterion
 from detrex.modeling.neck import ChannelMapper
 from detrex.layers import PositionEmbeddingSine
 
-from modeling import (
+from projects.dab_deformable_detr.modeling import (
     DabDeformableDETR,
     DabDeformableDetrTransformerEncoder,
     DabDeformableDetrTransformerDecoder,
