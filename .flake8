@@ -6,7 +6,7 @@ ignore = W503, E203, E221, C901, C408, E741, C407, B017
 max-line-length = 100
 max-complexity = 18
 select = B,C,E,F,W,T4,B9
-exclude = build
+exclude = build, detectron2
 per-file-ignores =
   **/__init__.py:F401,F403,E402
   **/configs/**.py:F401,E402
@@ -16,5 +16,5 @@ per-file-ignores =
   tests/**.py: E402
   tools/**.py: E402
   projects/**/configs/**.py:F401
-  detectron2/**.py: F401,F403,E402
-  detectron2/projects/**.py: F401,F403,E402
+  detectron2/**.py: F401,F403,E402,F811,W391
+  detectron2/projects/**.py: F401,F403,E402,F811,W391

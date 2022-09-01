@@ -20,7 +20,7 @@ fi
 set -v
 
 echo "Running autoflake ..."
-autoflake --remove-unused-variables --in-place --recursive .
+autoflake --remove-unused-variables --in-place --recursive . --exclude=detectron2
 
 echo "Running isort ..."
 isort -y -sp . --atomic
