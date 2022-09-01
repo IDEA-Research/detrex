@@ -25,15 +25,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from detrex.layers import MLP, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
+from detrex.utils.misc import inverse_sigmoid
+
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
-
-from detrex.layers import (
-    box_cxcywh_to_xyxy,
-    box_xyxy_to_cxcywh,
-    MLP,
-)
-from detrex.utils.misc import inverse_sigmoid
 
 
 class DNDETR(nn.Module):
@@ -73,7 +69,7 @@ class DNDETR(nn.Module):
         self.num_queries = num_queries
         self.num_classes = num_classes
         self.criterion = criterion
-        
+
         # leave one dim for indicator
         self.label_encoder = nn.Embedding(num_classes + 1, embed_dim - 1)
         self.dn_num = dn_num
@@ -86,7 +82,7 @@ class DNDETR(nn.Module):
         self.random_refpoints_xy = random_refpoints_xy
 
         self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
-        
+
         if self.iter_update:
             self.transformer.decoder.bbox_embed = self.bbox_embed
 
@@ -139,7 +135,7 @@ class DNDETR(nn.Module):
             targets = self.prepare_targets(gt_instances)
         else:
             targets = None
-        
+
         input_query_label, input_query_bbox, attn_mask, dn_metas = self.generate_dn_queries(
             targets,
             dn_num=self.dn_num,
@@ -150,7 +146,7 @@ class DNDETR(nn.Module):
             num_classes=self.num_classes,
             embed_dim=self.embed_dim,
             label_encoder=self.label_encoder,
-            batch_size=len(batched_inputs)
+            batch_size=len(batched_inputs),
         )
 
         # hs, reference = self.transformer(self.input_proj(src), mask, embedweight, pos[-1])
@@ -268,7 +264,9 @@ class DNDETR(nn.Module):
         batch_size,
     ):
         indicator_mt = torch.zeros([num_queries, 1]).to(self.device)
-        content_queries_mt = label_encoder(torch.tensor(num_classes).to(self.device)).repeat(num_queries, 1)
+        content_queries_mt = label_encoder(torch.tensor(num_classes).to(self.device)).repeat(
+            num_queries, 1
+        )
         content_queries_mt = torch.cat([content_queries_mt, indicator_mt], dim=1)
 
         if targets is None:
@@ -281,7 +279,7 @@ class DNDETR(nn.Module):
         batch_idx = torch.cat(
             [torch.full_like(t["labels"].long(), i) for i, t in enumerate(targets)]
         )
-        unmask_label=torch.cat([torch.ones_like(t["labels"]) for t in targets])
+        unmask_label = torch.cat([torch.ones_like(t["labels"]) for t in targets])
         gt_indices_for_matching = torch.nonzero(unmask_label)
         gt_indices_for_matching = gt_indices_for_matching.view(-1)
         gt_indices_for_matching = gt_indices_for_matching.repeat(dn_num, 1).view(-1)
@@ -307,8 +305,7 @@ class DNDETR(nn.Module):
             diff[:, :2] = dn_boxes[:, 2:] / 2
             diff[:, 2:] = dn_boxes[:, 2:]
             dn_boxes += (
-                    torch.mul((torch.rand_like(dn_boxes) * 2 - 1.0), diff).cuda()
-                    * box_noise_scale
+                torch.mul((torch.rand_like(dn_boxes) * 2 - 1.0), diff).cuda() * box_noise_scale
             )
             dn_boxes = dn_boxes.clamp(min=0.0, max=1.0)
 
@@ -323,18 +320,18 @@ class DNDETR(nn.Module):
         padding_for_dn_labels = torch.zeros(padding_size, embed_dim).to(self.device)
         padding_for_dn_boxes = torch.zeros(padding_size, 4).to(self.device)
 
-        input_query_label = torch.cat([padding_for_dn_labels, content_queries_mt], dim=0).repeat(batch_size, 1, 1)
-        input_query_bbox = torch.cat([padding_for_dn_boxes, refpoint_embed.weight], dim=0).repeat(batch_size, 1, 1)
+        input_query_label = torch.cat([padding_for_dn_labels, content_queries_mt], dim=0).repeat(
+            batch_size, 1, 1
+        )
+        input_query_bbox = torch.cat([padding_for_dn_boxes, refpoint_embed.weight], dim=0).repeat(
+            batch_size, 1, 1
+        )
 
         # map in order
         dn_indices = torch.tensor([]).to(input_query_bbox.device)
         if len(gt_num):
-            dn_indices = torch.cat(
-                [torch.tensor(range(num)) for num in gt_num]
-            )  # [1,2, 1,2,3]
-            dn_indices = torch.cat(
-                [dn_indices + single_padding * i for i in range(dn_num)]
-            ).long()
+            dn_indices = torch.cat([torch.tensor(range(num)) for num in gt_num])  # [1,2, 1,2,3]
+            dn_indices = torch.cat([dn_indices + single_padding * i for i in range(dn_num)]).long()
         if len(dn_bid):
             input_query_label[(dn_bid.long(), dn_indices)] = input_label_embed
             input_query_bbox[(dn_bid.long(), dn_indices)] = dn_boxes
@@ -347,15 +344,21 @@ class DNDETR(nn.Module):
         for i in range(dn_num):
             if i == 0:
                 attn_mask[
-                single_padding * i: single_padding * (i + 1), single_padding * (i + 1): padding_size
+                    single_padding * i : single_padding * (i + 1),
+                    single_padding * (i + 1) : padding_size,
                 ] = True
             if i == dn_num - 1:
-                attn_mask[single_padding * i: single_padding * (i + 1), : single_padding * i] = True
+                attn_mask[
+                    single_padding * i : single_padding * (i + 1), : single_padding * i
+                ] = True
             else:
                 attn_mask[
-                single_padding * i: single_padding * (i + 1), single_padding * (i + 1): padding_size
+                    single_padding * i : single_padding * (i + 1),
+                    single_padding * (i + 1) : padding_size,
                 ] = True
-                attn_mask[single_padding * i: single_padding * (i + 1), : single_padding * i] = True
+                attn_mask[
+                    single_padding * i : single_padding * (i + 1), : single_padding * i
+                ] = True
         dn_metas = {
             "dn_num": dn_num,
             "single_padding": single_padding,
@@ -366,17 +369,17 @@ class DNDETR(nn.Module):
         return input_query_label, input_query_bbox, attn_mask, dn_metas
 
     def dn_post_process(self, outputs_class, outputs_coord, dn_metas):
-        if dn_metas and dn_metas['single_padding'] > 0:
-            padding_size=dn_metas['single_padding']*dn_metas['dn_num']
+        if dn_metas and dn_metas["single_padding"] > 0:
+            padding_size = dn_metas["single_padding"] * dn_metas["dn_num"]
             output_known_class = outputs_class[:, :, :padding_size, :]
             output_known_coord = outputs_coord[:, :, :padding_size, :]
             outputs_class = outputs_class[:, :, padding_size:, :]
             outputs_coord = outputs_coord[:, :, padding_size:, :]
 
-            out = {'pred_logits': output_known_class[-1], 'pred_boxes': output_known_coord[-1]}
+            out = {"pred_logits": output_known_class[-1], "pred_boxes": output_known_coord[-1]}
             if self.aux_loss:
-                out['aux_outputs'] = self._set_aux_loss(output_known_class, output_known_coord)
-            dn_metas['output_known_lbs_bboxes'] = out
+                out["aux_outputs"] = self._set_aux_loss(output_known_class, output_known_coord)
+            dn_metas["output_known_lbs_bboxes"] = out
         return outputs_class, outputs_coord
 
     @torch.jit.unused

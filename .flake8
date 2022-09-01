@@ -16,3 +16,4 @@ per-file-ignores =
   tests/**.py: E402
   tools/**.py: E402
   projects/**/configs/**.py:F401
+  detectron2/**.py: E402

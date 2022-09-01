@@ -15,4 +15,3 @@ model.backbone = L(ResNet)(
     out_features=["res2", "res3", "res4", "res5"],
     freeze_at=1,
 )
-

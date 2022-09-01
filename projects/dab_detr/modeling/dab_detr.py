@@ -77,7 +77,6 @@ class DABDETR(nn.Module):
         if self.iter_update:
             self.transformer.decoder.bbox_embed = self.bbox_embed
 
-
         # normalizer for input raw images
         self.device = device
         pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
