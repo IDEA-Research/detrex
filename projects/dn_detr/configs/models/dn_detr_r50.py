@@ -34,11 +34,11 @@ model = L(DNDETR)(
         freeze_at=1,
     ),
     position_embedding=L(PositionEmbeddingSine)(
-        num_pos_feats=128, 
-        temperature=20, 
+        num_pos_feats=128,
+        temperature=20,
         normalize=True,
     ),
-    in_features = ["res5"], # use last level feature as DAB-DETR
+    in_features=["res5"],  # use last level feature as DAB-DETR
     transformer=L(DNDetrTransformer)(
         encoder=L(DNDetrTransformerEncoder)(
             transformer_layers=L(BaseTransformerLayer)(

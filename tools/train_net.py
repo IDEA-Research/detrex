@@ -19,7 +19,6 @@ import time
 import torch
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import LazyConfig, instantiate
 from detectron2.engine import (
@@ -33,6 +32,8 @@ from detectron2.engine import (
 from detectron2.engine.defaults import create_ddp_model
 from detectron2.evaluation import inference_on_dataset, print_csv_format
 from detectron2.utils import comm
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 logger = logging.getLogger("detrex")
 
@@ -172,8 +173,7 @@ def do_train(args, cfg):
         dataloader=train_loader,
         optimizer=optim,
         amp=cfg.train.amp.enabled,
-        clip_grad_params=cfg.train.clip_grad.params if \
-                         cfg.train.clip_grad.enabled else None,
+        clip_grad_params=cfg.train.clip_grad.params if cfg.train.clip_grad.enabled else None,
     )
 
     checkpointer = DetectionCheckpointer(

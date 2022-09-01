@@ -20,13 +20,13 @@ fi
 set -v
 
 echo "Running autoflake ..."
-autoflake --remove-unused-variables --in-place --recursive .
+autoflake --remove-unused-variables --in-place --recursive . --exclude=detectron2
 
 echo "Running isort ..."
 isort -y -sp . --atomic
 
 echo "Running black ..."
-black -l 100 .
+black -l 100 . --exclude=detectron2
 
 echo "Running flake8 ..."
 if [ -x "$(command -v flake8)" ]; then

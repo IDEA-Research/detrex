@@ -44,12 +44,12 @@ def default_coco_scheduler(epochs=50, decay_epochs=40, warmup_epochs=0):
     commonly referred to in papers, where every 1x has the total length of 1440k
     training images (~12 COCO epochs). LR is decayed twice at the end of training
     following the strategy defined in "Rethinking ImageNet Pretraining", Sec 4.
-    
+
     Args:
         epochs (int): total training epochs.
         decay_epochs (int): lr decay steps.
         warmup_epochs (int): warmup epochs.
-    
+
     Returns:
         DictConfig: configs that define the multiplier for LR during training
     """

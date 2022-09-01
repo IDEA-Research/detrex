@@ -15,7 +15,7 @@ train = dict(
         params=dict(
             max_norm=0.1,
             norm_type=2,
-        )
+        ),
     ),  # options for Gradient Clipping
     fast_dev_run=dict(enabled=False),  # options for Fast Checking
     checkpointer=dict(period=5000, max_to_keep=100),  # options for PeriodicCheckpointer
