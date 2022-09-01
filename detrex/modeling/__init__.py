@@ -24,5 +24,6 @@ from .backbone import (
     make_stage,
     BottleneckBlock,
     BasicBlock,
+    ConvNeXt,
     TimmBackbone,
 )
