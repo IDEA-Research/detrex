@@ -20,6 +20,7 @@
 # ------------------------------------------------------------------------------------------------
 
 from typing import Dict, List
+import copy
 import torch.nn as nn
 
 from detrex.layers import ConvNormAct
@@ -120,8 +121,8 @@ class ChannelMapper(nn.Module):
                     bias=bias,
                     groups=groups,
                     dilation=dilation,
-                    norm_layer=norm_layer,
-                    activation=activation,
+                    norm_layer=copy.deepcopy(norm_layer),
+                    activation=copy.deepcopy(activation),
                 )
             )
 
@@ -142,8 +143,8 @@ class ChannelMapper(nn.Module):
                         bias=bias,
                         groups=groups,
                         dilation=dilation,
-                        norm_layer=norm_layer,
-                        activation=activation,
+                        norm_layer=copy.deepcopy(norm_layer),
+                        activation=copy.deepcopy(activation),
                     )
                 )
 
