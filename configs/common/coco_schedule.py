@@ -82,5 +82,5 @@ lr_multiplier_50ep = default_coco_scheduler(50, 40, 0)
 lr_multiplier_12ep = default_coco_scheduler(12, 11, 0)
 
 # warmup scheduler for detr
-lr_multiplier_50ep_warmup = default_coco_scheduler(50, 40, 1e-4)
-lr_multiplier_12ep_warmup = default_coco_scheduler(12, 11, 1e-4)
+lr_multiplier_50ep_warmup = default_coco_scheduler(50, 40, 1e-3)
+lr_multiplier_12ep_warmup = default_coco_scheduler(12, 11, 1e-3)
