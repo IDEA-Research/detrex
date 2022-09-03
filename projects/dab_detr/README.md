@@ -27,7 +27,7 @@ Shilong Liu, Feng Li, Hao Zhang, Xiao Yang, Xianbiao Qi, Hang Su, Jun Zhu, Lei Z
 </tr>
 <!-- ROW: dab_detr_r101_50ep -->
  <tr><td align="left"><a href="configs/dab_detr_r101_50ep.py">DAB-DETR-R101</a></td>
-<td align="center">R-50</td>
+<td align="center">R-101</td>
 <td align="center">IN1k</td>
 <td align="center">43.8</td>
 <td align="center"> <a href="">Google Drive</a>&nbsp;|&nbsp;<a href="">Tsinghua Cloud</a></td>
