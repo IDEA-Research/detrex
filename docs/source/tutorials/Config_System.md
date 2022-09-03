@@ -273,3 +273,108 @@ We adopted the ``built-in coco datasets`` and ``detection dataloader`` usage fro
 - [Data Augmentation](https://detectron2.readthedocs.io/en/latest/tutorials/augmentation.html)
 
 
+### optimizer
+This is the configuration for optimizer. The default configuration can be found in ``configs/common/optim.py``.
+
+detrex uilizes ``detectron2.solver.build.get_default_optimizer_params`` which needs the ``nn.Module`` as argument and returns the parameter groups.
+
+```python
+# configs/common/optim.py
+import torch
+
+from detectron2.config import LazyCall as L
+from detectron2.solver.build import get_default_optimizer_params
+
+
+AdamW = L(torch.optim.AdamW)(
+    params=L(get_default_optimizer_params)(
+        # params.model is meant to be set to the model object, before instantiating
+        # the optimizer.
+        base_lr="${..lr}",
+        weight_decay_norm=0.0,
+    ),
+    lr=1e-4,
+    betas=(0.9, 0.999),
+    weight_decay=0.1,
+)
+```
+if you want to use ``torch.optim.SGD`` in training, you can modify your config as follows:
+```python
+import torch
+from configs.commom.optim import AdamW as optim
+
+optim._target_ = torch.optim.SGD
+
+# Remove the incompatible arguments
+del optim.betas
+
+# Add the needed arguments
+optim.momentum = 0.9
+```
+
+
+### lr_multiplier
+This is the configuration for ``lr_multiplier`` which is combined with ``detectron2.engine.hooks.LRScheduler`` and  performs learning scheduler function during training.
+
+The default ``lr_multiplier`` config can be found in ``configs/common/coco_schedule.py``, we defined the commonly 50 epochs scheduler referred to in the papers as follows:
+
+```python
+from fvcore.common.param_scheduler import MultiStepParamScheduler
+
+from detectron2.config import LazyCall as L
+from detectron2.solver import WarmupParamScheduler
+
+def default_coco_scheduler(epochs=50, decay_epochs=40, warmup_epochs=0):
+    """
+    Returns the config for a default multi-step LR scheduler such as "50epochs",
+    commonly referred to in papers, where every 1x has the total length of 1440k
+    training images (~12 COCO epochs). LR is decayed once at the end of training.
+
+    Args:
+        epochs (int): total training epochs.
+        decay_epochs (int): lr decay steps.
+        warmup_epochs (int): warmup epochs.
+
+    Returns:
+        DictConfig: configs that define the multiplier for LR during training
+    """
+    # total number of iterations assuming 16 batch size, using 1440000/16=90000
+    total_steps_16bs = epochs * 7500
+    decay_steps = decay_epochs * 7500
+    warmup_steps = warmup_epochs * 7500
+    scheduler = L(MultiStepParamScheduler)(
+        values=[1.0, 0.1],
+        milestones=[decay_steps, total_steps_16bs],
+    )
+    return L(WarmupParamScheduler)(
+        scheduler=scheduler,
+        warmup_length=warmup_steps / total_steps_16bs,
+        warmup_method="linear",
+        warmup_factor=0.001,
+    )
+```
+Please refer to [fvcore.common.param_scheduler.ParamScheduler](https://detectron2.readthedocs.io/en/latest/modules/fvcore.html#fvcore.common.param_scheduler.ParamScheduler) for more details about the ``ParamScheduler`` usage in detectron2.
+
+
+## Get the Default Config
+Users don't have to rewrite all contents in config every time. You can use the default built-in detrex configs using ``detrex.config.get_config``.
+
+After building ``detrex`` from source, you can use ``get_config`` to get the default configs as follows:
+
+```python
+from detrex.config import get_config
+
+# get the default config
+dataloader = get_config("common/data/coco_detr.py").dataloader
+optimizer = get_config("common/optim.py").AdamW
+lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep
+train = get_config("common/train.py").train
+
+# modify the config
+train.max_iter = 375000
+train.output_dir = "path/to/your/own/dir"
+```
+
+## LazyConfig Best Practices
+1. Treat the configs you write as actual "code": Avoid copying them or duplicating them. Import the common parts between configs.
+2. Keep the configs you write as simple as possible: Do not include keys that do not affect the experimental setting.
