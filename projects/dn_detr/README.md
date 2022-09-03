@@ -5,7 +5,7 @@ Feng Li, Hao Zhang, Shilong Liu, Jian Guo, Lionel M.Ni, Lei Zhang
 [[`arXiv`](https://arxiv.org/abs/2203.01305)] [[`BibTeX`](#citing-dn-detr)]
 
 <div align="center">
-  <img src="./assets/dn_detr_overall.png"/>
+  <img src="./assets/dn_detr_arch.png"/>
 </div><br/>
 
 ## Pretrained Models
