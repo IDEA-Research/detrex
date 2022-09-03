@@ -68,7 +68,7 @@ if model.as_two_stage:
 
 dataloader = get_config("common/data/coco_detr.py").dataloader
 optimizer = get_config("common/optim.py").AdamW
-lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep
+lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep_warmup
 train = get_config("common/train.py").train
 
 # modify training config
@@ -78,7 +78,7 @@ train.max_iter = 375000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1
 train.clip_grad.params.norm_type = 2
-train.seed = 600
+train.seed = 42
 
 # modify optimizer config
 optimizer.weight_decay = 1e-4

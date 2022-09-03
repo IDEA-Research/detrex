@@ -418,7 +418,7 @@ class DabDeformableDetrTransformer(nn.Module):
             topk_coords_unact = torch.gather(
                 enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
             ) # unsigmoided.
-            reference_points = topk_coords_unact.sigmoid().detach()
+            reference_points = topk_coords_unact.detach().sigmoid()
             init_reference_out = reference_points
 
             # extract region features
