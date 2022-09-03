@@ -8,10 +8,10 @@ Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Ki
 
 
 ## Training
-All configs can be trained with:
+Training DETR model for 300 epochs:
 ```bash
 cd detrex
-python tools/train_net.py --config-file projects/detr/configs/path/to/config.py --num-gpus 8
+python tools/train_net.py --config-file projects/detr/configs/detr_r50_300ep.py --num-gpus 8
 ```
 By default, we use 8 GPUs with total batch size as 64 for training.
 
