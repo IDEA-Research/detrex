@@ -15,9 +15,6 @@
 
 
 from .misc import (
-    _max_by_axis,
-    NestedTensor,
-    nested_tensor_from_tensor_list,
     interpolate,
     inverse_sigmoid,
 )
