@@ -12,7 +12,7 @@ from detrex.modeling.matcher import HungarianMatcher
 from detrex.modeling.criterion.criterion import SetCriterion
 from detrex.layers.position_embedding import PositionEmbeddingSine
 
-from modeling import (
+from projects.detr.modeling import (
     DETR,
     DetrTransformer,
     DetrTransformerEncoder,
@@ -34,6 +34,7 @@ model = L(DETR)(
         num_pos_feats=128, 
         normalize=True
     ),
+    in_features=["res5"],
     transformer=L(DetrTransformer)(
         encoder=L(DetrTransformerEncoder)(
             transformer_layers=L(BaseTransformerLayer)(
@@ -77,8 +78,10 @@ model = L(DETR)(
             post_norm=True,
         ),
     ),
-    num_classes=81,  # 80 categories and 1 for non-object
+    num_classes=80,  # 80 categories and 1 for non-object
     num_queries=100,
+    embed_dim=256,
+    in_channels=2048,
     criterion=L(SetCriterion)(
         num_classes=80,
         matcher=L(HungarianMatcher)(
