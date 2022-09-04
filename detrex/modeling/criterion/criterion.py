@@ -36,8 +36,8 @@ class SetCriterion(nn.Module):
         matcher,
         weight_dict,
         losses,
-        eos_coef=None,
-        loss_class_type="focal_loss",
+        eos_coef: float = 0.1,
+        loss_class_type: str = "focal_loss",
         alpha: float = 0.25,
         gamma: float = 2.0,
     ):

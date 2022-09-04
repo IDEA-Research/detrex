@@ -19,14 +19,13 @@
 # https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
 # ------------------------------------------------------------------------------------------------
 
-
+from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from detrex.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from detrex.layers.mlp import MLP
-from detrex.utils.misc import nested_tensor_from_tensor_list
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
@@ -37,37 +36,34 @@ class DETR(nn.Module):
 
     def __init__(
         self,
-        backbone,
-        transformer,
-        num_classes,
-        num_queries,
-        criterion,
-        pixel_mean,
-        pixel_std,
-        device="cuda",
-        aux_loss=False,
+        backbone: nn.Module,
+        in_features: List[str],
+        position_embedding: nn.Module,
+        transformer: nn.Module,
+        num_classes: int,
+        num_queries: int,
+        criterion: nn.Module,
+        pixel_mean: List[float],
+        pixel_std: List[float],
+        in_channels: int = 2048,
+        embed_dim: int = 256,
+        aux_loss: bool = False,
+        device: str = "cuda",
     ):
-        """Initializes the model.
-
-        Parameters:
-            backbone: torch module of the backbone to be used. See backbone.py
-            transformer: torch module of the transformer architecture. See transformer.py
-            num_classes: number of object classes
-            num_queries: number of object queries, ie detection slot. This is the maximal number of objects
-                         DETR can detect in a single image. For COCO, we recommend 100 queries.
-            aux_loss: True if auxiliary decoding losses (loss at each decoder layer) are to be used.
-        """
         super().__init__()
         self.num_queries = num_queries
         self.transformer = transformer
-        hidden_dim = 256
-        self.class_embed = nn.Linear(hidden_dim, num_classes + 1)
-        self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
-        self.query_embed = nn.Embedding(num_queries, hidden_dim)
-        self.input_proj = nn.Conv2d(2048, hidden_dim, kernel_size=1)
+        self.class_embed = nn.Linear(embed_dim, num_classes + 1)
+        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
+        self.query_embed = nn.Embedding(num_queries, embed_dim)
+        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
         self.backbone = backbone
+        self.position_embedding = position_embedding
+        self.in_features = in_features
         self.aux_loss = aux_loss
         self.criterion = criterion
+
+        # normalizer for input raw images
         self.device = device
         pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
@@ -90,16 +86,26 @@ class DETR(nn.Module):
         """
         images = self.preprocess_image(batched_inputs)
 
-        if isinstance(images, (list, torch.Tensor)):
-            images = nested_tensor_from_tensor_list(images)
-        features, pos = self.backbone(images)
+        if self.training:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_ones(batch_size, H, W)
+            for img_id in range(batch_size):
+                img_h, img_w = batched_inputs[img_id]["instances"].image_size
+                img_masks[img_id, :img_h, :img_w] = 0
+        else:
+            batch_size, _, H, W = images.tensor.shape
+            img_masks = images.tensor.new_zeros(batch_size, H, W)
 
-        src, mask = features[-1].decompose()
-        assert mask is not None
-        hs = self.transformer(self.input_proj(src), mask, self.query_embed.weight, pos[-1])[0]
+        # only use last level feature in DETR
+        features = self.backbone(images.tensor)[self.in_features[-1]]
+        features = self.input_proj(features)
+        img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
+        pos_embed = self.position_embedding(img_masks)
 
-        outputs_class = self.class_embed(hs)
-        outputs_coord = self.bbox_embed(hs).sigmoid()
+        hidden_states, _ = self.transformer(features, img_masks, self.query_embed.weight, pos_embed)
+
+        outputs_class = self.class_embed(hidden_states)
+        outputs_coord = self.bbox_embed(hidden_states).sigmoid()
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
