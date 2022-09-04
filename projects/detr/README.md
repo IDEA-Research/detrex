@@ -2,6 +2,8 @@
 
 Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, Sergey Zagoruyko
 
+[[`arXiv`](https://arxiv.org/abs/2005.12872)] [[`BibTeX`](#citing-detr)]
+
 <div align="center">
   <img src="./assets/DETR.png"/>
 </div><br/>
