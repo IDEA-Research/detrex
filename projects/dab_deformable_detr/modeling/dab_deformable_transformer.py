@@ -250,6 +250,8 @@ class DabDeformableDetrTransformer(nn.Module):
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
             self.enc_output_norm = nn.LayerNorm(self.embed_dim)
 
+        self.init_weights()
+
     def init_weights(self):
         for p in self.parameters():
             if p.dim() > 1:

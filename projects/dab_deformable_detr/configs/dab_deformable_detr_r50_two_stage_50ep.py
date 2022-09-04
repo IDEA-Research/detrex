@@ -68,7 +68,7 @@ if model.as_two_stage:
 
 dataloader = get_config("common/data/coco_detr.py").dataloader
 optimizer = get_config("common/optim.py").AdamW
-lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep_warmup
+lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep
 train = get_config("common/train.py").train
 
 # modify training config
