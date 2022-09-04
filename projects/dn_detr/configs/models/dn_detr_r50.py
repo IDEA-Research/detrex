@@ -45,13 +45,13 @@ model = L(DNDETR)(
                 attn=L(MultiheadAttention)(
                     embed_dim=256,
                     num_heads=8,
-                    attn_drop=0.0,
+                    attn_drop=0.1,
                     batch_first=False,
                 ),
                 ffn=L(FFN)(
                     embed_dim=256,
                     feedforward_dim=2048,
-                    ffn_drop=0.0,
+                    ffn_drop=0.1,
                     activation=L(nn.PReLU)(),
                 ),
                 norm=L(nn.LayerNorm)(normalized_shape=256),
@@ -71,20 +71,20 @@ model = L(DNDETR)(
                     L(ConditionalSelfAttention)(
                         embed_dim=256,
                         num_heads=8,
-                        attn_drop=0.0,
+                        attn_drop=0.1,
                         batch_first=False,
                     ),
                     L(ConditionalCrossAttention)(
                         embed_dim=256,
                         num_heads=8,
-                        attn_drop=0.0,
+                        attn_drop=0.1,
                         batch_first=False,
                     ),
                 ],
                 ffn=L(FFN)(
                     embed_dim=256,
                     feedforward_dim=2048,
-                    ffn_drop=0.0,
+                    ffn_drop=0.1,
                     activation=L(nn.PReLU)(),
                 ),
                 norm=L(nn.LayerNorm)(

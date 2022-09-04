@@ -8,7 +8,7 @@ train = get_config("common/train.py").train
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "/comp_robot/rentianhe/code/detrex/projects/dn_detr/output/dn_detr_seed42"
+train.output_dir = "/comp_robot/rentianhe/code/detrex/projects/dn_detr/output/dn_detr_with_dropout"
 train.max_iter = 375000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1
