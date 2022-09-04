@@ -147,7 +147,7 @@ class BaseTransformerLayer(nn.Module):
                 f"to the number of attention in "
                 f"operation_order {self.num_attn}"
             )
-
+        # import ipdb; ipdb.set_trace()
         for layer in self.operation_order:
             if layer == "self_attn":
                 temp_key = temp_value = query
@@ -158,7 +158,7 @@ class BaseTransformerLayer(nn.Module):
                     identity if self.pre_norm else None,
                     query_pos=query_pos,
                     key_pos=query_pos,
-                    attn_mask=attn_masks[attn_index],
+                    # attn_mask=attn_masks[attn_index],
                     key_padding_mask=query_key_padding_mask,
                     **kwargs,
                 )
@@ -177,7 +177,7 @@ class BaseTransformerLayer(nn.Module):
                     identity if self.pre_norm else None,
                     query_pos=query_pos,
                     key_pos=key_pos,
-                    attn_mask=attn_masks[attn_index],
+                    # attn_mask=attn_masks[attn_index],
                     key_padding_mask=key_padding_mask,
                     **kwargs,
                 )

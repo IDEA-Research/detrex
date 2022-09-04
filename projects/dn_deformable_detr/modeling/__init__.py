@@ -13,16 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .timm_backbone import TimmBackbone
-# from .torchvision_backbone import TorchvisionBackbone
-from .resnet import (
-    BasicStem,
-    ResNet,
-    ResNetBlockBase,
-    make_stage,
-    BottleneckBlock,
-    BasicBlock,
-    DeformBottleneckBlock,
+
+from .dab_deformable_transformer import (
+    DabDeformableDetrTransformerEncoder,
+    DabDeformableDetrTransformerDecoder,
+    DabDeformableDetrTransformer,
 )
-from .convnext import ConvNeXt
-from .focalnet import FocalNet
+from .dab_deformable_detr import DabDeformableDETR
