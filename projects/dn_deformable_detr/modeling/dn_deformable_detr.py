@@ -213,7 +213,7 @@ class DNDeformableDETR(nn.Module):
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
-            loss_dict = self.criterion(output, targets)
+            loss_dict = self.criterion(output, targets, dn_metas)
             weight_dict = self.criterion.weight_dict
             for k in loss_dict.keys():
                 if k in weight_dict:
