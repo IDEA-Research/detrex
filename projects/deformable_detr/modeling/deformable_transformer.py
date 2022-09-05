@@ -206,7 +206,7 @@ class DeformableDetrTransformerDecoder(TransformerLayerSequence):
         return output, reference_points
 
 
-class DabDeformableDetrTransformer(nn.Module):
+class DeformableDetrTransformer(nn.Module):
     def __init__(
         self,
         encoder=None,
@@ -215,7 +215,7 @@ class DabDeformableDetrTransformer(nn.Module):
         num_feature_levels=4,
         two_stage_num_proposals=300,
     ):
-        super(DabDeformableDetrTransformer, self).__init__()
+        super(DeformableDetrTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.as_two_stage = as_two_stage

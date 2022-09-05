@@ -26,7 +26,7 @@ from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
 
-class DabDeformableDETR(nn.Module):
+class DeformableDETR(nn.Module):
     def __init__(
         self,
         backbone,
