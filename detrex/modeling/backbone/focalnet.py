@@ -189,7 +189,7 @@ class FocalModulationBlock(nn.Module):
 
     def forward(self, x):
         """Forward function of `FocalModulationBlock`.
-        
+
         Args:
             x: Input feature, tensor size (B, H*W, C).
             H, W: Spatial resolution of the input feature.
@@ -281,7 +281,7 @@ class BasicLayer(nn.Module):
 
     def forward(self, x, H, W):
         """Forward function of `BasicLayer`.
-        
+
         Args:
             x: Input feature, tensor size (B, H*W, C).
             H, W: Spatial resolution of the input feature.

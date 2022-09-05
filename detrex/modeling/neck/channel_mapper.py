@@ -19,8 +19,8 @@
 # https://github.com/open-mmlab/mmdetection/blob/master/mmdet/models/necks/channel_mapper.py
 # ------------------------------------------------------------------------------------------------
 
-from typing import Dict, List
 import copy
+from typing import Dict, List
 import torch.nn as nn
 
 from detrex.layers import ConvNormAct

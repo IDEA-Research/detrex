@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import copy
 import math
 import torch
@@ -27,7 +26,7 @@ from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
 
-class DabDeformableDETR(nn.Module):
+class DeformableDETR(nn.Module):
     def __init__(
         self,
         backbone,
@@ -41,6 +40,7 @@ class DabDeformableDETR(nn.Module):
         pixel_std,
         embed_dim=256,
         aux_loss=True,
+        with_box_refine=False,
         as_two_stage=False,
         device="cuda",
     ):
@@ -55,18 +55,12 @@ class DabDeformableDETR(nn.Module):
         self.num_classes = num_classes
 
         if not as_two_stage:
-            self.tgt_embed = nn.Embedding(num_queries, embed_dim)
-            self.refpoint_embed = nn.Embedding(num_queries, 4)
+            self.query_embedding = nn.Embedding(num_queries, embed_dim * 2)
 
         self.aux_loss = aux_loss
+        self.with_box_refine = with_box_refine
         self.as_two_stage = as_two_stage
         self.criterion = criterion
-
-        # normalizer for input raw images
-        self.device = device
-        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
-        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
-        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
@@ -82,39 +76,32 @@ class DabDeformableDETR(nn.Module):
         num_pred = (
             (transformer.decoder.num_layers + 1) if as_two_stage else transformer.decoder.num_layers
         )
-        self.class_embed = nn.ModuleList([copy.deepcopy(self.class_embed) for i in range(num_pred)])
-        self.bbox_embed = nn.ModuleList([copy.deepcopy(self.bbox_embed) for i in range(num_pred)])
-        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
-        # hack implementation for two-stage
+        if with_box_refine:
+            self.class_embed = nn.ModuleList(
+                [copy.deepcopy(self.class_embed) for i in range(num_pred)]
+            )
+            self.bbox_embed = nn.ModuleList(
+                [copy.deepcopy(self.bbox_embed) for i in range(num_pred)]
+            )
+            nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
+            self.transformer.decoder.bbox_embed = self.bbox_embed
+        else:
+            nn.init.constant_(self.bbox_embed.layers[-1].bias.data[2:], -2.0)
+            self.class_embed = nn.ModuleList([self.class_embed for _ in range(num_pred)])
+            self.bbox_embed = nn.ModuleList([self.bbox_embed for _ in range(num_pred)])
+            self.transformer.decoder.bbox_embed = None
+
         if self.as_two_stage:
+            # hack implementation for two-stage
             self.transformer.decoder.class_embed = self.class_embed
+            for box_embed in self.bbox_embed:
+                nn.init.constant_(box_embed.layers[-1].bias.data[2:], 0.0)
 
-        # self.init_weights()
-
-        # hack implementation for iterative bounding box refinement
-        self.transformer.decoder.bbox_embed = self.bbox_embed
-
-    # def init_weights(self):
-    # prior_prob = 0.01
-    # bias_value = -math.log((1 - prior_prob) / prior_prob)
-
-    # for class_embed_layer in self.class_embed:
-    #     class_embed_layer.bias.data = torch.ones(self.num_classes) * bias_value
-
-    # for bbox_embed_layer in self.bbox_embed:
-    #     nn.init.constant_(bbox_embed_layer.layers[-1].weight.data, 0)
-    #     nn.init.constant_(bbox_embed_layer.layers[-1].bias.data, 0)
-
-    # for _, neck_layer in self.neck.named_modules():
-    #     if isinstance(neck_layer, nn.Conv2d):
-    #         nn.init.xavier_uniform_(neck_layer.weight, gain=1)
-    #         nn.init.constant_(neck_layer.bias, 0)
-
-    # nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
-
-    # if self.as_two_stage:
-    #     for bbox_embed_layer in self.bbox_embed:
-    #         nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
+        # normalizer for input raw images
+        self.device = device
+        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
+        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
+        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
     def forward(self, batched_inputs):
 
@@ -143,9 +130,9 @@ class DabDeformableDETR(nn.Module):
             )
             multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
 
-        tgt_embed = self.tgt_embed.weight  # nq, 256
-        refanchor = self.refpoint_embed.weight  # nq, 4
-        query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
+        query_embeds = None
+        if not self.as_two_stage:
+            query_embeds = self.query_embedding.weight
 
         (
             inter_states,
@@ -181,6 +168,13 @@ class DabDeformableDETR(nn.Module):
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
+
+        if self.as_two_stage:
+            enc_outputs_coord = enc_outputs_coord_unact.sigmoid()
+            output["enc_outputs"] = {
+                "pred_logits": enc_outputs_class,
+                "pred_boxes": enc_outputs_coord,
+            }
 
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
