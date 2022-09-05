@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from .timm_backbone import TimmBackbone
-# from .torchvision_backbone import TorchvisionBackbone
+from .torchvision_backbone import TorchvisionBackbone
 from .resnet import (
     BasicStem,
     ResNet,
