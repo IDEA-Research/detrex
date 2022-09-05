@@ -29,7 +29,7 @@ from detrex.layers import (
 from detrex.utils import inverse_sigmoid
 
 
-class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
+class DNDeformableDetrTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -101,7 +101,7 @@ class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
         return query
 
 
-class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
+class DNDeformableDetrTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -224,7 +224,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         return output, reference_points
 
 
-class DabDeformableDetrTransformer(nn.Module):
+class DNDeformableDetrTransformer(nn.Module):
     def __init__(
         self,
         encoder=None,
@@ -399,7 +399,6 @@ class DabDeformableDetrTransformer(nn.Module):
         # lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
         #     1, 0, 2)  # (H*W, bs, embed_dims)
 
-        # import ipdb; ipdb.set_trace()
         memory = self.encoder(
             query=feat_flatten,
             key=None,
@@ -446,7 +445,6 @@ class DabDeformableDetrTransformer(nn.Module):
             # (300, 4)
 
         # decoder
-        # import ipdb; ipdb.set_trace()
         inter_states, inter_references = self.decoder(
             query=target,  # bs, num_queries, embed_dims
             key=memory,  # bs, num_tokens, embed_dims

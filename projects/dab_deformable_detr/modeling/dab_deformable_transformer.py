@@ -398,7 +398,6 @@ class DabDeformableDetrTransformer(nn.Module):
         # lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
         #     1, 0, 2)  # (H*W, bs, embed_dims)
 
-        # import ipdb; ipdb.set_trace()
         memory = self.encoder(
             query=feat_flatten,
             key=None,

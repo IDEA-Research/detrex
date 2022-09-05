@@ -27,7 +27,7 @@ from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
 
-class DabDeformableDETR(nn.Module):
+class DNDeformableDETR(nn.Module):
     def __init__(
         self,
         backbone,
@@ -165,7 +165,7 @@ class DabDeformableDETR(nn.Module):
             batch_size=len(batched_inputs),
             tgt_embed=tgt_embed,
         )
-        # # import ipdb; ipdb.set_trace()
+
         query_embeds = torch.cat((input_query_label, input_query_bbox), dim=2).transpose(0, 1).contiguous()
         # indicator_mt = torch.zeros([self.num_queries, 1]).to(self.device)
         # input_query_label = torch.cat([tgt_embed, indicator_mt], dim=1).repeat(batch_size, 1, 1)
