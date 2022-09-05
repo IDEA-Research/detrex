@@ -29,7 +29,7 @@ from detrex.layers import (
 from detrex.utils import inverse_sigmoid
 
 
-class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
+class DNDeformableDetrTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -101,7 +101,7 @@ class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
         return query
 
 
-class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
+class DNDeformableDetrTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -168,7 +168,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
     ):
         output = query
         bs, num_queries, _ = output.size()
-        reference_points = reference_points.unsqueeze(0).repeat(bs, 1, 1)  # bs, num_queries, 4
+        # reference_points = reference_points.unsqueeze(0).repeat(bs, 1, 1)  # bs, num_queries, 4
 
         intermediate = []
         intermediate_reference_points = []
@@ -224,7 +224,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         return output, reference_points
 
 
-class DabDeformableDetrTransformer(nn.Module):
+class DNDeformableDetrTransformer(nn.Module):
     def __init__(
         self,
         encoder=None,
@@ -359,6 +359,7 @@ class DabDeformableDetrTransformer(nn.Module):
         multi_level_masks,
         multi_level_pos_embeds,
         query_embed,
+        attn_masks,
         **kwargs,
     ):
         feat_flatten = []
@@ -403,6 +404,7 @@ class DabDeformableDetrTransformer(nn.Module):
             key=None,
             value=None,
             query_pos=lvl_pos_embed_flatten,
+            # attn_masks=attn_masks,
             query_key_padding_mask=mask_flatten,
             spatial_shapes=spatial_shapes,
             reference_points=reference_points,  # bs, num_token, num_level, 2
@@ -438,7 +440,7 @@ class DabDeformableDetrTransformer(nn.Module):
         elif self.use_dab:
             reference_points = query_embed[..., self.embed_dim :].sigmoid()
             target = query_embed[..., : self.embed_dim]
-            target = target.unsqueeze(0).expand(bs, -1, -1)
+            # target = target.unsqueeze(0).expand(bs, -1, -1)
             init_reference_out = reference_points
             # (300, 4)
 
@@ -448,6 +450,7 @@ class DabDeformableDetrTransformer(nn.Module):
             key=memory,  # bs, num_tokens, embed_dims
             value=memory,  # bs, num_tokens, embed_dims
             query_pos=None,
+            attn_masks=attn_masks,
             key_padding_mask=mask_flatten,  # bs, num_tokens
             reference_points=reference_points,  # num_queries, 4
             spatial_shapes=spatial_shapes,  # nlvl, 2
