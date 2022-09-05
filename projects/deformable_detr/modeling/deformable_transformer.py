@@ -419,7 +419,7 @@ class DeformableDetrTransformer(nn.Module):
             pos_trans_out = self.pos_trans_norm(
                 self.pos_trans(self.get_proposal_pos_embed(topk_coords_unact))
             )
-            query_embed, target = torch.split(pos_trans_out, c, dim=2)
+            query_embed, query = torch.split(pos_trans_out, c, dim=2)
         else:
             query_pos, query = torch.split(query_embed, c, dim=1)
             query_pos = query_pos.unsqueeze(0).expand(bs, -1, -1)
@@ -429,7 +429,7 @@ class DeformableDetrTransformer(nn.Module):
 
         # decoder
         inter_states, inter_references = self.decoder(
-            query=target,  # bs, num_queries, embed_dims
+            query=query,  # bs, num_queries, embed_dims
             key=None,  # bs, num_tokens, embed_dims
             value=memory,  # bs, num_tokens, embed_dims
             query_pos=query_pos,

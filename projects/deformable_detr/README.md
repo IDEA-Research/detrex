@@ -12,7 +12,7 @@ Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, Jifeng Dai
 ## Citing Deformable-DETR
 ```BibTex
 @article{zhu2020deformable,
-  title={Deformable detr: Deformable transformers for end-to-end object detection},
+  title={Deformable DETR: Deformable Transformers for End-to-End Object Detection},
   author={Zhu, Xizhou and Su, Weijie and Lu, Lewei and Li, Bin and Wang, Xiaogang and Dai, Jifeng},
   journal={arXiv preprint arXiv:2010.04159},
   year={2020}

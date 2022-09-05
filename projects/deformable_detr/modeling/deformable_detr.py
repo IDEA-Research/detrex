@@ -62,11 +62,15 @@ class DeformableDETR(nn.Module):
         self.as_two_stage = as_two_stage
         self.criterion = criterion
 
-        # normalizer for input raw images
-        self.device = device
-        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
-        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
-        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
+        prior_prob = 0.01
+        bias_value = -math.log((1 - prior_prob) / prior_prob)
+        self.class_embed.bias.data = torch.ones(num_classes) * bias_value
+        nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
+        nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
+        for _, neck_layer in self.neck.named_modules():
+            if isinstance(neck_layer, nn.Conv2d):
+                nn.init.xavier_uniform_(neck_layer.weight, gain=1)
+                nn.init.constant_(neck_layer.bias, 0)
                 
         # if two-stage, the last class_embed and bbox_embed is for region proposal generation
         num_pred = (
@@ -89,25 +93,11 @@ class DeformableDETR(nn.Module):
             for box_embed in self.bbox_embed:
                 nn.init.constant_(box_embed.layers[-1].bias.data[2:], 0.0)
 
-        self.init_weights()
-
-
-    def init_weights(self):
-        prior_prob = 0.01
-        bias_value = -math.log((1 - prior_prob) / prior_prob)
-
-        for class_embed_layer in self.class_embed:
-            class_embed_layer.bias.data = torch.ones(self.num_classes) * bias_value
-
-        for bbox_embed_layer in self.bbox_embed:
-            nn.init.constant_(bbox_embed_layer.layers[-1].weight.data, 0)
-            nn.init.constant_(bbox_embed_layer.layers[-1].bias.data, 0)
-
-        for _, neck_layer in self.neck.named_modules():
-            if isinstance(neck_layer, nn.Conv2d):
-                nn.init.xavier_uniform_(neck_layer.weight, gain=1)
-                nn.init.constant_(neck_layer.bias, 0)
-
+        # normalizer for input raw images
+        self.device = device
+        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
+        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
+        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
     def forward(self, batched_inputs):
 

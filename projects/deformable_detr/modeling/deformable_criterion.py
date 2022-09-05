@@ -24,8 +24,28 @@ class DeformableCriterion(SetCriterion):
     """This class computes the loss for Deformable-DETR 
     and two-stage Deformable-DETR
     """
-    def __init__(self, *args, **kwargs):
-        super(SetCriterion, self).__init__(*args, **kwargs)
+    def __init__(
+        self,
+        num_classes,
+        matcher,
+        weight_dict,
+        losses,
+        eos_coef: float = 0.1,
+        loss_class_type: str = "focal_loss",
+        alpha: float = 0.25,
+        gamma: float = 2.0,
+    ):
+        super(DeformableCriterion, self).__init__(
+            num_classes=num_classes,
+            matcher=matcher,
+            weight_dict=weight_dict,
+            losses=losses,
+            eos_coef=eos_coef,
+            loss_class_type=loss_class_type,
+            alpha=alpha,
+            gamma=gamma,
+        )
+
 
     def forward(self, outputs, targets):
         outputs_without_aux = {k: v for k, v in outputs.items() if k != 'aux_outputs' and k != 'enc_outputs'}

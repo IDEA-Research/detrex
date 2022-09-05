@@ -66,7 +66,6 @@ model = L(DeformableDETR)(
             ffn_dropout=0.0,
             num_layers=6,
             return_intermediate=True,
-            use_dab=True,
             num_feature_levels=num_feature_levels,
         ),
         as_two_stage=False,
