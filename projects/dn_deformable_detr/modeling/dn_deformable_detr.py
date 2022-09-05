@@ -43,8 +43,8 @@ class DNDeformableDETR(nn.Module):
         aux_loss=True,
         as_two_stage=False,
         dn_num=5,
-        label_noise_scale=0.0,
-        box_noise_scale=0.0,
+        label_noise_scale=0.2,
+        box_noise_scale=0.4,
         device="cuda",
     ):
         super().__init__()
