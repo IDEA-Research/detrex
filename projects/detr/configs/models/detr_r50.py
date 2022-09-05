@@ -30,10 +30,7 @@ model = L(DETR)(
         out_features=["res2", "res3", "res4", "res5"],
         freeze_at=1,
     ),
-    position_embedding=L(PositionEmbeddingSine)(
-        num_pos_feats=128, 
-        normalize=True
-    ),
+    position_embedding=L(PositionEmbeddingSine)(num_pos_feats=128, normalize=True),
     in_features=["res5"],
     transformer=L(DetrTransformer)(
         encoder=L(DetrTransformerEncoder)(
@@ -97,8 +94,8 @@ model = L(DETR)(
         },
         eos_coef=0.1,
         losses=[
-            "class", 
-            "boxes", 
+            "class",
+            "boxes",
         ],
     ),
     aux_loss=True,
