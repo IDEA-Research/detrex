@@ -15,48 +15,42 @@
 
 
 import torchvision
-from torchvision.models.feature_extraction import (
-    get_graph_node_names,
-    create_feature_extractor,
-)
+from torchvision.models.feature_extraction import create_feature_extractor, get_graph_node_names
+
 from detectron2.modeling.backbone import Backbone
 from detectron2.utils.logger import setup_logger
 
 
-def log_model_graph_info(
-    model, 
-    training=False
-):
+def log_model_graph_info(model, training=False):
     """Print graph info of torchvision backbone to help development and debug.
 
     Args:
         model (nn.Module): Model created on top of PyTorch.
-        training (bool): Training mode or eval mode of model, 
-            cause there might be difference of the computational 
+        training (bool): Training mode or eval mode of model,
+            cause there might be difference of the computational
             graph between training and inference time.
     """
     logger = setup_logger(name="torchvision backbone")
-    
 
 
 class TorchvisionBackbone(Backbone):
-    def __init__(self,
-                 model_name: str = "resnet50",
-                 return_nodes: dict = {
-                    "layer1": "res2",
-                    "layer2": "res3",
-                    "layer3": "res4",
-                    "layer4": "res5",
-                 },
-                 **kwargs,
-                ):
+    def __init__(
+        self,
+        model_name: str = "resnet50",
+        return_nodes: dict = {
+            "layer1": "res2",
+            "layer2": "res3",
+            "layer3": "res4",
+            "layer4": "res5",
+        },
+        **kwargs,
+    ):
         super(TorchvisionBackbone, self).__init__()
         self.model = getattr(torchvision.models, model_name)(**kwargs)
         self.feature_extractor = create_feature_extractor(
-            model = self.model,
-            return_nodes=return_nodes
+            model=self.model, return_nodes=return_nodes
         )
-    
+
     def forward(self, x):
         outs = self.feature_extractor(x)
         return outs

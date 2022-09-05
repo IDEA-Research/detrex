@@ -153,12 +153,12 @@ class DeformableDetrTransformerDecoder(TransformerLayerSequence):
         attn_masks=None,
         query_key_padding_mask=None,
         key_padding_mask=None,
-        reference_points=None, 
+        reference_points=None,
         valid_ratios=None,
         **kwargs,
     ):
         output = query
-        
+
         intermediate = []
         intermediate_reference_points = []
         for layer_idx, layer in enumerate(self.layers):
@@ -350,7 +350,7 @@ class DeformableDetrTransformer(nn.Module):
         **kwargs,
     ):
         assert self.as_two_stage or query_embed is not None
-        
+
         feat_flatten = []
         mask_flatten = []
         lvl_pos_embed_flatten = []

@@ -71,14 +71,18 @@ class DeformableDETR(nn.Module):
             if isinstance(neck_layer, nn.Conv2d):
                 nn.init.xavier_uniform_(neck_layer.weight, gain=1)
                 nn.init.constant_(neck_layer.bias, 0)
-                
+
         # if two-stage, the last class_embed and bbox_embed is for region proposal generation
         num_pred = (
             (transformer.decoder.num_layers + 1) if as_two_stage else transformer.decoder.num_layers
         )
         if with_box_refine:
-            self.class_embed = nn.ModuleList([copy.deepcopy(self.class_embed) for i in range(num_pred)])
-            self.bbox_embed = nn.ModuleList([copy.deepcopy(self.bbox_embed) for i in range(num_pred)])
+            self.class_embed = nn.ModuleList(
+                [copy.deepcopy(self.class_embed) for i in range(num_pred)]
+            )
+            self.bbox_embed = nn.ModuleList(
+                [copy.deepcopy(self.bbox_embed) for i in range(num_pred)]
+            )
             nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
             self.transformer.decoder.bbox_embed = self.bbox_embed
         else:
@@ -167,7 +171,10 @@ class DeformableDETR(nn.Module):
 
         if self.as_two_stage:
             enc_outputs_coord = enc_outputs_coord_unact.sigmoid()
-            output["enc_outputs"] = {'pred_logits': enc_outputs_class, 'pred_boxes': enc_outputs_coord}
+            output["enc_outputs"] = {
+                "pred_logits": enc_outputs_class,
+                "pred_boxes": enc_outputs_coord,
+            }
 
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
