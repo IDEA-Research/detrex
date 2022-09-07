@@ -424,7 +424,8 @@ class DINOTransformer(nn.Module):
         )
         reference_points = topk_coords_unact.detach()
         reference_points = reference_points.sigmoid()
-        reference_points = torch.cat([query_embed[1].sigmoid(),reference_points],1)
+        if query_embed[1] is not None:
+            reference_points = torch.cat([query_embed[1].sigmoid(),reference_points],1)
         init_reference_out = reference_points
 
         # extract region features
@@ -435,7 +436,8 @@ class DINOTransformer(nn.Module):
             target=self.tgt_embed.weight[None].repeat(bs,1,1)
         else:
             target = target_unact.detach()
-        target = torch.cat([query_embed[0],target],1)
+        if query_embed[0] is not None:
+            target = torch.cat([query_embed[0],target],1)
 
         # decoder
         inter_states, inter_references = self.decoder(
