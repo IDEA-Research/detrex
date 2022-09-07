@@ -53,10 +53,14 @@ class DabDeformableDETR(nn.Module):
         self.class_embed = nn.Linear(embed_dim, num_classes)
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.num_classes = num_classes
+        self.as_two_stage = as_two_stage
 
         if not as_two_stage:
             self.tgt_embed = nn.Embedding(num_queries, embed_dim)
             self.refpoint_embed = nn.Embedding(num_queries, 4)
+            nn.init.zeros_(self.tgt_embed.weight)
+            nn.init.uniform_(self.refpoint_embed.weight)
+            self.refpoint_embed.weight.data[:] = inverse_sigmoid(self.refpoint_embed.weight.data[:]).clamp(-3, 3)
 
         self.aux_loss = aux_loss
         self.as_two_stage = as_two_stage
@@ -68,6 +72,7 @@ class DabDeformableDETR(nn.Module):
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
+        # initialize weights
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         self.class_embed.bias.data = torch.ones(num_classes) * bias_value
@@ -85,14 +90,18 @@ class DabDeformableDETR(nn.Module):
         self.class_embed = nn.ModuleList([copy.deepcopy(self.class_embed) for i in range(num_pred)])
         self.bbox_embed = nn.ModuleList([copy.deepcopy(self.bbox_embed) for i in range(num_pred)])
         nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
+
         # hack implementation for two-stage
         if self.as_two_stage:
             self.transformer.decoder.class_embed = self.class_embed
+        # hack implementation for iterative bounding box refinement
+        self.transformer.decoder.bbox_embed = self.bbox_embed
 
         # self.init_weights()
 
-        # hack implementation for iterative bounding box refinement
-        self.transformer.decoder.bbox_embed = self.bbox_embed
+        if self.as_two_stage:
+            for bbox_embed_layer in self.bbox_embed:
+                nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
 
     # def init_weights(self):
     # prior_prob = 0.01
@@ -142,17 +151,20 @@ class DabDeformableDETR(nn.Module):
                 F.interpolate(img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0)
             )
             multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
-
-        tgt_embed = self.tgt_embed.weight  # nq, 256
-        refanchor = self.refpoint_embed.weight  # nq, 4
-        query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
+            
+        if self.as_two_stage:
+            query_embeds = None
+        else:
+            tgt_embed = self.tgt_embed.weight  # nq, 256
+            refanchor = self.refpoint_embed.weight  # nq, 4
+            query_embeds = torch.cat((tgt_embed, refanchor), dim=1)
 
         (
             inter_states,
             init_reference,
             inter_references,
-            enc_outputs_class,
-            enc_outputs_coord_unact,
+            enc_state,
+            enc_reference, # [0..1]
         ) = self.transformer(
             multi_level_feats, multi_level_masks, multi_level_position_embeddings, query_embeds
         )
@@ -182,6 +194,12 @@ class DabDeformableDETR(nn.Module):
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
 
+        # prepare two stage output
+        if self.as_two_stage:
+            interm_coord = enc_reference
+            interm_class = self.class_embed[-1](enc_state)
+            output['enc_outputs'] = {'pred_logits': interm_class, 'pred_boxes': interm_coord}
+            
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
