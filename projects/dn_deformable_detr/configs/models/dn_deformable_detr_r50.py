@@ -5,20 +5,20 @@ from detectron2.layers import ShapeSpec
 from detectron2.config import LazyCall as L
 
 from detrex.modeling.matcher import HungarianMatcher
-from detrex.modeling.criterion import SetCriterion
 from detrex.modeling.neck import ChannelMapper
 from detrex.layers import PositionEmbeddingSine
 
-from projects.dab_deformable_detr.modeling import (
-    DabDeformableDETR,
-    DabDeformableDetrTransformerEncoder,
-    DabDeformableDetrTransformerDecoder,
-    DabDeformableDetrTransformer,
+from projects.dn_deformable_detr.modeling import (
+    DNDeformableDETR,
+    DNDeformableDetrTransformerEncoder,
+    DNDeformableDetrTransformerDecoder,
+    DNDeformableDetrTransformer,
+    DNCriterion,
 )
 
 num_feature_levels = 4
 
-model = L(DabDeformableDETR)(
+model = L(DNDeformableDETR)(
     backbone=L(ResNet)(
         stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
         stages=L(ResNet.make_default_stages)(
@@ -47,8 +47,8 @@ model = L(DabDeformableDETR)(
         kernel_size=1,
         norm_layer=L(nn.GroupNorm)(num_groups=32, num_channels=256),
     ),
-    transformer=L(DabDeformableDetrTransformer)(
-        encoder=L(DabDeformableDetrTransformerEncoder)(
+    transformer=L(DNDeformableDetrTransformer)(
+        encoder=L(DNDeformableDetrTransformerEncoder)(
             embed_dim=256,
             num_heads=8,
             feedforward_dim=2048,
@@ -58,7 +58,7 @@ model = L(DabDeformableDETR)(
             post_norm=False,
             num_feature_levels=num_feature_levels,
         ),
-        decoder=L(DabDeformableDetrTransformerDecoder)(
+        decoder=L(DNDeformableDetrTransformerDecoder)(
             embed_dim=256,
             num_heads=8,
             feedforward_dim=2048,
@@ -69,15 +69,14 @@ model = L(DabDeformableDETR)(
             use_dab=True,
             num_feature_levels=num_feature_levels,
         ),
-        as_two_stage="${..as_two_stage}",
+        as_two_stage=False,
         num_feature_levels=num_feature_levels,
         two_stage_num_proposals=300,
     ),
     num_classes=80,
     num_queries=300,
     aux_loss=True,
-    as_two_stage=False,
-    criterion=L(SetCriterion)(
+    criterion=L(DNCriterion)(
         num_classes=80,
         matcher=L(HungarianMatcher)(
             cost_class=2.0,
@@ -108,6 +107,9 @@ model = L(DabDeformableDETR)(
 # set aux loss weight dict
 if model.aux_loss:
     weight_dict = model.criterion.weight_dict
+    weight_dict["tgt_loss_ce"] = 1.0
+    weight_dict["tgt_loss_bbox"] = 5.0
+    weight_dict["tgt_loss_giou"] = 2.0
     aux_weight_dict = {}
     for i in range(model.transformer.decoder.num_layers - 1):
         aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})

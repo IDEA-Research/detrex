@@ -20,4 +20,3 @@ from .dab_deformable_transformer import (
     DabDeformableDetrTransformer,
 )
 from .dab_deformable_detr import DabDeformableDETR
-from .two_stage_criterion import TwoStageCriterion
