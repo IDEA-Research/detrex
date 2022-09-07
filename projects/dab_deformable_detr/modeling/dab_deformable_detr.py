@@ -94,36 +94,14 @@ class DabDeformableDETR(nn.Module):
         # hack implementation for two-stage
         if self.as_two_stage:
             self.transformer.decoder.class_embed = self.class_embed
+        
         # hack implementation for iterative bounding box refinement
         self.transformer.decoder.bbox_embed = self.bbox_embed
-
-        # self.init_weights()
 
         if self.as_two_stage:
             for bbox_embed_layer in self.bbox_embed:
                 nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
 
-    # def init_weights(self):
-    # prior_prob = 0.01
-    # bias_value = -math.log((1 - prior_prob) / prior_prob)
-
-    # for class_embed_layer in self.class_embed:
-    #     class_embed_layer.bias.data = torch.ones(self.num_classes) * bias_value
-
-    # for bbox_embed_layer in self.bbox_embed:
-    #     nn.init.constant_(bbox_embed_layer.layers[-1].weight.data, 0)
-    #     nn.init.constant_(bbox_embed_layer.layers[-1].bias.data, 0)
-
-    # for _, neck_layer in self.neck.named_modules():
-    #     if isinstance(neck_layer, nn.Conv2d):
-    #         nn.init.xavier_uniform_(neck_layer.weight, gain=1)
-    #         nn.init.constant_(neck_layer.bias, 0)
-
-    # nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
-
-    # if self.as_two_stage:
-    #     for bbox_embed_layer in self.bbox_embed:
-    #         nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
 
     def forward(self, batched_inputs):
 
@@ -151,7 +129,7 @@ class DabDeformableDETR(nn.Module):
                 F.interpolate(img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0)
             )
             multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
-            
+
         if self.as_two_stage:
             query_embeds = None
         else:
@@ -199,7 +177,8 @@ class DabDeformableDETR(nn.Module):
             interm_coord = enc_reference
             interm_class = self.class_embed[-1](enc_state)
             output['enc_outputs'] = {'pred_logits': interm_class, 'pred_boxes': interm_coord}
-            
+
+
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
