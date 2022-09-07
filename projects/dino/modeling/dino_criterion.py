@@ -22,7 +22,6 @@ class DINOCriterion(TwoStageCriterion):
                       The expected keys in each dict depends on the losses applied, see each loss' doc
         """
         losses=super(DINOCriterion, self).forward(outputs, targets)
-        import pdb;pdb.set_trace()
         num_boxes = sum(len(t["labels"]) for t in targets)
         num_boxes = torch.as_tensor(
             [num_boxes], dtype=torch.float, device=next(iter(outputs.values())).device
