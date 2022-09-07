@@ -236,7 +236,7 @@ class DINO(nn.Module):
         if dn_number<=0:
             return None,None,None,None
             # positive and negative dn queries
-        import pdb;pdb.set_trace()
+            
         dn_number = dn_number * 2
         known = [(torch.ones_like(t['labels'])).cuda() for t in targets]
         batch_size = len(known)
