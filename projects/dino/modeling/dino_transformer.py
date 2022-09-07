@@ -421,6 +421,7 @@ class DINOTransformer(nn.Module):
         # extract region proposal boxes
         topk_coords_unact = torch.gather(
             enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
+            
         )
         reference_points = topk_coords_unact.detach()
         reference_points = reference_points.sigmoid()
