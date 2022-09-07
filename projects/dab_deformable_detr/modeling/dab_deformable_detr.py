@@ -94,13 +94,12 @@ class DabDeformableDETR(nn.Module):
         # hack implementation for two-stage
         if self.as_two_stage:
             self.transformer.decoder.class_embed = self.class_embed
+            for bbox_embed_layer in self.bbox_embed:
+                nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
         
         # hack implementation for iterative bounding box refinement
         self.transformer.decoder.bbox_embed = self.bbox_embed
 
-        if self.as_two_stage:
-            for bbox_embed_layer in self.bbox_embed:
-                nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
 
 
     def forward(self, batched_inputs):

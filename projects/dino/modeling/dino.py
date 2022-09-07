@@ -41,7 +41,7 @@ class DINO(nn.Module):
         pixel_std,
         embed_dim=256,
         aux_loss=True,
-        as_two_stage=False,
+        as_two_stage=True,
         device="cuda",
         dn_number=100,
         label_noise_ratio=0.2,
@@ -80,12 +80,24 @@ class DINO(nn.Module):
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
+        # initialize weights
+        prior_prob = 0.01
+        bias_value = -math.log((1 - prior_prob) / prior_prob)
+        self.class_embed.bias.data = torch.ones(num_classes) * bias_value
+        nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
+        nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
+        for _, neck_layer in self.neck.named_modules():
+            if isinstance(neck_layer, nn.Conv2d):
+                nn.init.xavier_uniform_(neck_layer.weight, gain=1)
+                nn.init.constant_(neck_layer.bias, 0)
+
         # if two-stage, the last class_embed and bbox_embed is for region proposal generation
         num_pred = (
             (transformer.decoder.num_layers + 1) if as_two_stage else transformer.decoder.num_layers
         )
         self.class_embed = nn.ModuleList([copy.deepcopy(self.class_embed) for i in range(num_pred)])
         self.bbox_embed = nn.ModuleList([copy.deepcopy(self.bbox_embed) for i in range(num_pred)])
+        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
 
         # hack implementation for iterative bounding box refinement
         self.transformer.decoder.bbox_embed = self.bbox_embed
@@ -93,28 +105,6 @@ class DINO(nn.Module):
         # hack implementation for two-stage
         if self.as_two_stage:
             self.transformer.decoder.class_embed = self.class_embed
-
-        self.init_weights()
-
-    def init_weights(self):
-        prior_prob = 0.01
-        bias_value = -math.log((1 - prior_prob) / prior_prob)
-
-        for class_embed_layer in self.class_embed:
-            class_embed_layer.bias.data = torch.ones(self.num_classes) * bias_value
-
-        for bbox_embed_layer in self.bbox_embed:
-            nn.init.constant_(bbox_embed_layer.layers[-1].weight.data, 0)
-            nn.init.constant_(bbox_embed_layer.layers[-1].bias.data, 0)
-
-        for _, neck_layer in self.neck.named_modules():
-            if isinstance(neck_layer, nn.Conv2d):
-                nn.init.xavier_uniform_(neck_layer.weight, gain=1)
-                nn.init.constant_(neck_layer.bias, 0)
-
-        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
-
-        if self.as_two_stage:
             for bbox_embed_layer in self.bbox_embed:
                 nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
 

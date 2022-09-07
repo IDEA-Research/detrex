@@ -259,6 +259,8 @@ class DINOTransformer(nn.Module):
             self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
             self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
 
+        self.init_weights()
+
     def init_weights(self):
         for p in self.parameters():
             if p.dim() > 1:
