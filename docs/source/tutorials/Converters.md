@@ -8,7 +8,7 @@ To use the detectron2 provided pretrained weights, please refer to [ImageNet Pre
 ### 1. Download Pretrained Weights
 `Torchvision 0.11.0` was released packed with better pretrained weights on numerous models including `ResNet`. More details can be found in [How to Train State-Of-The-Art Models Using TorchVision’s Latest Primitives](https://pytorch.org/blog/how-to-train-state-of-the-art-models-using-torchvision-latest-primitives/), here we collected the download link for `TorchVision ResNet` models.
 
-<table><tbody>
+<table class="docutils"><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
 <th valign="bottom">Name</th>
@@ -17,26 +17,26 @@ To use the detectron2 provided pretrained weights, please refer to [ImageNet Pre
 <th valign="bottom">Acc@1</th>
 <th valign="bottom">Acc@5</th>
 <!-- TABLE BODY -->
- <tr><td align="left"><a>ResNet-50 (ImageNet1k-V1) </a></td>
-<td align="center"> <details><summary> script </summary><pre><code> wget https://download.pytorch.org/models/resnet50-0676ba61.pth</code></pre></details> </td>
+<tr><td align="left">ResNet-50 (ImageNet1k-V1) </td>
+<td align="center"> <details><summary> script </summary><pre><code> wget https://download.pytorch.org/models/resnet50-0676ba61.pth -O r50_v1.pth</code></pre></details> </td>
 <td align="center">IN1k</td>
 <td align="center">76.130</td>
 <td align="center">92.862</td>
 </tr>
- <tr><td align="left"><a>ResNet-50 (ImageNet1k-V2) </a></td>
-<td align="center"> <details><summary> script </summary><pre><code> wget https://download.pytorch.org/models/resnet50-11ad3fa6.pth</code></pre></details> </td>
+<tr><td align="left"> ResNet-50 (ImageNet1k-V2) </td>
+<td align="center"> <details><summary> script </summary><pre><code> wget https://download.pytorch.org/models/resnet50-11ad3fa6.pth -O r50_v2.pth</code></pre></details> </td>
 <td align="center">IN1k</td>
 <td align="center">80.858</td>
 <td align="center">95.434</td>
 </tr>
- <tr><td align="left"><a>ResNet-101 (ImageNet1k-V1) </a></td>
-<td align="center"> <details><summary> script </summary><pre><code> wget https://download.pytorch.org/models/resnet101-63fe2227.pth </code></pre></details> </td>
+<tr><td align="left"> ResNet-101 (ImageNet1k-V1) </td>
+<td align="center"> <details><summary> script </summary><pre><code> wget https://download.pytorch.org/models/resnet101-63fe2227.pth -O r101_v1.pth</code></pre></details> </td>
 <td align="center">IN1k</td>
 <td align="center">77.374</td>
 <td align="center">93.546</td>
 </tr>
- <tr><td align="left"><a>ResNet-101 (ImageNet1k-V2) </a></td>
-<td align="center"> <details><summary> script </summary><pre><code> wget https://download.pytorch.org/models/resnet101-cd907fc2.pth</code></pre></details> </td>
+<tr><td align="left"> ResNet-101 (ImageNet1k-V2) </td>
+<td align="center"> <details><summary> script </summary><pre><code> wget https://download.pytorch.org/models/resnet101-cd907fc2.pth -O r101_v2.pth</code></pre></details> </td>
 <td align="center">IN1k</td>
 <td align="center">81.886</td>
 <td align="center">95.780</td>
