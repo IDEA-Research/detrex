@@ -99,6 +99,9 @@ model = L(DNDeformableDETR)(
         alpha=0.25,
         gamma=2.0,
     ),
+    dn_num=5,
+    label_noise_scale=0.2,
+    box_noise_scale=0.4,
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
     device="cuda",
@@ -107,9 +110,9 @@ model = L(DNDeformableDETR)(
 # set aux loss weight dict
 if model.aux_loss:
     weight_dict = model.criterion.weight_dict
-    weight_dict["tgt_loss_ce"] = 1.0
-    weight_dict["tgt_loss_bbox"] = 5.0
-    weight_dict["tgt_loss_giou"] = 2.0
+    weight_dict["loss_class_dn"] = 1.0
+    weight_dict["loss_bbox_dn"] = 5.0
+    weight_dict["loss_giou_dn"] = 2.0
     aux_weight_dict = {}
     for i in range(model.transformer.decoder.num_layers - 1):
         aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})

@@ -14,9 +14,10 @@
 # limitations under the License.
 
 
-from .dab_deformable_transformer import (
-    DabDeformableDetrTransformerEncoder,
-    DabDeformableDetrTransformerDecoder,
-    DabDeformableDetrTransformer,
+from .dn_deformable_transformer import (
+    DNDeformableDetrTransformerEncoder,
+    DNDeformableDetrTransformerDecoder,
+    DNDeformableDetrTransformer,
 )
-from .dab_deformable_detr import DabDeformableDETR
+from .dn_deformable_detr import DNDeformableDETR
+from .dn_criterion import DNCriterion

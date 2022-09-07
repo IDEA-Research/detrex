@@ -42,7 +42,7 @@ class DNDeformableDetrTransformerEncoder(TransformerLayerSequence):
         post_norm: bool = False,
         num_feature_levels: int = 4,
     ):
-        super(DabDeformableDetrTransformerEncoder, self).__init__(
+        super(DNDeformableDetrTransformerEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=MultiScaleDeformableAttention(
                     embed_dim=embed_dim,
@@ -114,7 +114,7 @@ class DNDeformableDetrTransformerDecoder(TransformerLayerSequence):
         use_dab: bool = True,
         num_feature_levels: int = 4,
     ):
-        super(DabDeformableDetrTransformerDecoder, self).__init__(
+        super(DNDeformableDetrTransformerDecoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=[
                     MultiheadAttention(
@@ -233,7 +233,7 @@ class DNDeformableDetrTransformer(nn.Module):
         num_feature_levels=4,
         two_stage_num_proposals=300,
     ):
-        super(DabDeformableDetrTransformer, self).__init__()
+        super(DNDeformableDetrTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.as_two_stage = as_two_stage
@@ -250,6 +250,8 @@ class DNDeformableDetrTransformer(nn.Module):
             self.enc_outpout_norm = nn.LayerNorm(self.embed_dim)
             self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
             self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
+
+        self.init_weights()
 
     def init_weights(self):
         for p in self.parameters():

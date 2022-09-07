@@ -43,8 +43,8 @@ class DNDeformableDETR(nn.Module):
         aux_loss=True,
         as_two_stage=False,
         dn_num=5,
-        label_noise_scale=0.0,
-        box_noise_scale=0.0,
+        label_noise_scale=0.2,
+        box_noise_scale=0.4,
         device="cuda",
     ):
         super().__init__()
@@ -213,7 +213,7 @@ class DNDeformableDETR(nn.Module):
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
-            loss_dict = self.criterion(output, targets)
+            loss_dict = self.criterion(output, targets, dn_metas)
             weight_dict = self.criterion.weight_dict
             for k in loss_dict.keys():
                 if k in weight_dict:
