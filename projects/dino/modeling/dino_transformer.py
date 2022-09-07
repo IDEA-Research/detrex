@@ -256,8 +256,6 @@ class DINOTransformer(nn.Module):
         if self.as_two_stage:
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
             self.enc_output_norm = nn.LayerNorm(self.embed_dim)
-            self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
-            self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
 
         self.init_weights()
 
@@ -424,8 +422,8 @@ class DINOTransformer(nn.Module):
         topk_coords_unact = torch.gather(
             enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
         )
-        topk_coords_unact = topk_coords_unact.detach()
-        reference_points = topk_coords_unact.sigmoid()
+        reference_points = topk_coords_unact.detach()
+        reference_points = reference_points.sigmoid()
         reference_points = torch.cat([query_embed[1].sigmoid(),reference_points],1)
         init_reference_out = reference_points
 
