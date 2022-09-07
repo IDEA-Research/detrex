@@ -83,7 +83,7 @@ class DNCriterion(SetCriterion):
         else:
             losses["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
             losses["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
-            losses["loss_ce_dn"] = torch.as_tensor(0.0).to("cuda")
+            losses["loss_class_dn"] = torch.as_tensor(0.0).to("cuda")
 
         for i in range(aux_num):
             # dn aux loss
@@ -108,7 +108,7 @@ class DNCriterion(SetCriterion):
             else:
                 l_dict["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
                 l_dict["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
-                l_dict["loss_ce_dn"] = torch.as_tensor(0.0).to("cuda")
+                l_dict["loss_class_dn"] = torch.as_tensor(0.0).to("cuda")
                 l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
             losses.update(l_dict)
         return losses

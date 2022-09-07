@@ -13,6 +13,7 @@ train.max_iter = 375000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1
 train.clip_grad.params.norm_type = 2
+train.seed = 42
 
 # modify optimizer config
 optimizer.weight_decay = 1e-4
