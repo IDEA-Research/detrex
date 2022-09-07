@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from .misc import (
-    interpolate,
-    inverse_sigmoid,
+from .deformable_transformer import (
+    DeformableDetrTransformerEncoder,
+    DeformableDetrTransformerDecoder,
+    DeformableDetrTransformer,
 )
-from .dist import (
-    is_dist_avail_and_initialized,
-    get_world_size,
-)
+from .deformable_detr import DeformableDETR
+from .deformable_criterion import DeformableCriterion

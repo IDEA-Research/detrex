@@ -3,7 +3,6 @@ import torch.nn as nn
 from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.config import LazyCall as L
 
-from detrex.modeling import MaskedBackbone, Joiner
 from detrex.layers import (
     BaseTransformerLayer,
     FFN,
@@ -13,7 +12,7 @@ from detrex.modeling.matcher import HungarianMatcher
 from detrex.modeling.criterion.criterion import SetCriterion
 from detrex.layers.position_embedding import PositionEmbeddingSine
 
-from modeling import (
+from projects.detr.modeling import (
     DETR,
     DetrTransformer,
     DetrTransformerEncoder,
@@ -21,21 +20,18 @@ from modeling import (
 )
 
 model = L(DETR)(
-    backbone=L(Joiner)(
-        backbone=L(MaskedBackbone)(
-            backbone=L(ResNet)(
-                stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
-                stages=L(ResNet.make_default_stages)(
-                    depth=50,
-                    stride_in_1x1=False,
-                    norm="FrozenBN",
-                ),
-                out_features=["res2", "res3", "res4", "res5"],
-                freeze_at=2,
-            )
+    backbone=L(ResNet)(
+        stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
+        stages=L(ResNet.make_default_stages)(
+            depth=50,
+            stride_in_1x1=False,
+            norm="FrozenBN",
         ),
-        position_embedding=L(PositionEmbeddingSine)(num_pos_feats=128, normalize=True),
+        out_features=["res2", "res3", "res4", "res5"],
+        freeze_at=1,
     ),
+    position_embedding=L(PositionEmbeddingSine)(num_pos_feats=128, normalize=True),
+    in_features=["res5"],
     transformer=L(DetrTransformer)(
         encoder=L(DetrTransformerEncoder)(
             transformer_layers=L(BaseTransformerLayer)(
@@ -79,8 +75,10 @@ model = L(DETR)(
             post_norm=True,
         ),
     ),
-    num_classes=80,
+    num_classes=80,  # 80 categories and 1 for non-object
     num_queries=100,
+    embed_dim=256,
+    in_channels=2048,
     criterion=L(SetCriterion)(
         num_classes=80,
         matcher=L(HungarianMatcher)(
@@ -90,12 +88,15 @@ model = L(DETR)(
             cost_class_type="ce_cost",
         ),
         weight_dict={
-            "loss_ce": 1,
+            "loss_class": 1,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
         eos_coef=0.1,
-        losses=["labels", "boxes", "cardinality"],
+        losses=[
+            "class",
+            "boxes",
+        ],
     ),
     aux_loss=True,
     pixel_mean=[123.675, 116.280, 103.530],

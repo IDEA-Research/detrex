@@ -40,10 +40,9 @@ def default_X_scheduler(num_X):
 
 def default_coco_scheduler(epochs=50, decay_epochs=40, warmup_epochs=0):
     """
-    Returns the config for a default multi-step LR scheduler such as "1x", "3x",
+    Returns the config for a default multi-step LR scheduler such as "50epochs",
     commonly referred to in papers, where every 1x has the total length of 1440k
-    training images (~12 COCO epochs). LR is decayed twice at the end of training
-    following the strategy defined in "Rethinking ImageNet Pretraining", Sec 4.
+    training images (~12 COCO epochs). LR is decayed once at the end of training.
 
     Args:
         epochs (int): total training epochs.

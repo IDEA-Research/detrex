@@ -24,19 +24,19 @@ from detectron2.utils.logger import setup_logger
 
 
 def log_model_graph_info(
-    model, 
+    model,
     training=False
 ):
     """Print graph info of torchvision backbone to help development and debug.
 
     Args:
         model (nn.Module): Model created on top of PyTorch.
-        training (bool): Training mode or eval mode of model, 
-            cause there might be difference of the computational 
+        training (bool): Training mode or eval mode of model,
+            cause there might be difference of the computational
             graph between training and inference time.
     """
     logger = setup_logger(name="torchvision backbone")
-    
+
 
 
 class TorchvisionBackbone(Backbone):
@@ -56,7 +56,7 @@ class TorchvisionBackbone(Backbone):
             model = self.model,
             return_nodes=return_nodes
         )
-    
+
     def forward(self, x):
         outs = self.feature_extractor(x)
         return outs
