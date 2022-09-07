@@ -1,26 +1,26 @@
 import copy
-from detrex.config import get_config
-
 from detectron2.config import LazyCall as L
-
+from detrex.config import get_config
 from detrex.modeling.matcher import HungarianMatcher
 
-from projects.dab_deformable_detr.modeling import (
-    DabDeformableDETR,
-    DabDeformableDetrTransformerEncoder,
-    DabDeformableDetrTransformerDecoder,
-    DabDeformableDetrTransformer,
-    TwoStageCriterion
+from projects.dab_deformable_detr.modeling import TwoStageCriterion
+
+from .dab_deformable_detr_r50_50ep import (
+    model,
+    train,
+    dataloader,
+    optimizer,
+    lr_multiplier,
 )
 
 
 
-from .models.dab_deformable_detr_r50 import model
+# modify training config
+train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+train.output_dir = "./output/dab_deformable_detr_r50_two_stage_50ep"
 
 
-
-
-# set model
+# modify model config
 model.as_two_stage = True
 model.criterion = L(TwoStageCriterion)(
         num_classes=80,
@@ -48,7 +48,7 @@ model.criterion = L(TwoStageCriterion)(
     )
 
 
-# set aux loss weight dict
+# set aux loss weight dict for two stage deformable model
 base_weight_dict = copy.deepcopy(model.criterion.weight_dict)
 if model.aux_loss:
     weight_dict = model.criterion.weight_dict
@@ -63,26 +63,3 @@ if model.as_two_stage:
     aux_weight_dict.update({k + f"_enc": v for k, v in base_weight_dict.items()})
     weight_dict.update(aux_weight_dict)
     model.criterion.weight_dict = weight_dict
-
-
-
-dataloader = get_config("common/data/coco_detr.py").dataloader
-optimizer = get_config("common/optim.py").AdamW
-lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep
-train = get_config("common/train.py").train
-
-# modify training config
-train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/dab_deformable_detr_r50_50ep"
-train.max_iter = 375000
-train.clip_grad.enabled = True
-train.clip_grad.params.max_norm = 0.1
-train.clip_grad.params.norm_type = 2
-train.seed = 42
-
-# modify optimizer config
-optimizer.weight_decay = 1e-4
-optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in module_name else 1
-
-# modify dataloader config
-dataloader.train.num_workers = 16
