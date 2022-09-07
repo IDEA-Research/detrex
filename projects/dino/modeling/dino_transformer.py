@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import torch
 import torch.nn as nn
 
@@ -29,7 +28,7 @@ from detrex.layers import (
 from detrex.utils import inverse_sigmoid
 
 
-class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
+class DINOTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -42,7 +41,7 @@ class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
         post_norm: bool = False,
         num_feature_levels: int = 4,
     ):
-        super(DabDeformableDetrTransformerEncoder, self).__init__(
+        super(DINOTransformerEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=MultiScaleDeformableAttention(
                     embed_dim=embed_dim,
@@ -101,7 +100,7 @@ class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
         return query
 
 
-class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
+class DINOTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -113,8 +112,9 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         return_intermediate: bool = True,
         use_dab: bool = True,
         num_feature_levels: int = 4,
+        look_forward_twice=True,
     ):
-        super(DabDeformableDetrTransformerDecoder, self).__init__(
+        super(DINOTransformerDecoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=[
                     MultiheadAttention(
@@ -151,6 +151,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
 
         self.bbox_embed = None
         self.class_embed = None
+        self.look_forward_twice=look_forward_twice
 
     def forward(
         self,
@@ -162,7 +163,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         attn_masks=None,
         query_key_padding_mask=None,
         key_padding_mask=None,
-        reference_points=None,  # num_queries, 4. normalized.
+        reference_points=None,  # num_queries, 4
         valid_ratios=None,
         **kwargs,
     ):
@@ -217,7 +218,10 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
 
             if self.return_intermediate:
                 intermediate.append(output)
-                intermediate_reference_points.append(reference_points)
+                if self.look_forward_twice:
+                    intermediate_reference_points.append(new_reference_points)
+                else:
+                    intermediate_reference_points.append(reference_points)
 
         if self.return_intermediate:
             return torch.stack(intermediate), torch.stack(intermediate_reference_points)
@@ -225,7 +229,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         return output, reference_points
 
 
-class DabDeformableDetrTransformer(nn.Module):
+class DINOTransformer(nn.Module):
     def __init__(
         self,
         encoder=None,
@@ -233,8 +237,9 @@ class DabDeformableDetrTransformer(nn.Module):
         as_two_stage=False,
         num_feature_levels=4,
         two_stage_num_proposals=300,
+        learnt_init_query=True,
     ):
-        super(DabDeformableDetrTransformer, self).__init__()
+        super(DINOTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.as_two_stage = as_two_stage
@@ -245,14 +250,14 @@ class DabDeformableDetrTransformer(nn.Module):
         self.use_dab = self.decoder.use_dab
 
         self.level_embeds = nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dim))
-
+        self.learnt_init_query=learnt_init_query
+        if self.learnt_init_query:
+            self.tgt_embed = nn.Embedding(self.two_stage_num_proposals, self.embed_dim)
         if self.as_two_stage:
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
             self.enc_output_norm = nn.LayerNorm(self.embed_dim)
             self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
             self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
-
-        self.init_weights()
 
     def init_weights(self):
         for p in self.parameters():
@@ -349,6 +354,7 @@ class DabDeformableDetrTransformer(nn.Module):
         multi_level_masks,
         multi_level_pos_embeds,
         query_embed,
+        attn_masks,
         **kwargs,
     ):
         feat_flatten = []
@@ -384,10 +390,6 @@ class DabDeformableDetrTransformer(nn.Module):
             spatial_shapes, valid_ratios, device=feat.device
         )
 
-        # feat_flatten = feat_flatten.permute(1, 0, 2)  # (H*W, bs, embed_dims)
-        # lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
-        #     1, 0, 2)  # (H*W, bs, embed_dims)
-
         memory = self.encoder(
             query=feat_flatten,
             key=None,
@@ -402,41 +404,38 @@ class DabDeformableDetrTransformer(nn.Module):
         )
 
         bs, _, c = memory.shape
-        if self.as_two_stage:
-            assert query_embed is None, "query_embed should be None in two-stage"
-            output_memory, output_proposals = self.gen_encoder_output_proposals(
-                memory, mask_flatten, spatial_shapes
-            ) 
-            # output_memory: bs, num_tokens, c
-            # output_proposals: bs, num_tokens, 4. unsigmoided.
-            # output_proposals: bs, num_tokens, 4
+        # if self.as_two_stage:
+        output_memory, output_proposals = self.gen_encoder_output_proposals(
+            memory, mask_flatten, spatial_shapes
+        )
+        # output_memory: bs, num_tokens, c
+        # output_proposals: bs, num_tokens, 4
 
-            enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
-            enc_outputs_coord_unact = (
-                self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
-            ) # unsigmoided.
+        enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
+        enc_outputs_coord_unact = (
+            self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
+        )
 
-            topk = self.two_stage_num_proposals
-            topk_proposals = torch.topk(enc_outputs_class.max(-1)[0], topk, dim=1)[1]
-            
-            # extract region proposal boxes
-            topk_coords_unact = torch.gather(
-                enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
-            ) # unsigmoided.
-            reference_points = topk_coords_unact.detach().sigmoid()
-            init_reference_out = reference_points
+        topk = self.two_stage_num_proposals
+        topk_proposals = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
+        # extract region proposal boxes
+        topk_coords_unact = torch.gather(
+            enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
+        )
+        topk_coords_unact = topk_coords_unact.detach()
+        reference_points = topk_coords_unact.sigmoid()
+        reference_points = torch.cat([query_embed[1].sigmoid(),reference_points],1)
+        init_reference_out = reference_points
 
-            # extract region features
-            target_unact = torch.gather(
-                output_memory, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, output_memory.shape[-1])
-            )
-            target = target_unact.detach()
+        # extract region features
+        target_unact = torch.gather(
+            output_memory, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, output_memory.shape[-1])
+        )
+        if self.learnt_init_query:
+            target=self.tgt_embed.weight[None].repeat(bs,1,1)
         else:
-            reference_points = query_embed[..., self.embed_dim :].sigmoid()
-            target = query_embed[..., : self.embed_dim]
-            target = target.unsqueeze(0).expand(bs, -1, -1)
-            init_reference_out = reference_points
-            # (300, 4)
+            target = target_unact.detach()
+        target = torch.cat([query_embed[0],target],1)
 
         # decoder
         inter_states, inter_references = self.decoder(
@@ -449,6 +448,7 @@ class DabDeformableDetrTransformer(nn.Module):
             spatial_shapes=spatial_shapes,  # nlvl, 2
             level_start_index=level_start_index,  # nlvl
             valid_ratios=valid_ratios,  # bs, nlvl, 2
+            attn_masks=attn_masks,
             **kwargs,
         )
 
