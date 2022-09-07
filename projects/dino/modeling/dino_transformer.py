@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import torch
 import torch.nn as nn
 
-from ideadet.layers import (
+from detrex.layers import (
     FFN,
     MLP,
     BaseTransformerLayer,
@@ -26,10 +25,10 @@ from ideadet.layers import (
     TransformerLayerSequence,
     get_sine_pos_embed,
 )
-from ideadet.utils import inverse_sigmoid
+from detrex.utils import inverse_sigmoid
 
 
-class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
+class DINOTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -42,7 +41,7 @@ class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
         post_norm: bool = False,
         num_feature_levels: int = 4,
     ):
-        super(DabDeformableDetrTransformerEncoder, self).__init__(
+        super(DINOTransformerEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=MultiScaleDeformableAttention(
                     embed_dim=embed_dim,
@@ -101,7 +100,7 @@ class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
         return query
 
 
-class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
+class DINOTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -115,7 +114,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         num_feature_levels: int = 4,
         look_forward_twice=True,
     ):
-        super(DabDeformableDetrTransformerDecoder, self).__init__(
+        super(DINOTransformerDecoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=[
                     MultiheadAttention(
@@ -230,7 +229,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         return output, reference_points
 
 
-class DabDeformableDetrTransformer(nn.Module):
+class DINOTransformer(nn.Module):
     def __init__(
         self,
         encoder=None,
@@ -240,7 +239,7 @@ class DabDeformableDetrTransformer(nn.Module):
         two_stage_num_proposals=300,
         learnt_init_query=True,
     ):
-        super(DabDeformableDetrTransformer, self).__init__()
+        super(DINOTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.as_two_stage = as_two_stage
@@ -391,11 +390,6 @@ class DabDeformableDetrTransformer(nn.Module):
             spatial_shapes, valid_ratios, device=feat.device
         )
 
-        # feat_flatten = feat_flatten.permute(1, 0, 2)  # (H*W, bs, embed_dims)
-        # lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
-        #     1, 0, 2)  # (H*W, bs, embed_dims)
-
-        # import ipdb; ipdb.set_trace()
         memory = self.encoder(
             query=feat_flatten,
             key=None,
@@ -442,15 +436,6 @@ class DabDeformableDetrTransformer(nn.Module):
         else:
             target = target_unact.detach()
         target = torch.cat([query_embed[0],target],1)
-        import pdb;pdb.set_trace()
-
-
-        # elif self.use_dab:
-        #     reference_points = query_embed[..., self.embed_dim :].sigmoid()
-        #     target = query_embed[..., : self.embed_dim]
-        #     target = target.unsqueeze(0).expand(bs, -1, -1)
-        #     init_reference_out = reference_points
-            # (300, 4)
 
         # decoder
         inter_states, inter_references = self.decoder(

@@ -5,10 +5,10 @@ from detrex.utils import (
     is_dist_avail_and_initialized,
 )
 
-from detrex.modeling.criterion.two_stage_criterion import TwoStageCriterion
+from .two_stage_criterion import TwoStageCriterion
 
 
-class SetCriterion(TwoStageCriterion):
+class DINOCriterion(TwoStageCriterion):
     """This class computes the loss for DETR.
     The process happens in two steps:
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
@@ -21,7 +21,7 @@ class SetCriterion(TwoStageCriterion):
              targets: list of dicts, such that len(targets) == batch_size.
                       The expected keys in each dict depends on the losses applied, see each loss' doc
         """
-        losses=super(SetCriterion, self).forward(outputs, targets)
+        losses=super(DINOCriterion, self).forward(outputs, targets)
         import pdb;pdb.set_trace()
         num_boxes = sum(len(t["labels"]) for t in targets)
         num_boxes = torch.as_tensor(
