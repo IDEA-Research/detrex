@@ -19,8 +19,14 @@
 # https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/bbox/match_costs/match_cost.py
 # ------------------------------------------------------------------------------------------------
 
+import torch
 import torch.nn as nn
 
+from detrex.layers import (
+    generalized_box_iou,
+    box_cxcywh_to_xyxy,
+    box_xyxy_to_cxcywh,
+)
 
 class FocalLossCost(nn.Module):
     def __init__(
@@ -85,5 +91,52 @@ class CrossEntropyCost(nn.Module):
 class GIoUCost(nn.Module):
     def __init__(
         self,
-        
+        weight: float = 1.0,
     ):
+        super().__init__()
+        self.weight = weight
+    
+    def forward(self, bboxes, gt_bboxes):
+        """
+        Args:
+            bboxes (nn.Tensor): Predicted bboxes with unnormalized coordinates
+                (x1, y1, x2, y2) with shape (num_queries, 4).
+            gt_bboxes (nn.Tensor): Ground truth boxes with unnormalized coordinates
+                (x1, y1, x2, y2) with shape (num_gt, 4).
+        
+        Returns:
+            torch.Tensor: GIoU cost with weight
+        """
+        cost_giou = - generalized_box_iou(bboxes, gt_bboxes)
+        return cost_giou * self.weight
+
+
+class L1Cost(nn.Module):
+    def __init__(
+        self,
+        weight: float = 1.0,
+        box_format = "xyxy"
+    ):
+        super().__init__()
+        self.weight = weight
+        assert box_format in ["xyxy", "xywh"]
+        self.box_format = box_format
+    
+    def forward(self, bboxes, gt_bboxes):
+        """
+        Args:
+            bboxes (Tensor): Predicted boxes with normalized coordinates
+                (cx, cy, w, h), which are all in range [0, 1] with shape
+                (num_queries, 4).
+            gt_bboxes (Tensor): Ground truth boxes with normalized
+                coordinates (x1, y1, x2, y2) with shape (num_gt, 4).
+
+        Returns:
+            torch.Tensor: cost_bbox with weight
+        """
+        if self.box_format == "xywh":
+            gt_bboxes = box_xyxy_to_cxcywh(gt_bboxes)
+        elif self.box_format == "xyxy":
+            bboxes = box_cxcywh_to_xyxy(bboxes)
+        cost_bbox = torch.cdist(bboxes, gt_bboxes, p=1)
+        return cost_bbox * self.weight
