@@ -63,3 +63,27 @@ class CrossEntropyCost(nn.Module):
     ):
         super().__init__()
         self.weight = weight
+
+    def forward(self, pred_logits, gt_labels):
+        """
+        Args:
+            pred_logits (nn.Tensor): Predicted classification logits.
+            gt_labels (nn.Tensor): Ground truth labels.
+
+        Return:
+            nn.Tensor: CrossEntropy loss cost matrix with weight in shape 
+                ``(num_queries, num_gt)``
+        """
+        # Compute the classification cost. Contrary to the loss, we don't use the NLL,
+        # but approximate it in 1 - prob[target class].
+        # The 1 is a constant that doesn't change the matching, it can be ommitted.
+        out_prob = pred_logits.softmax(-1)
+        cost_class = -out_prob[:, gt_labels]
+        return cost_class * self.weight
+
+
+class GIoUCost(nn.Module):
+    def __init__(
+        self,
+        
+    ):
