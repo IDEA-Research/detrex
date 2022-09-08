@@ -16,4 +16,7 @@
 from .matcher import HungarianMatcher
 from .match_cost import (
     FocalLossCost,
+    CrossEntropyCost,
+    L1Cost,
+    GIoUCost
 )
