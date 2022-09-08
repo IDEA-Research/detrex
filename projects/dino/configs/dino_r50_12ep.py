@@ -8,7 +8,7 @@ train = get_config("common/train.py").train
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/dino_r50_12ep_without_norm"
+train.output_dir = "./output/dino_r50_12ep_no_dn"
 train.max_iter = 90000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1
@@ -20,3 +20,5 @@ optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" or "refe
 
 # modify dataloader config
 dataloader.train.num_workers = 16
+
+model.dn_number = 0
