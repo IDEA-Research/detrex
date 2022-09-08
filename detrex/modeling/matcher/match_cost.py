@@ -19,8 +19,8 @@
 # https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/bbox/match_costs/match_cost.py
 # ------------------------------------------------------------------------------------------------
 
-
 import torch.nn as nn
+
 
 class FocalLossCost(nn.Module):
     def __init__(
@@ -37,6 +37,15 @@ class FocalLossCost(nn.Module):
         self.eps = eps
 
     def forward(self, pred_logits, gt_labels):
+        """
+        Args:
+            pred_logits (nn.Tensor): Predicted classification logits.
+            gt_labels (nn.Tensor): Ground truth labels.
+
+        Return:
+            nn.Tensor: Focal loss cost matrix with weight in shape 
+                ``(num_queries, num_gt)``
+        """
         alpha = self.alpha
         gamma = self.gamma
         eps = self.eps
@@ -45,3 +54,12 @@ class FocalLossCost(nn.Module):
         pos_cost_class = alpha * ((1 - out_prob) ** gamma) * (-(out_prob + eps).log())
         cost_class = pos_cost_class[:, gt_labels] - neg_cost_class[:, gt_labels]
         return cost_class * self.weight
+
+
+class CrossEntropyCost(nn.Module):
+    def __init__(
+        self,
+        weight: float = 1.0,
+    ):
+        super().__init__()
+        self.weight = weight
