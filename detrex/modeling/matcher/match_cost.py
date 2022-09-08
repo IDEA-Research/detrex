@@ -93,10 +93,10 @@ class GIoUCost(nn.Module):
         super().__init__()
         self.weight = weight
     
-    def forward(self, bboxes, gt_bboxes):
+    def forward(self, pred_bboxes, gt_bboxes):
         """
         Args:
-            bboxes (nn.Tensor): Predicted bboxes with unnormalized coordinates
+            pred_bboxes (nn.Tensor): Predicted bboxes with unnormalized coordinates
                 (x1, y1, x2, y2) with shape (num_queries, 4).
             gt_bboxes (nn.Tensor): Ground truth boxes with unnormalized coordinates
                 (x1, y1, x2, y2) with shape (num_gt, 4).
@@ -104,7 +104,7 @@ class GIoUCost(nn.Module):
         Returns:
             torch.Tensor: GIoU cost with weight
         """
-        cost_giou = - generalized_box_iou(bboxes, gt_bboxes)
+        cost_giou = - generalized_box_iou(pred_bboxes, gt_bboxes)
         return cost_giou * self.weight
 
 
@@ -116,10 +116,10 @@ class L1Cost(nn.Module):
         super().__init__()
         self.weight = weight
     
-    def forward(self, bboxes, gt_bboxes):
+    def forward(self, pred_bboxes, gt_bboxes):
         """
         Args:
-            bboxes (Tensor): Predicted boxes with normalized coordinates
+            pred_bboxes (Tensor): Predicted boxes with normalized coordinates
                 (cx, cy, w, h), which are all in range [0, 1] with shape
                 (num_queries, 4).
             gt_bboxes (Tensor): Ground truth boxes with normalized
@@ -128,5 +128,5 @@ class L1Cost(nn.Module):
         Returns:
             torch.Tensor: cost_bbox with weight
         """
-        cost_bbox = torch.cdist(bboxes, gt_bboxes, p=1)
+        cost_bbox = torch.cdist(pred_bboxes, gt_bboxes, p=1)
         return cost_bbox * self.weight
