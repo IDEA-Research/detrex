@@ -12,13 +12,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ------------------------------------------------------------------------------------------------
+# Copyright (c) OpenMMLab. All rights reserved.
+# ------------------------------------------------------------------------------------------------
+# Modified from:
+# https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/bbox/match_costs/match_cost.py
+# ------------------------------------------------------------------------------------------------
+
 
 import torch.nn as nn
 
 class FocalLossCost(nn.Module):
-    def __init__(self,  
-                 alpha, 
-                 gamma, 
-                 weight, 
-                 eps
-                ):
+    def __init__(
+        self,  
+        alpha: float = 0.25, 
+        gamma: float = 2.0, 
+        weight: float = 1.0, 
+        eps: float = 1e-8
+    ):
+        super().__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.weight = weight
+        self.eps = eps
+
+    def forward(self, pred_logits, gt_labels):
+        alpha = self.alpha
+        gamma = self.gamma
+        eps = self.eps
+        out_prob = pred_logits.sigmoid()
+        neg_cost_class = (1 - alpha) * (out_prob**gamma) * (-(1 - out_prob + eps).log())
+        pos_cost_class = alpha * ((1 - out_prob) ** gamma) * (-(out_prob + eps).log())
+        cost_class = pos_cost_class[:, gt_labels] - neg_cost_class[:, gt_labels]
+        return cost_class * self.weight
