@@ -73,30 +73,22 @@ class HungarianMatcher(nn.Module):
         pred_bboxes = pred_bboxes.flatten(0, 1)  # [batch_size * num_queries, 4]
 
         # Also concat the target labels and boxes
-        tgt_ids = torch.cat([v["labels"] for v in targets])
+        gt_labels = torch.cat([v["labels"] for v in targets])
         tgt_bbox = torch.cat([v["boxes"] for v in targets])
 
         # Compute the classification cost.
-        if self.cost_class_type == "ce_cost":
-            # Compute the classification cost. Contrary to the loss, we don't use the NLL,
-            # but approximate it in 1 - proba[target class].
-            # The 1 is a constant that doesn't change the matching, it can be ommitted.
-            cost_class = -out_prob[:, tgt_ids]
-        elif self.cost_class_type == "focal_loss_cost":
-            alpha = self.alpha
-            gamma = self.gamma
-            neg_cost_class = (1 - alpha) * (out_prob**gamma) * (-(1 - out_prob + 1e-8).log())
-            pos_cost_class = alpha * ((1 - out_prob) ** gamma) * (-(out_prob + 1e-8).log())
-            cost_class = pos_cost_class[:, tgt_ids] - neg_cost_class[:, tgt_ids]
+        cls_cost = self.cost_class(pred_logits, gt_labels)
 
         # Compute the L1 cost between boxes
-        cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
+        bbox_cost = self.cost_bbox(pred_bboxes, gt_bboxes)
 
         # Compute the giou cost betwen boxes
-        cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyxy(tgt_bbox))
+        pred_bboxes = box_cxcywh_to_xyxy(pred_bboxes)
+        gt_bboxes = box_cxcywh_to_xyxy(gt_bboxes)
+        giou_cost = self.cost_giou(pred_bboxes, gt_bboxes)
 
         # Final cost matrix
-        C = self.cost_bbox * cost_bbox + self.cost_class * cost_class + self.cost_giou * cost_giou
+        C = cls_cost + bbox_cost + giou_cost
         C = C.view(bs, num_queries, -1).cpu()
 
         sizes = [len(v["boxes"]) for v in targets]
