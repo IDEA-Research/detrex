@@ -59,22 +59,18 @@ class HungarianMatcher(nn.Module):
                 with shape ``(bs, num_queries, num_class)``.
             pred_bboxes (nn.Tensor): Predicted boxes with normalized coordinates
                 (cx, cy, w, h), which are all in range [0, 1] with shape
-                ``(bs, num_queries, 4)``
-            gt_labels (nn.Tensor): Ground truth classification labels
+                ``(bs, num_queries, 4)``.
+            gt_labels (nn.Tensor): Ground truth classification labels with shape
+                ``(num_gt,)``.
+            gt_bboxes (nn.Tensor): Ground truth boxes with normalized coordinates
+                (cx, cy, w, h), which are all in range [0, 1] with shape
+                ``(num_queries, 4)``.
         """
-        bs, 
-
-        # We flatten to compute the cost matrices in a batch
-        if self.cost_class_type == "ce_cost":
-            out_prob = (
-                outputs["pred_logits"].flatten(0, 1).softmax(-1)
-            )  # [batch_size * num_queries, num_classes]
-        elif self.cost_class_type == "focal_loss_cost":
-            out_prob = (
-                outputs["pred_logits"].flatten(0, 1).sigmoid()
-            )  # [batch_size * num_queries, num_classes]
-
-        out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size * num_queries, 4]
+        bs, num_queries, _ = pred_logits.shape()
+        
+        # flatten to compute the cost matrices in a batch
+        pred_logits = pred_logits.flatten(0, 1)  # [batch_size * num_queries, num_classes]
+        pred_bboxes = pred_bboxes.flatten(0, 1)  # [batch_size * num_queries, 4]
 
         # Also concat the target labels and boxes
         tgt_ids = torch.cat([v["labels"] for v in targets])
