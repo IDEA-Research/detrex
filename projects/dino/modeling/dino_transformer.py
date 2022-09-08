@@ -256,6 +256,7 @@ class DINOTransformer(nn.Module):
         if self.as_two_stage:
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
             self.enc_output_norm = nn.LayerNorm(self.embed_dim)
+            # self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
 
         self.init_weights()
 
@@ -417,7 +418,7 @@ class DINOTransformer(nn.Module):
         )
 
         topk = self.two_stage_num_proposals
-        topk_proposals = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
+        topk_proposals = torch.topk(enc_outputs_class.max(-1)[0], topk, dim=1)[1]
         # extract region proposal boxes
         topk_coords_unact = torch.gather(
             enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
@@ -458,6 +459,7 @@ class DINOTransformer(nn.Module):
         inter_references_out = inter_references
         if self.as_two_stage:
             return (
+                # self.pos_trans_norm(inter_states),
                 inter_states,
                 init_reference_out,
                 inter_references_out,
