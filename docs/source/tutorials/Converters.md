@@ -482,9 +482,7 @@ def main():
                 k = k.replace(f"bn{t}", f"conv{t}.norm")
             k = k.replace("downsample.0", "shortcut")
             k = k.replace("downsample.1", "shortcut.norm")
-            # k = "backbone.0.backbone." + k
             k = "backbone." + k
-        # k = "detr." + k
 
         # add new convert content
         if "decoder" in k:
@@ -636,7 +634,6 @@ def main():
                 k = k.replace(f"bn{t}", f"conv{t}.norm")
             k = k.replace("downsample.0", "shortcut")
             k = k.replace("downsample.1", "shortcut.norm")
-            # k = "backbone.0.backbone." + k
             k = "backbone." + k
 
         # add input_proj converter
