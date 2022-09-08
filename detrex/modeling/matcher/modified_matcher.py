@@ -25,7 +25,7 @@ import torch
 import torch.nn as nn
 from scipy.optimize import linear_sum_assignment
 
-from detrex.layers.box_ops import box_cxcywh_to_xyxy, generalized_box_iou
+from detrex.layers.box_ops import box_cxcywh_to_xyxy
 from detrex.modeling.matcher import FocalLossCost, L1Cost, GIoUCost
 
 class HungarianMatcher(nn.Module):
@@ -50,8 +50,8 @@ class HungarianMatcher(nn.Module):
         self,
         pred_logits,
         pred_bboxes,
-        gt_labels,
-        gt_bboxes,
+        gt_labels_list,
+        gt_bboxes_list,
     ):
         """
         Args:
@@ -60,10 +60,10 @@ class HungarianMatcher(nn.Module):
             pred_bboxes (nn.Tensor): Predicted boxes with normalized coordinates
                 (cx, cy, w, h), which are all in range [0, 1] with shape
                 ``(bs, num_queries, 4)``.
-            gt_labels (nn.Tensor): Ground truth classification labels with shape
-                ``(num_gt,)``.
-            gt_bboxes (nn.Tensor): Ground truth boxes with normalized coordinates
-                (cx, cy, w, h), which are all in range [0, 1] with shape
+            gt_labels_list (list[nn.Tensor]): Ground truth classification labels for each image
+                with shape ``(num_gt,)``.
+            gt_bboxes (list[nn.Tensor]): Ground truth boxes with normalized coordinates
+                (cx, cy, w, h) for each image, which are all in range [0, 1] with shape
                 ``(num_queries, 4)``.
         """
         bs, num_queries, _ = pred_logits.shape()
@@ -73,8 +73,8 @@ class HungarianMatcher(nn.Module):
         pred_bboxes = pred_bboxes.flatten(0, 1)  # [batch_size * num_queries, 4]
 
         # Also concat the target labels and boxes
-        gt_labels = torch.cat([v["labels"] for v in targets])
-        tgt_bbox = torch.cat([v["boxes"] for v in targets])
+        gt_labels = torch.cat(gt_labels_list)
+        gt_bboxes = torch.cat(gt_bboxes_list)
 
         # Compute the classification cost.
         cls_cost = self.cost_class(pred_logits, gt_labels)
@@ -82,7 +82,8 @@ class HungarianMatcher(nn.Module):
         # Compute the L1 cost between boxes
         bbox_cost = self.cost_bbox(pred_bboxes, gt_bboxes)
 
-        # Compute the giou cost betwen boxes
+        # Convert the box format to (x1, y1, x2, y2) to 
+        # compute giou cost betwen boxes
         pred_bboxes = box_cxcywh_to_xyxy(pred_bboxes)
         gt_bboxes = box_cxcywh_to_xyxy(gt_bboxes)
         giou_cost = self.cost_giou(pred_bboxes, gt_bboxes)
@@ -91,7 +92,7 @@ class HungarianMatcher(nn.Module):
         C = cls_cost + bbox_cost + giou_cost
         C = C.view(bs, num_queries, -1).cpu()
 
-        sizes = [len(v["boxes"]) for v in targets]
+        sizes = [len(gt_boxes) for gt_boxes in gt_bboxes_list]
         indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
         return [
             (torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64))
