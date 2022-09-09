@@ -19,4 +19,7 @@
 # https://github.com/open-mmlab/mmdetection/blob/master/mmdet/models/losses/cross_entropy_loss.py
 # ------------------------------------------------------------------------------------------------
 
+import torch.nn as nn
+import torch.nn.functional as F
+
 

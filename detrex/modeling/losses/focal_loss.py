@@ -24,11 +24,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .utils import reduce_loss
+from .utils import weight_reduce_loss
 
 def sigmoid_focal_loss(
     preds, 
     targets, 
+    weight = None,
     alpha: float = 0.25, 
     gamma: float = 2,
     reduction: str = "mean",

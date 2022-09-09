@@ -15,4 +15,4 @@
 
 from .focal_loss import sigmoid_focal_loss
 from .dice_loss import dice_loss
-from .utils import reduce_loss
+from .utils import reduce_loss, weight_reduce_loss

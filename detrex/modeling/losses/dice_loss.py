@@ -24,12 +24,13 @@
 import torch
 import torch.nn as nn
 
-from .utils import reduce_loss
+from .utils import weight_reduce_loss
 
 
 def dice_loss(
     preds, 
     targets,
+    weight=None,
     eps: float = 1e-4,
     reduction: str = "mean",
     avg_factor: int = None,
@@ -44,6 +45,8 @@ def dice_loss(
             A float tensor with the same shape as inputs. Stores the binary
             classification label for each element in inputs
             (0 for the negative class and 1 for the positive class).
+        weight (torch.Tensor, optional): The weight of loss for each
+            prediction, has a shape (n,). Defaults to None.
         eps (float): Avoid dividing by zero. Default: 1e-4.
         avg_factor (int, optional): Average factor that is used to average 
             the loss. Default: None.
@@ -51,24 +54,16 @@ def dice_loss(
     Return:
         torch.Tensor: The computed dice loss.
     """
-    # use sigmoid ?
     preds = preds.flatten(1)
     targets = targets.flatten(1).float()
     numerator = 2 * torch.sum(preds * targets, 1) + eps
     denominator = torch.sum(preds, 1) + torch.sum(targets, 1) + eps
     loss = 1 - (numerator + 1) / (denominator + 1)
     
-    # if avg_factor is not specified, just reduce the loss.
-    if avg_factor is None:
-        loss = reduce_loss(loss, reduction)
-    else:
-        # if reduction is mean, then average the loss by avg_factor.
-        if reduction == "mean":
-            # Avoid causing ZeroDivisionError when avg_factor is 0.0
-            eps = torch.finfo(torch.float32).eps
-            loss = loss.sum() / (avg_factor + eps)
-        elif reduction != "none":
-            raise ValueError('avg_factor can not be used with reduction="sum"')
+    if weight is not None:
+        assert weight.ndim == loss.ndim
+        assert len(weight) == len(preds)
+    loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
     return loss
 
 
@@ -89,6 +84,7 @@ class DiceLoss(nn.Module):
         self,
         preds,
         targets,
+        weight=None,
         avg_factor = None,
     ):
         if self.use_sigmoid:
@@ -97,8 +93,9 @@ class DiceLoss(nn.Module):
         loss = self.loss_weight * dice_loss(
             preds,
             targets,
-            self.eps,
-            self.reduction,
-            avg_factor
+            weight,
+            eps=self.eps,
+            reduction=self.reduction,
+            avg_factor=avg_factor,
         )
         return loss
