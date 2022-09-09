@@ -41,7 +41,7 @@ class DINO(nn.Module):
         pixel_std,
         embed_dim=256,
         aux_loss=True,
-        as_two_stage=True,
+        as_two_stage=False,
         device="cuda",
         dn_number=100,
         label_noise_ratio=0.2,
@@ -69,6 +69,9 @@ class DINO(nn.Module):
         if not as_two_stage:
             self.tgt_embed = nn.Embedding(num_queries, embed_dim)
             self.refpoint_embed = nn.Embedding(num_queries, 4)
+            nn.init.zeros_(self.tgt_embed.weight)
+            nn.init.uniform_(self.refpoint_embed.weight)
+            self.refpoint_embed.weight.data[:] = inverse_sigmoid(self.refpoint_embed.weight.data[:]).clamp(-3, 3)
 
         self.aux_loss = aux_loss
         self.as_two_stage = as_two_stage
@@ -99,14 +102,39 @@ class DINO(nn.Module):
         self.bbox_embed = nn.ModuleList([copy.deepcopy(self.bbox_embed) for i in range(num_pred)])
         nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
 
-        # hack implementation for iterative bounding box refinement
-        self.transformer.decoder.bbox_embed = self.bbox_embed
-
         # hack implementation for two-stage
         if self.as_two_stage:
             self.transformer.decoder.class_embed = self.class_embed
+        # hack implementation for iterative bounding box refinement
+        self.transformer.decoder.bbox_embed = self.bbox_embed
+
+        # self.init_weights()
+
+        if self.as_two_stage:
             for bbox_embed_layer in self.bbox_embed:
                 nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
+
+    # def init_weights(self):
+    # prior_prob = 0.01
+    # bias_value = -math.log((1 - prior_prob) / prior_prob)
+
+    # for class_embed_layer in self.class_embed:
+    #     class_embed_layer.bias.data = torch.ones(self.num_classes) * bias_value
+
+    # for bbox_embed_layer in self.bbox_embed:
+    #     nn.init.constant_(bbox_embed_layer.layers[-1].weight.data, 0)
+    #     nn.init.constant_(bbox_embed_layer.layers[-1].bias.data, 0)
+
+    # for _, neck_layer in self.neck.named_modules():
+    #     if isinstance(neck_layer, nn.Conv2d):
+    #         nn.init.xavier_uniform_(neck_layer.weight, gain=1)
+    #         nn.init.constant_(neck_layer.bias, 0)
+
+    # nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
+
+    # if self.as_two_stage:
+    #     for bbox_embed_layer in self.bbox_embed:
+    #         nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
 
     def forward(self, batched_inputs):
 
@@ -226,7 +254,7 @@ class DINO(nn.Module):
         if dn_number<=0:
             return None,None,None,None
             # positive and negative dn queries
-            
+        # import pdb;pdb.set_trace()
         dn_number = dn_number * 2
         known = [(torch.ones_like(t['labels'])).cuda() for t in targets]
         batch_size = len(known)
@@ -352,7 +380,6 @@ class DINO(nn.Module):
                 The tensor predicts 4-vector (x,y,w,h) box
                 regression values for every queryx
             image_sizes (List[torch.Size]): the input image sizes
-
         Returns:
             results (List[Instances]): a list of #images elements.
         """

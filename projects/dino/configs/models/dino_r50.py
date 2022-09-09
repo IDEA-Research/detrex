@@ -45,6 +45,7 @@ model = L(DINO)(
         in_features=["res3", "res4", "res5"],
         out_channels=256,
         num_outs=4,
+        kernel_size=1,
         norm_layer=L(nn.GroupNorm)(num_groups=32, num_channels=256),
     ),
     transformer=L(DINOTransformer)(
