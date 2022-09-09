@@ -71,7 +71,7 @@ class CrossEntropyLoss(nn.Module):
         ignore_index=None,
         avg_non_ignore=False,
     ):
-        super().__init__()
+        super(CrossEntropyLoss, self).__init__()
         self.reduction = reduction
         self.loss_weight = loss_weight
         self.ignore_index = ignore_index

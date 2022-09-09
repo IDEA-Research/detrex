@@ -75,6 +75,7 @@ class DiceLoss(nn.Module):
         loss_weight = 1.0,
         eps = 1e-3,
     ):
+        super(DiceLoss, self).__init__()
         self.use_sigmoid = use_sigmoid
         self.reduction = reduction
         self.loss_weight = loss_weight
