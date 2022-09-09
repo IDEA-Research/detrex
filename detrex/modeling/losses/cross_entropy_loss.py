@@ -12,7 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ------------------------------------------------------------------------------------------------
+# Copyright (c) OpenMMLab. All rights reserved.
+# ------------------------------------------------------------------------------------------------
+# Modified from:
+# https://github.com/open-mmlab/mmdetection/blob/master/mmdet/models/losses/cross_entropy_loss.py
+# ------------------------------------------------------------------------------------------------
 
-from .focal_loss import sigmoid_focal_loss
-from .dice_loss import dice_loss
-from .utils import reduce_loss
+

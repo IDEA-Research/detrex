@@ -29,6 +29,17 @@ from detrex.layers.box_ops import box_cxcywh_to_xyxy
 from detrex.modeling.matcher import FocalLossCost, L1Cost, GIoUCost
 
 class HungarianMatcher(nn.Module):
+    """HungarianMatcher which computes an assignment between targets and predictions.
+
+    For efficiency reasons, the targets don't include the no_object. Because of this, in general,
+    there are more predictions than targets. In this case, we do a 1-to-1 matching of the best predictions,
+    while the others are un-matched (and thus treated as non-objects).
+
+    Args:
+        cost_class (nn.Module): Cost function for classification.
+        cost_bbox (nn.Module): Cost function for regression L1 cost.
+        cost_giou (nn.Module): Cost function for regression iou cost.
+    """
     def __init__(
         self,
         cost_class: nn.Module = FocalLossCost(
