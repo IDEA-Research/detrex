@@ -17,7 +17,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # ------------------------------------------------------------------------------------------------
 # Modified from:
-# https://github.com/facebookresearch/fvcore/blob/main/fvcore/nn/smooth_l1_loss.pys
+# https://github.com/facebookresearch/fvcore/blob/main/fvcore/nn/smooth_l1_loss.py
 # https://github.com/open-mmlab/mmdetection/blob/master/mmdet/models/losses/smooth_l1_loss.py
 # ------------------------------------------------------------------------------------------------
 
