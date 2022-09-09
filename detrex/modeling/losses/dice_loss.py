@@ -22,6 +22,7 @@
 # ------------------------------------------------------------------------------------------------
 
 import torch
+import torch.nn as nn
 
 from .utils import reduce_loss
 
@@ -50,7 +51,8 @@ def dice_loss(
     Return:
         torch.Tensor: The computed dice loss.
     """
-    preds = preds.sigmoid().flatten(1)
+    # use sigmoid ?
+    preds = preds.flatten(1)
     targets = targets.flatten(1).float()
     numerator = 2 * torch.sum(preds * targets, 1) + eps
     denominator = torch.sum(preds, 1) + torch.sum(targets, 1) + eps
@@ -68,3 +70,35 @@ def dice_loss(
         elif reduction != "none":
             raise ValueError('avg_factor can not be used with reduction="sum"')
     return loss
+
+
+class DiceLoss(nn.Module):
+    def __init__(
+        self,
+        use_sigmoid = True,
+        reduction = "mean",
+        loss_weight = 1.0,
+        eps = 1e-3,
+    ):
+        self.use_sigmoid = use_sigmoid
+        self.reduction = reduction
+        self.loss_weight = loss_weight
+        self.eps = eps
+    
+    def forward(
+        self,
+        preds,
+        targets,
+        avg_factor = None,
+    ):
+        if self.use_sigmoid:
+            preds = preds.sigmoid()
+        
+        loss = self.loss_weight * dice_loss(
+            preds,
+            targets,
+            self.eps,
+            self.reduction,
+            avg_factor
+        )
+        return loss
