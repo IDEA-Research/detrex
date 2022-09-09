@@ -69,15 +69,10 @@ def sigmoid_focal_loss(
         alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
         loss = alpha_t * loss
 
-    if avg_factor is None:
-        loss = reduce_loss(loss, reduction=reduction)
-    else:
-        if reduction == "mean":
-            eps = torch.finfo(torch.float32).eps
-            loss = loss.sum() / (avg_factor + eps)
-        elif reduction != 'none':
-            raise ValueError('avg_factor can not be used with reduction="sum"')
+    if weight is not None:
+        assert weight.ndim == loss.ndim
 
+    loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
     return loss
 
 
@@ -98,14 +93,16 @@ class FocalLoss(nn.Module):
         self,
         preds,
         targets,
+        weight=None,
         avg_factor=None,
     ):
         loss_class = self.loss_weight * sigmoid_focal_loss(
             preds,
             targets,
-            self.alpha,
-            self.gamma,
-            self.reduction,
-            avg_factor,
+            weight,
+            alpha=self.alpha,
+            gamma=self.gamma,
+            reduction=self.reduction,
+            avg_factor=avg_factor,
         )
         return loss_class
