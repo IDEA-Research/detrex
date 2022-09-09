@@ -21,7 +21,10 @@ import numpy as np
 from detrex.modeling.losses import (
     FocalLoss,
     CrossEntropyLoss,
+    GIoULoss,
+    L1Loss,
 )
+from detrex.layers.box_ops import generalized_box_iou
 
 from utils import sigmoid_focal_loss
 
@@ -70,6 +73,61 @@ class TestLosses(unittest.TestCase):
         detrex_output = ce_detrex(preds, targets, class_weight=empty_weight)
         original_output = F.cross_entropy(preds, targets, empty_weight) * loss_weight
         
+        self.assertTrue(
+            np.allclose(
+                detrex_output.cpu().numpy(), 
+                original_output.cpu().numpy(),
+                1e-7,
+                1e-7,
+            )
+        )
+
+    def test_l1_loss(self):
+        preds = torch.tensor([[-1, -1, 1, 1], [-1, -1, 1, 1]], dtype=torch.float32)
+        targets = torch.tensor([[0, 0, 1, 1], [0, 0, 1, 1]], dtype=torch.float32)
+        avg_factor = 2
+        loss_weight = 2.0
+
+        l1_loss_detrex = L1Loss(reduction="mean", loss_weight=loss_weight)
+
+        detrex_output = l1_loss_detrex(
+            preds,
+            targets,
+            avg_factor=avg_factor,
+        )
+
+        original_output = F.l1_loss(preds, targets, reduction="none")
+        original_output = original_output.sum() / avg_factor
+        original_output *= loss_weight
+
+        self.assertTrue(
+            np.allclose(
+                detrex_output.cpu().numpy(), 
+                original_output.cpu().numpy(),
+                1e-7,
+                1e-7,
+            )
+        )
+
+    def test_giou_loss(self):
+        preds = torch.tensor([[-1, -1, 1, 1], [-1, -1, 1, 1]], dtype=torch.float32)
+        targets = torch.tensor([[0, 0, 1, 1], [0, 0, 1, 1]], dtype=torch.float32)
+        avg_factor = 2
+        loss_weight = 2.0
+
+        giou_loss_detrex = GIoULoss(eps=1e-6, reduction="mean", loss_weight=loss_weight)
+
+        detrex_output = giou_loss_detrex(
+            preds,
+            targets,
+            avg_factor=avg_factor
+        )
+        original_output = 1 - torch.diag(
+            generalized_box_iou(preds, targets)
+        )
+        original_output = original_output.sum() / avg_factor
+        original_output *= loss_weight
+
         self.assertTrue(
             np.allclose(
                 detrex_output.cpu().numpy(), 
