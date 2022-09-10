@@ -1,19 +1,40 @@
-## DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection
+## DAB-Deformable-DETR
 
-Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heung-Yeung Shum
+Implement `DAB-Deformable-DETR` which is a strong baseline of [DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR](https://arxiv.org/abs/2201.12329).
 
-[[`arXiv`](https://arxiv.org/abs/2203.03605)] [[`BibTeX`](#citing-dino)]
+[[`arXiv`](https://arxiv.org/abs/2201.12329)] [[`BibTeX`](#citing-dab-detr)]
 
 <div align="center">
-  <img src="./assets/dino_arch.png"/>
+  <img src="./assets/dab_detr_overall.png"/>
 </div><br/>
+
+## Pretrained Models
+<table><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+<!-- ROW: dab_deformable_detr_r50_50ep -->
+ <tr><td align="left"><a href="configs/dab_deformable_detr_r50_50ep.py">DAB-Deformable-DETR-R50</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">48.7</td>
+<td align="center"> <a href="">Google Drive</a>&nbsp;|&nbsp;<a href="">Tsinghua Cloud</a></td>
+</tr>
+</tbody></table>
+
+**Note:** DC5 means using dilated convolution in `res5`.
 
 
 ## Training
 All configs can be trained with:
 ```bash
 cd detrex
-python tools/train_net.py --config-file projects/dino/configs/path/to/config.py --num-gpus 8
+python tools/train_net.py --config-file projects/dab_deformable_detr/configs/path/to/config.py --num-gpus 8
 ```
 By default, we use 8 GPUs with total batch size as 16 for training.
 
@@ -21,20 +42,19 @@ By default, we use 8 GPUs with total batch size as 16 for training.
 Model evaluation can be done as follows:
 ```bash
 cd detrex
-python tools/train_net.py --config-file projects/dino/configs/path/to/config.py --eval-only train.init_checkpoint=/path/to/model_checkpoint
+python tools/train_net.py --config-file projects/dab_deformable_detr/configs/path/to/config.py --eval-only train.init_checkpoint=/path/to/model_checkpoint
 ```
 
-
-## Citing DINO
+## Citing DAB-DETR
 If you find our work helpful for your research, please consider citing the following BibTeX entry.
 
 ```BibTex
-@misc{zhang2022dino,
-      title={DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection}, 
-      author={Hao Zhang and Feng Li and Shilong Liu and Lei Zhang and Hang Su and Jun Zhu and Lionel M. Ni and Heung-Yeung Shum},
+@inproceedings{
+      liu2022dabdetr,
+      title={{DAB}-{DETR}: Dynamic Anchor Boxes are Better Queries for {DETR}},
+      author={Shilong Liu and Feng Li and Hao Zhang and Xiao Yang and Xianbiao Qi and Hang Su and Jun Zhu and Lei Zhang},
+      booktitle={International Conference on Learning Representations},
       year={2022},
-      eprint={2203.03605},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+      url={https://openreview.net/forum?id=oMI9PjOb9Jl}
 }
 ```
