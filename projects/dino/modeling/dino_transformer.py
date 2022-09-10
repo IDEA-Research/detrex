@@ -29,7 +29,7 @@ from detrex.layers import (
 from detrex.utils import inverse_sigmoid
 
 
-class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
+class DINOTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -42,7 +42,7 @@ class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
         post_norm: bool = False,
         num_feature_levels: int = 4,
     ):
-        super(DabDeformableDetrTransformerEncoder, self).__init__(
+        super(DINOTransformerEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=MultiScaleDeformableAttention(
                     embed_dim=embed_dim,
@@ -101,7 +101,7 @@ class DabDeformableDetrTransformerEncoder(TransformerLayerSequence):
         return query
 
 
-class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
+class DINOTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -115,7 +115,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         num_feature_levels: int = 4,
         look_forward_twice=True,
     ):
-        super(DabDeformableDetrTransformerDecoder, self).__init__(
+        super(DINOTransformerDecoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=[
                     MultiheadAttention(
@@ -230,7 +230,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         return output, reference_points
 
 
-class DabDeformableDetrTransformer(nn.Module):
+class DINOTransformer(nn.Module):
     def __init__(
         self,
         encoder=None,
@@ -240,7 +240,7 @@ class DabDeformableDetrTransformer(nn.Module):
         two_stage_num_proposals=300,
         learnt_init_query=True,
     ):
-        super(DabDeformableDetrTransformer, self).__init__()
+        super(DINOTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.as_two_stage = as_two_stage

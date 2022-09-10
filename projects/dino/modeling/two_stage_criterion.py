@@ -20,9 +20,7 @@ class TwoStageCriterion(SetCriterion):
              outputs: dict of tensors, see the output specification of the model for the format
              targets: list of dicts, such that len(targets) == batch_size.
                       The expected keys in each dict depends on the losses applied, see each loss' doc
-
              return_indices: used for vis. if True, the layer0-5 indices will be returned as well.
-
         """
 
         outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
