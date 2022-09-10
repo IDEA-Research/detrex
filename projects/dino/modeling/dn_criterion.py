@@ -1,10 +1,12 @@
 import torch
 
+
 from detrex.utils import (
     get_world_size,
     is_dist_avail_and_initialized,
 )
 
+# from ..losses import dice_loss, sigmoid_focal_loss
 from .two_stage_criterion import TwoStageCriterion
 
 
@@ -22,7 +24,7 @@ class DINOCriterion(TwoStageCriterion):
                       The expected keys in each dict depends on the losses applied, see each loss' doc
         """
         losses=super(DINOCriterion, self).forward(outputs, targets)
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         num_boxes = sum(len(t["labels"]) for t in targets)
         num_boxes = torch.as_tensor(
             [num_boxes], dtype=torch.float, device=next(iter(outputs.values())).device
