@@ -44,3 +44,7 @@ from .conv import (
     ConvNormAct,
     ConvNorm,
 )
+from .denoising import (
+    apply_box_noise,
+    apply_label_noise,
+)

@@ -24,10 +24,12 @@ def apply_label_noise(
 ):
     """
     Args:
-        labels (nn.Tensor): Classification labels with ``(num_labels, )``.
+        labels (torch.Tensor): Classification labels with ``(num_labels, )``.
+        label_noise_scale (float):
+        num_classes (int): 
 
     Returns:
-        nn.Tensor: The noised labels the same shape as ``labels``.
+        torch.Tensor: The noised labels the same shape as ``labels``.
     """
     if label_noise_scale > 0:
         p = torch.rand_like(labels.float())
@@ -43,6 +45,12 @@ def apply_box_noise(
     boxes: torch.Tensor,
     box_noise_scale: float = 0.4,
 ):
+    """
+    Args:
+        boxes (torch.Tensor): Bounding boxes in format ``(x1, y1, x2, y2)`` with
+            shape ``(num_boxes, 4)``
+        box_noise_scale (float): 
+    """
     if box_noise_scale > 0:
         diff = torch.zeros_like(boxes)
         diff[:, :2] = boxes[:, 2:] / 2
@@ -62,6 +70,7 @@ class GenerateNoiseQueries(nn.Module):
         noise_nums_per_group: int = 5,
         label_noise_scale: float = 0.0,
         box_noise_scale: float = 0.0,
+        with_indicator: bool = False,
     ):
         self.num_classes = num_classes
         self.noise_nums_per_group = noise_nums_per_group
@@ -71,4 +80,10 @@ class GenerateNoiseQueries(nn.Module):
         # leave one dim for indicator mentioned in DN-DETR
         self.label_encoder = nn.Embedding(num_classes + 1, label_embed_dim - 1)
 
-
+    def forward(
+        self,
+        input_labels_list,
+        input_boxes_list,
+        gt_labels_list,
+        gt_boxes_list,
+    )
