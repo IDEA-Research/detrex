@@ -17,18 +17,58 @@ import torch
 import torch.nn as nn
 
 
+def apply_label_noise(
+    labels: torch.Tensor, 
+    label_noise_scale: float = 0.2, 
+    num_classes: int = 80,
+):
+    """
+    Args:
+        labels (nn.Tensor): Classification labels with ``(num_labels, )``.
+
+    Returns:
+        nn.Tensor: The noised labels the same shape as ``labels``.
+    """
+    if label_noise_scale > 0:
+        p = torch.rand_like(labels.float())
+        noised_index = torch.nonzero(p < label_noise_scale).view(-1)
+        new_lebels = torch.randint_like(noised_index, 0, num_classes)
+        noised_labels = labels.scatter_(0, noised_index, new_lebels)
+        return noised_labels
+    else:
+        return labels
+
+
+def apply_box_noise(
+    boxes: torch.Tensor,
+    box_noise_scale: float = 0.4,
+):
+    if box_noise_scale > 0:
+        diff = torch.zeros_like(boxes)
+        diff[:, :2] = boxes[:, 2:] / 2
+        diff[:, 2:] = boxes[:, 2:]
+        boxes += (
+            torch.mul((torch.rand_like(boxes) * 2 - 1.0), diff) * box_noise_scale
+        )
+        boxes = boxes.clamp(min=0.0, max=1.0)
+    return boxes
+
+
 class GenerateNoiseQueries(nn.Module):
     def __init__(
         self,
-        noise_nums: int = 5,
+        num_classes: int = 80,
+        label_embed_dim: int = 256,
+        noise_nums_per_group: int = 5,
         label_noise_scale: float = 0.0,
         box_noise_scale: float = 0.0,
     ):
-        self.noise_nums = noise_nums
+        self.num_classes = num_classes
+        self.noise_nums_per_group = noise_nums_per_group
         self.label_noise_scale = label_noise_scale
         self.box_noise_scale = box_noise_scale
-    
-    def apply_label_noise(self, gt_labels_list):
-        noised_label = gt_labels_list.repeat(self.noise_nums, 1).view(-1)
-        if self.label_noise_scale > 0:
-            
+        
+        # leave one dim for indicator mentioned in DN-DETR
+        self.label_encoder = nn.Embedding(num_classes + 1, label_embed_dim - 1)
+
+
