@@ -56,16 +56,19 @@ def apply_box_noise(
     return boxes
 
 
-class GenerateNoiseQueries(nn.Module):
+class GenerateDNQueries(nn.Module):
     def __init__(
         self,
+        num_queries: int = 300,
         num_classes: int = 80,
         label_embed_dim: int = 256,
         noise_nums_per_group: int = 5,
-        label_noise_scale: float = 0.0,
-        box_noise_scale: float = 0.0,
+        label_noise_scale: float = 0.2,
+        box_noise_scale: float = 0.4,
         with_indicator: bool = False,
     ):
+        super(GenerateDNQueries, self).__init__()
+        self.num_queries = num_queries
         self.num_classes = num_classes
         self.label_embed_dim = label_embed_dim
         self.noise_nums_per_group = noise_nums_per_group
@@ -79,7 +82,32 @@ class GenerateNoiseQueries(nn.Module):
         else:
             self.label_encoder = nn.Embedding(num_classes, label_embed_dim)
 
-        
+    def generate_query_masks(self, max_gt_num_per_image, device):
+        noised_query_nums = max_gt_num_per_image * self.noise_nums_per_group
+        tgt_size = max_gt_num_per_image + self.num_queries
+        attn_mask = torch.ones(tgt_size, tgt_size).to(device) < 0
+        # match query cannot see the reconstruct
+        attn_mask[noised_query_nums:, :noised_query_nums] = True
+        for i in range(self.noise_nums_per_group):
+            if i == 0:
+                attn_mask[
+                    max_gt_num_per_image * i : max_gt_num_per_image * (i + 1),
+                    max_gt_num_per_image * (i + 1) : noised_query_nums,
+                ] = True
+            if i == self.noise_nums_per_group - 1:
+                attn_mask[
+                    max_gt_num_per_image * i : max_gt_num_per_image * (i + 1), : max_gt_num_per_image * i
+                ] = True
+            else:
+                attn_mask[
+                    max_gt_num_per_image * i : max_gt_num_per_image * (i + 1),
+                    max_gt_num_per_image * (i + 1) : noised_query_nums,
+                ] = True
+                attn_mask[
+                    max_gt_num_per_image * i : max_gt_num_per_image * (i + 1), : max_gt_num_per_image * i
+                ] = True
+        return attn_mask
+
     def forward(
         self,
         gt_labels_list,
@@ -137,4 +165,8 @@ class GenerateNoiseQueries(nn.Module):
             noised_label_queries[(batch_idx_per_instance, valid_index_per_group)] = label_embedding
             noised_box_queries[(batch_idx_per_instance, valid_index_per_group)] = noised_boxes
 
-        return noised_label_queries, noised_box_queries, max_gt_num_per_image
+        attn_mask = self.generate_query_masks(max_gt_num_per_image, device)
+
+        return noised_label_queries, noised_box_queries, attn_mask
+
+
