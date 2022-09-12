@@ -34,48 +34,76 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DABDETR(nn.Module):
+    """Implement DETR model: arxiv
+    
+    Args:
+        backbone (nn.Module): The backbone model used for feature extraction.
+        in_features (List[str]): 
+        in_channels
+        position_embedding
+        transformer
+        embed_dim
+        num_classes
+        num_queries
+        criterion
+        pixel_mean
+        pixel_std
+        aux_loss
+        device
+    """
     def __init__(
         self,
         backbone: nn.Module,
         in_features: List[str],
-        transformer: nn.Module,
+        in_channels: int,
         position_embedding: nn.Module,
+        transformer: nn.Module,
+        embed_dim: int,
         num_classes: int,
         num_queries: int,
         criterion: nn.Module,
         pixel_mean: List[float],
         pixel_std: List[float],
-        in_channels: int = 2048,
-        embed_dim: int = 256,
         aux_loss: bool = True,
-        iter_update: bool = True,
-        query_dim: int = 4,
-        random_refpoints_xy: bool = True,
+        freeze_anchor_box_centers: bool = True,
+        select_box_nums_for_evaluation: int = 300,
         device: str = "cuda",
     ):
         super(DABDETR, self).__init__()
+        # define backbone and position embedding module
         self.backbone = backbone
         self.in_features = in_features
-        self.transformer = transformer
         self.position_embedding = position_embedding
-        self.class_embed = nn.Linear(embed_dim, num_classes)
-        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
-        self.refpoint_embed = nn.Embedding(num_queries, query_dim)
-        self.num_classes = num_classes
-        self.num_queries = num_queries
-        self.criterion = criterion
-        self.query_dim = query_dim
-        self.aux_loss = aux_loss
-        self.iter_update = iter_update
 
-        assert self.query_dim in [2, 4]
-
-        self.random_refpoints_xy = random_refpoints_xy
-
+        # project the backbone output feature 
+        # into the required dim for transformer block
         self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
+        
+        # define leanable anchor boxes and transformer module
+        self.transformer = transformer
+        self.anchor_box_embed = nn.Embedding(num_queries, 4)
 
-        if self.iter_update:
-            self.transformer.decoder.bbox_embed = self.bbox_embed
+        # whether to freeze the initilized anchor box centers during training
+        self.freeze_anchor_box_centers = freeze_anchor_box_centers
+
+        # define classification head and box head
+        self.class_embed = nn.Linear(embed_dim, num_classes)
+        self.bbox_embed = MLP(
+            input_dim=embed_dim, 
+            hidden_dim=embed_dim, 
+            output_dim=4, 
+            num_layers=3
+        )
+        self.num_classes = num_classes
+
+        # predict offsets to update anchor boxes after each decoder layer
+        # with shared box embedding head
+        # this is a hack implementation which will be modified in the future
+        self.transformer.decoder.bbox_embed = self.bbox_embed
+
+        # where to calculate auxiliary loss in criterion
+        self.aux_loss = aux_loss
+        self.criterion = criterion
 
         # normalizer for input raw images
         self.device = device
@@ -83,15 +111,19 @@ class DABDETR(nn.Module):
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
+        # The total nums of selected boxes for evaluation
+        self.select_box_nums_for_evaluation = select_box_nums_for_evaluation
+
         self.init_weights()
 
     def init_weights(self):
-        if self.random_refpoints_xy:
-            self.refpoint_embed.weight.data[:, :2].uniform_(0, 1)
-            self.refpoint_embed.weight.data[:, :2] = inverse_sigmoid(
+        """Initialize weights for DAB-DETR."""
+        if self.freeze_anchor_box_centers:
+            self.anchor_box_embed.weight.data[:, :2].uniform_(0, 1)
+            self.anchor_box_embed.weight.data[:, :2] = inverse_sigmoid(
                 self.refpoint_embed.weight.data[:, :2]
             )
-            self.refpoint_embed.weight.data[:, :2].requires_grad = False
+            self.anchor_box_embed.weight.data[:, :2].requires_grad = False
 
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
@@ -124,7 +156,7 @@ class DABDETR(nn.Module):
 
         reference_before_sigmoid = inverse_sigmoid(reference)
         temp = self.bbox_embed(hidden_states)
-        temp[..., : self.query_dim] += reference_before_sigmoid
+        temp[..., : 4] += reference_before_sigmoid
         outputs_coord = temp.sigmoid()
         outputs_class = self.class_embed(hidden_states)
 
@@ -155,6 +187,16 @@ class DABDETR(nn.Module):
                 processed_results.append({"instances": r})
             return processed_results
 
+    @torch.jit.unused
+    def _set_aux_loss(self, outputs_class, outputs_coord):
+        # this is a workaround to make torchscript happy, as torchscript
+        # doesn't support dictionary with non-homogeneous values, such
+        # as a dict having both a Tensor and a list.
+        return [
+            {"pred_logits": a, "pred_boxes": b}
+            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
+        ]
+
     def inference(self, box_cls, box_pred, image_sizes):
         """
         Arguments:
@@ -171,12 +213,16 @@ class DABDETR(nn.Module):
         assert len(box_cls) == len(image_sizes)
         results = []
 
+        # Select top-k confidence boxes for inference
         prob = box_cls.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 100, dim=1)
+        topk_values, topk_indexes = torch.topk(
+            prob.view(box_cls.shape[0], -1), 
+            self.select_box_nums_for_evaluation, 
+            dim=1,
+        )
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]
-
         boxes = torch.gather(box_pred, 1, topk_boxes.unsqueeze(-1).repeat(1, 1, 4))
 
         for i, (scores_per_image, labels_per_image, box_pred_per_image, image_size) in enumerate(
@@ -205,13 +251,3 @@ class DABDETR(nn.Module):
         images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
         images = ImageList.from_tensors(images)
         return images
-
-    @torch.jit.unused
-    def _set_aux_loss(self, outputs_class, outputs_coord):
-        # this is a workaround to make torchscript happy, as torchscript
-        # doesn't support dictionary with non-homogeneous values, such
-        # as a dict having both a Tensor and a list.
-        return [
-            {"pred_logits": a, "pred_boxes": b}
-            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
-        ]

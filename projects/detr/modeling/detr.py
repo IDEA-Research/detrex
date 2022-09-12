@@ -32,34 +32,64 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DETR(nn.Module):
-    """This is the DETR module that performs object detection"""
-
+    """Implement DETR model: arxiv
+    
+    Args:
+        backbone (nn.Module): The backbone model used for feature extraction.
+        in_features (List[str]): 
+        in_channels
+        position_embedding
+        transformer
+        embed_dim
+        num_classes
+        num_queries
+        criterion
+        pixel_mean
+        pixel_std
+        aux_loss
+        device
+    """
     def __init__(
         self,
         backbone: nn.Module,
         in_features: List[str],
+        in_channels: int,
         position_embedding: nn.Module,
         transformer: nn.Module,
+        embed_dim: int,
         num_classes: int,
         num_queries: int,
         criterion: nn.Module,
         pixel_mean: List[float],
         pixel_std: List[float],
-        in_channels: int = 2048,
-        embed_dim: int = 256,
         aux_loss: bool = False,
         device: str = "cuda",
     ):
         super().__init__()
-        self.num_queries = num_queries
-        self.transformer = transformer
-        self.class_embed = nn.Linear(embed_dim, num_classes + 1)
-        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
-        self.query_embed = nn.Embedding(num_queries, embed_dim)
-        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
+        # define backbone and position embedding module
         self.backbone = backbone
-        self.position_embedding = position_embedding
         self.in_features = in_features
+        self.position_embedding = position_embedding
+        
+        # project the backbone output feature 
+        # into the required dim for transformer block
+        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
+
+        # define learnable object queries and transformer module
+        self.transformer = transformer
+        self.query_embed = nn.Embedding(num_queries, embed_dim)
+        
+        # define classification head and box head
+        self.class_embed = nn.Linear(embed_dim, num_classes + 1)
+        self.bbox_embed = MLP(
+            input_dim=embed_dim, 
+            hidden_dim=embed_dim, 
+            output_dim=4, 
+            num_layers=3
+        )
+        self.num_classes = num_classes
+
+        # where to calculate auxiliary loss in criterion
         self.aux_loss = aux_loss
         self.criterion = criterion
 
@@ -167,7 +197,6 @@ class DETR(nn.Module):
         ):
             result = Instances(image_size)
             result.pred_boxes = Boxes(box_cxcywh_to_xyxy(box_pred_per_image))
-
             result.pred_boxes.scale(scale_x=image_size[1], scale_y=image_size[0])
             result.scores = scores_per_image
             result.pred_classes = labels_per_image
