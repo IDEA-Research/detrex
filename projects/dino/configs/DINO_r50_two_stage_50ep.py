@@ -80,7 +80,7 @@ train = get_config("common/train.py").train
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
 # train.init_checkpoint = "/comp_robot/rentianhe/code/detrex/test_dino.pth"
-train.output_dir = "./output/dino_r50_12ep_900query_inference_top300"
+train.output_dir = "./output/dino_r50_12ep_900query_use_deformable_pos"
 # train.output_dir = "./output/test"
 train.max_iter = 90000
 train.clip_grad.enabled = True
