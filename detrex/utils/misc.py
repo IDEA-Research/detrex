@@ -37,7 +37,8 @@ def interpolate(input, size=None, scale_factor=None, mode="nearest", align_corne
 
 def inverse_sigmoid(x, eps=1e-3):
     """
-    The inverse function for sigmoid activation function.
+    The inverse function for sigmoid activation function. 
+    Note: It might face numberical issues with fp16 small eps.
     """
     x = x.clamp(min=0, max=1)
     x1 = x.clamp(min=eps)
