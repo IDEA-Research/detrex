@@ -31,9 +31,9 @@ model = L(DabDeformableDETR)(
     ),
     position_embedding=L(PositionEmbeddingSine)(
         num_pos_feats=128,
-        temperature=10000,
+        temperature=20,
         normalize=True,
-        offset=-0.5,
+        # offset=-0.5,
     ),
     neck=L(ChannelMapper)(
         input_shapes={
@@ -71,10 +71,10 @@ model = L(DabDeformableDETR)(
         ),
         as_two_stage="${..as_two_stage}",
         num_feature_levels=num_feature_levels,
-        two_stage_num_proposals=300,
+        two_stage_num_proposals=900,
     ),
     num_classes=80,
-    num_queries=300,
+    num_queries=900,
     aux_loss=True,
     as_two_stage=False,
     criterion=L(SetCriterion)(

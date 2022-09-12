@@ -79,7 +79,9 @@ train = get_config("common/train.py").train
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/dino_r50_12ep_rebuild"
+# train.init_checkpoint = "/comp_robot/rentianhe/code/detrex/test_dino.pth"
+train.output_dir = "./output/dino_r50_12ep_900query_inference_top300"
+# train.output_dir = "./output/test"
 train.max_iter = 90000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1
@@ -88,11 +90,6 @@ train.seed = 42
 
 # modify optimizer config
 optimizer.weight_decay = 1e-4
-# optimizer.params.lr_factor_func = (
-#     lambda module_name: 0.1
-#     if "backbone" or "reference_points" or "sampling_offsets" in module_name
-#     else 1
-# )
 optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in module_name else 1
 
 # modify dataloader config

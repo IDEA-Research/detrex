@@ -214,7 +214,7 @@ class DabDeformableDETR(nn.Module):
         # prepare two stage output
         # if self.as_two_stage:
         interm_coord = enc_reference
-        interm_class = self.class_embed[-1](enc_state)
+        interm_class = self.transformer.decoder.class_embed[-1](enc_state)
         output['enc_outputs'] = {'pred_logits': interm_class, 'pred_boxes': interm_coord}
         # output['dn_meta']=dn_meta
         if self.training:
@@ -390,7 +390,7 @@ class DabDeformableDETR(nn.Module):
         # box_cls.shape: 1, 300, 80
         # box_pred.shape: 1, 300, 4
         prob = box_cls.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 100, dim=1)
+        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 300, dim=1)
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]

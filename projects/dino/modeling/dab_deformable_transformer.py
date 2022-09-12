@@ -146,13 +146,14 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         self.return_intermediate = return_intermediate
 
         if use_dab:
-            self.query_scale = MLP(embed_dim, embed_dim, embed_dim, 2)
+            # self.query_scale = MLP(embed_dim, embed_dim, embed_dim, 2)
             self.ref_point_head = MLP(2 * embed_dim, embed_dim, embed_dim, 2)
         self.use_dab = use_dab
 
         self.bbox_embed = None
         self.class_embed = None
         self.look_forward_twice=look_forward_twice
+        self.norm = nn.LayerNorm(embed_dim)
 
     def forward(
         self,
@@ -188,7 +189,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
             if self.use_dab:
                 query_sine_embed = get_sine_pos_embed(reference_points_input[:, :, 0, :])
                 raw_query_pos = self.ref_point_head(query_sine_embed)
-                pos_scale = self.query_scale(output) if layer_idx != 0 else 1
+                pos_scale = 1
                 query_pos = pos_scale * raw_query_pos
 
             output = layer(
@@ -218,7 +219,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 reference_points = new_reference_points.detach()
 
             if self.return_intermediate:
-                intermediate.append(output)
+                intermediate.append(self.norm(output))
                 if self.look_forward_twice:
                     intermediate_reference_points.append(new_reference_points)
                 else:
