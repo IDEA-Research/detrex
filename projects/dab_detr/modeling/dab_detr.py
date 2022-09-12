@@ -150,14 +150,18 @@ class DABDETR(nn.Module):
         features = self.input_proj(features)
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
         pos_embed = self.position_embedding(img_masks)
-        embed_weight = self.refpoint_embed.weight
+        
+        # dynamic anchor boxes
+        dynamic_anchor_boxes = self.anchor_box_embed.weight
 
-        hidden_states, reference = self.transformer(features, img_masks, embed_weight, pos_embed)
+        # hidden_states: transformer output hidden feature
+        # reference_boxes: the refined dynamic anchor boxes in format (x, y, w, h)  with normalized coordinates in range of [0, 1].
+        hidden_states, reference_boxes = self.transformer(features, img_masks, dynamic_anchor_boxes, pos_embed)
 
-        reference_before_sigmoid = inverse_sigmoid(reference)
-        temp = self.bbox_embed(hidden_states)
-        temp[..., : 4] += reference_before_sigmoid
-        outputs_coord = temp.sigmoid()
+        # Calculate output coordinates and classes.
+        reference_boxes = inverse_sigmoid(reference_boxes)
+        anchor_box_offsets = self.bbox_embed(hidden_states)
+        outputs_coord = (reference_boxes + anchor_box_offsets).sigmoid()
         outputs_class = self.class_embed(hidden_states)
 
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
