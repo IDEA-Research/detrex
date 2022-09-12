@@ -7,8 +7,8 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/dn_detr_r50_50ep"
+train.init_checkpoint = "/comp_robot/rentianhe/code/detrex/projects/dn_detr/output/dn_detr_refine_loss_weight/model_0369999.pth"
+train.output_dir = "./output/test"
 train.max_iter = 375000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1

@@ -212,7 +212,7 @@ class DNDETR(nn.Module):
         # box_cls.shape: 1, 300, 80
         # box_pred.shape: 1, 300, 4
         prob = box_cls.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 100, dim=1)
+        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 300, dim=1)
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]

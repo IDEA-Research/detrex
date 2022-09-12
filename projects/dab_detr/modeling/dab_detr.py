@@ -46,6 +46,10 @@ class DABDETR(nn.Module):
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
+        freeze_anchor_box_centers (bool): If True, freeze the center param ``(x, y)`` for the initialized dynamic anchor boxes
+            in format ``(x, y, w, h)`` and only train ``(w, h)``. Default: True.
+        select_box_nums_for_evaluation (int): Select the top-k confidence predicted boxes for inference.
+            Default: 300.
         device (str): Training device. Default: "cuda".
     """
     def __init__(
