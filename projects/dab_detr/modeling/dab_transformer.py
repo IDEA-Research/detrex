@@ -112,7 +112,6 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         ffn_dropout: float = 0.0,
         activation: nn.Module = nn.PReLU(),
         num_layers: int = None,
-        query_dim: int = 4,
         modulate_hw_attn: bool = True,
         batch_first: bool = False,
         post_norm: bool = True,
@@ -151,7 +150,7 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         self.embed_dim = self.layers[0].embed_dim
         self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
         self.ref_point_head = MLP(
-            query_dim // 2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
+            2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
         )
 
         self.bbox_embed = None
