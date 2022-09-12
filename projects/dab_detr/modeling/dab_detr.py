@@ -12,12 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ------------------------------------------------------------------------------------------------
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-# ------------------------------------------------------------------------------------------------
-# Modified from:
-# https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
-# ------------------------------------------------------------------------------------------------
 
 import math
 from typing import List
@@ -34,22 +28,25 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DABDETR(nn.Module):
-    """Implement DETR model: arxiv
+    """Implement DAB-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
+    <https://arxiv.org/abs/2201.12329>`_
     
     Args:
-        backbone (nn.Module): The backbone model used for feature extraction.
-        in_features (List[str]): 
-        in_channels
-        position_embedding
-        transformer
-        embed_dim
-        num_classes
-        num_queries
-        criterion
-        pixel_mean
-        pixel_std
-        aux_loss
-        device
+        backbone (nn.Module): Backbone module for feature extraction.
+        in_features (List[str]): Selected backbone output features for transformer module.
+        in_channels (int): Dimension of the last feature in `in_features`.
+        position_embedding (nn.Module): Position encoding layer for generating position embeddings.
+        transformer (nn.Module): Transformer module used for further processing features and input queries.
+        embed_dim (nn.Module): Hidden dimension for transformer module.
+        num_classes (int): Number of total categories.
+        num_queries (int): Number of proposal dynamic anchor boxes in Transformer
+        criterion (nn.Module): Criterion for calculating the total losses.
+        aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
+        pixel_mean (List[float]): Pixel mean value for image normalization. 
+            Default: [123.675, 116.280, 103.530].
+        pixel_std (List[float]): Pixel std value for image normalization.
+            Default: [58.395, 57.120, 57.375].
+        device (str): Training device. Default: "cuda".
     """
     def __init__(
         self,
@@ -62,9 +59,9 @@ class DABDETR(nn.Module):
         num_classes: int,
         num_queries: int,
         criterion: nn.Module,
-        pixel_mean: List[float],
-        pixel_std: List[float],
         aux_loss: bool = True,
+        pixel_mean: List[float] = [123.675, 116.280, 103.530],
+        pixel_std: List[float] = [58.395, 57.120, 57.375],
         freeze_anchor_box_centers: bool = True,
         select_box_nums_for_evaluation: int = 300,
         device: str = "cuda",
