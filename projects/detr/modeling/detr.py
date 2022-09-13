@@ -41,7 +41,7 @@ class DETR(nn.Module):
         in_channels (int): Dimension of the last feature in `in_features`.
         position_embedding (nn.Module): Position encoding layer for generating position embeddings.
         transformer (nn.Module): Transformer module used for further processing features and input queries.
-        embed_dim (nn.Module): Hidden dimension for transformer module.
+        embed_dim (int): Hidden dimension for transformer module.
         num_classes (int): Number of total categories.
         num_queries (int): Number of proposal dynamic anchor boxes in Transformer
         criterion (nn.Module): Criterion for calculating the total losses.
@@ -177,12 +177,13 @@ class DETR(nn.Module):
         ]
 
     def inference(self, box_cls, box_pred, image_sizes):
-        """
-        Arguments:
-            box_cls (Tensor): tensor of shape (batch_size, num_queries, K).
+        """Inference function for DETR
+        
+        Args:
+            box_cls (torch.Tensor): tensor of shape ``(batch_size, num_queries, K)``.
                 The tensor predicts the classification probability for each query.
-            box_pred (Tensor): tensors of shape (batch_size, num_queries, 4).
-                The tensor predicts 4-vector (x,y,w,h) box
+            box_pred (torch.Tensor): tensors of shape ``(batch_size, num_queries, 4)``.
+                The tensor predicts 4-vector ``(x, y, w, h)`` box
                 regression values for every queryx
             image_sizes (List[torch.Size]): the input image sizes
 

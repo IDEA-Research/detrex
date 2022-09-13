@@ -289,7 +289,7 @@ class DabDetrTransformer(nn.Module):
         num_queries = refpoints_embed.shape[0]
         target = torch.zeros(num_queries, bs, self.embed_dim, device=refpoints_embed.device)
 
-        hidden_state, references = self.decoder(
+        hidden_state, reference_boxes = self.decoder(
             query=target,
             key=memory,
             value=memory,
@@ -297,4 +297,4 @@ class DabDetrTransformer(nn.Module):
             refpoints_embed=refpoints_embed,
         )
 
-        return hidden_state, references
+        return hidden_state, reference_boxes

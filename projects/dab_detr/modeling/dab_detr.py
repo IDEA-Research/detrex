@@ -37,7 +37,7 @@ class DABDETR(nn.Module):
         in_channels (int): Dimension of the last feature in `in_features`.
         position_embedding (nn.Module): Position encoding layer for generating position embeddings.
         transformer (nn.Module): Transformer module used for further processing features and input queries.
-        embed_dim (nn.Module): Hidden dimension for transformer module.
+        embed_dim (int): Hidden dimension for transformer module.
         num_classes (int): Number of total categories.
         num_queries (int): Number of proposal dynamic anchor boxes in Transformer
         criterion (nn.Module): Criterion for calculating the total losses.
@@ -122,7 +122,7 @@ class DABDETR(nn.Module):
         if self.freeze_anchor_box_centers:
             self.anchor_box_embed.weight.data[:, :2].uniform_(0, 1)
             self.anchor_box_embed.weight.data[:, :2] = inverse_sigmoid(
-                self.refpoint_embed.weight.data[:, :2]
+                self.anchor_box_embed.weight.data[:, :2]
             )
             self.anchor_box_embed.weight.data[:, :2].requires_grad = False
 
@@ -133,7 +133,28 @@ class DABDETR(nn.Module):
         nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
     def forward(self, batched_inputs):
+        """Forward function of `DAB-DETR` which excepts a list of dict as inputs.
 
+        Args:
+            batched_inputs (List[dict]): A list of instance dict, and each instance dict must consists of:
+                - dict["image"] (torch.Tensor): The unnormalized image tensor.
+                - dict["height"] (int): The original image height.
+                - dict["width"] (int): The original image width.
+                - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
+                    Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
+                    for the basic usage of Instances.
+        
+        Returns:
+            dict: Returns a dict with the following elements:
+                - dict["pred_logits"]: the classification logits for all queries (anchor boxes in DAB-DETR).
+                            with shape ``[batch_size, num_queries, num_classes]``
+                - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
+                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 
+                    each individual image (disregarding possible padding). See PostProcess for information 
+                    on how to retrieve the unnormalized bounding box.
+                - dict["aux_outputs"]: Optional, only returned when auxilary losses are activated. It is a list of
+                            dictionnaries containing the two above keys for each decoder layer.
+        """
         images = self.preprocess_image(batched_inputs)
 
         if self.training:
@@ -203,12 +224,13 @@ class DABDETR(nn.Module):
         ]
 
     def inference(self, box_cls, box_pred, image_sizes):
-        """
-        Arguments:
-            box_cls (Tensor): tensor of shape (batch_size, num_queries, K).
+        """Inference function for DAB-DETR
+        
+        Args:
+            box_cls (torch.Tensor): tensor of shape ``(batch_size, num_queries, K)``.
                 The tensor predicts the classification probability for each query.
-            box_pred (Tensor): tensors of shape (batch_size, num_queries, 4).
-                The tensor predicts 4-vector (x,y,w,h) box
+            box_pred (torch.Tensor): tensors of shape ``(batch_size, num_queries, 4)``.
+                The tensor predicts 4-vector ``(x, y, w, h)`` box
                 regression values for every queryx
             image_sizes (List[torch.Size]): the input image sizes
 
