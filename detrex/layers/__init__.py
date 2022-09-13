@@ -47,4 +47,5 @@ from .conv import (
 from .denoising import (
     apply_box_noise,
     apply_label_noise,
+    GenerateDNQueries,
 )
