@@ -14,10 +14,10 @@
 # limitations under the License.
 
 
-from .dab_deformable_transformer import (
-    DabDeformableDetrTransformerEncoder,
-    DabDeformableDetrTransformerDecoder,
-    DabDeformableDetrTransformer,
+from .dino_transformer import (
+    DINOTransformerEncoder,
+    DINOTransformerDecoder,
+    DINOTransformer,
 )
-from .dab_deformable_detr import DabDeformableDETR
+from .dino import DINO
 from .dn_criterion import DINOCriterion
