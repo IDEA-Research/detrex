@@ -101,6 +101,9 @@ model = L(DNDeformableDETR)(
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
+    dn_num=5,
+    label_noise_scale=0.2,
+    box_noise_scale=0.4,
     device="cuda",
 )
 

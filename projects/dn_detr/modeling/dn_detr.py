@@ -70,8 +70,16 @@ class DNDETR(nn.Module):
         self.num_classes = num_classes
         self.criterion = criterion
 
+        self.dn_generation = GenerateDNQueries(num_queries,
+            num_classes+1,
+            label_embed_dim = embed_dim,
+            noise_nums_per_group = dn_num,
+            label_noise_scale = label_noise_scale,
+            box_noise_scale = box_noise_scale,
+            with_indicator = True)
+
         # leave one dim for indicator
-        self.label_encoder = nn.Embedding(num_classes + 1, embed_dim - 1)
+        # self.label_encoder = nn.Embedding(num_classes + 1, embed_dim - 1)
         self.dn_num = dn_num
         self.label_noise_scale = label_noise_scale
         self.box_noise_scale = box_noise_scale
@@ -136,20 +144,25 @@ class DNDETR(nn.Module):
         else:
             targets = None
 
-        input_query_label, input_query_bbox, attn_mask, dn_metas = self.generate_dn_queries(
-            targets,
-            dn_num=self.dn_num,
-            label_noise_scale=self.label_noise_scale,
-            box_noise_scale=self.box_noise_scale,
-            refpoint_embed=self.refpoint_embed,
-            num_queries=self.num_queries,
-            num_classes=self.num_classes,
-            embed_dim=self.embed_dim,
-            label_encoder=self.label_encoder,
-            batch_size=len(batched_inputs),
-        )
+        gt_labels_list = [t["labels"] for t in targets]
+        gt_boxes_list = [t["boxes"] for t in targets]
 
-        # hs, reference = self.transformer(self.input_proj(src), mask, embedweight, pos[-1])
+        # generate dn queries and attn masks
+        noised_label_queries, noised_box_queries, attn_mask, noise_nums_per_group, max_gt_num_per_image = \
+            self.dn_generation(gt_labels_list, gt_boxes_list,)
+
+        # for vallina dn-detr, label queries in the matching part is encoded as "no object" (the last class)
+        # in the label encoder.
+        match_query_label = self.dn_generation.label_encoder(torch.tensor(self.num_classes).to(self.device)).repeat(
+            self.num_queries, 1
+        )
+        indicator_mt = torch.zeros([self.num_queries, 1]).to(self.device)
+        match_query_label = torch.cat([match_query_label, indicator_mt], 1).repeat(batch_size, 1, 1)
+        match_query_bbox = self.refpoint_embed.weight.repeat(batch_size, 1, 1)
+        # concate dn queries and matching queries
+        input_query_label = torch.cat([noised_label_queries, match_query_label], 1).transpose(0, 1)
+        input_query_bbox = torch.cat([noised_box_queries, match_query_bbox], 1).transpose(0, 1)
+
         hs, reference = self.transformer(
             features,
             img_masks,
@@ -166,14 +179,16 @@ class DNDETR(nn.Module):
         outputs_class = self.class_embed(hs)
 
         ###### dn post process
-        outputs_class, outputs_coord = self.dn_post_process(outputs_class, outputs_coord, dn_metas)
+        output = {'noise_nums_per_group': torch.tensor(noise_nums_per_group).to(self.device),
+                  'max_gt_num_per_image': torch.tensor(max_gt_num_per_image).to(self.device)}
+        outputs_class, outputs_coord = self.dn_post_process(outputs_class, outputs_coord, output)
 
-        output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
+        output.update({"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]})
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
 
         if self.training:
-            loss_dict = self.criterion(output, targets, dn_metas)
+            loss_dict = self.criterion(output, targets)
             weight_dict = self.criterion.weight_dict
             for k in loss_dict.keys():
                 if k in weight_dict:
@@ -250,127 +265,9 @@ class DNDETR(nn.Module):
         images = ImageList.from_tensors(images)
         return images
 
-    def generate_dn_queries(
-        self,
-        targets,
-        dn_num,
-        label_noise_scale,
-        box_noise_scale,
-        refpoint_embed,
-        num_queries,
-        num_classes,
-        embed_dim,
-        label_encoder,
-        batch_size,
-    ):
-        indicator_mt = torch.zeros([num_queries, 1]).to(self.device)
-        content_queries_mt = label_encoder(torch.tensor(num_classes).to(self.device)).repeat(
-            num_queries, 1
-        )
-        content_queries_mt = torch.cat([content_queries_mt, indicator_mt], dim=1)
-
-        if targets is None:
-            input_query_label = content_queries_mt.repeat(batch_size, 1, 1).transpose(0, 1)
-            input_query_bbox = refpoint_embed.weight.repeat(batch_size, 1, 1).transpose(0, 1)
-            return input_query_label, input_query_bbox, None, None
-        gt_labels = torch.cat([t["labels"] for t in targets])
-        gt_boxes = torch.cat([t["boxes"] for t in targets])
-        gt_num = [t["labels"].numel() for t in targets]
-        batch_idx = torch.cat(
-            [torch.full_like(t["labels"].long(), i) for i, t in enumerate(targets)]
-        )
-        unmask_label = torch.cat([torch.ones_like(t["labels"]) for t in targets])
-        gt_indices_for_matching = torch.nonzero(unmask_label)
-        gt_indices_for_matching = gt_indices_for_matching.view(-1)
-        gt_indices_for_matching = gt_indices_for_matching.repeat(dn_num, 1).view(-1)
-        dn_bid = batch_idx.repeat(dn_num, 1).view(-1)
-        gt_labels = gt_labels.repeat(dn_num, 1).view(-1)
-        gt_bboxs = gt_boxes.repeat(dn_num, 1)
-        dn_labels = gt_labels.clone()
-        dn_boxes = gt_bboxs.clone()
-
-        # noise on the label
-        if label_noise_scale > 0:
-            p = torch.rand_like(dn_labels.float())
-            chosen_indice = torch.nonzero(p < (label_noise_scale)).view(
-                -1
-            )  # usually half of bbox noise
-            new_label = torch.randint_like(
-                chosen_indice, 0, num_classes
-            )  # randomly put a new one here
-            dn_labels.scatter_(0, chosen_indice, new_label)
-        # noise on the box
-        if box_noise_scale > 0:
-            diff = torch.zeros_like(dn_boxes)
-            diff[:, :2] = dn_boxes[:, 2:] / 2
-            diff[:, 2:] = dn_boxes[:, 2:]
-            dn_boxes += (
-                torch.mul((torch.rand_like(dn_boxes) * 2 - 1.0), diff).cuda() * box_noise_scale
-            )
-            dn_boxes = dn_boxes.clamp(min=0.0, max=1.0)
-
-        m = dn_labels.long().to(self.device)
-        input_label_embed = label_encoder(m)
-        # add dn part indicator
-        indicator_dn = torch.ones([input_label_embed.shape[0], 1]).to(self.device)
-        input_label_embed = torch.cat([input_label_embed, indicator_dn], dim=1)
-        dn_boxes = inverse_sigmoid(dn_boxes)
-        single_padding = int(max(gt_num))
-        padding_size = int(single_padding * dn_num)
-        padding_for_dn_labels = torch.zeros(padding_size, embed_dim).to(self.device)
-        padding_for_dn_boxes = torch.zeros(padding_size, 4).to(self.device)
-
-        input_query_label = torch.cat([padding_for_dn_labels, content_queries_mt], dim=0).repeat(
-            batch_size, 1, 1
-        )
-        input_query_bbox = torch.cat([padding_for_dn_boxes, refpoint_embed.weight], dim=0).repeat(
-            batch_size, 1, 1
-        )
-
-        # map in order
-        dn_indices = torch.tensor([]).to(input_query_bbox.device)
-        if len(gt_num):
-            dn_indices = torch.cat([torch.tensor(range(num)) for num in gt_num])  # [1,2, 1,2,3]
-            dn_indices = torch.cat([dn_indices + single_padding * i for i in range(dn_num)]).long()
-        if len(dn_bid):
-            input_query_label[(dn_bid.long(), dn_indices)] = input_label_embed
-            input_query_bbox[(dn_bid.long(), dn_indices)] = dn_boxes
-
-        tgt_size = padding_size + num_queries
-        attn_mask = torch.ones(tgt_size, tgt_size).to(input_query_bbox.device) < 0
-        # match query cannot see the reconstruct
-        attn_mask[padding_size:, :padding_size] = True
-        # reconstruct cannot see each other
-        for i in range(dn_num):
-            if i == 0:
-                attn_mask[
-                    single_padding * i : single_padding * (i + 1),
-                    single_padding * (i + 1) : padding_size,
-                ] = True
-            if i == dn_num - 1:
-                attn_mask[
-                    single_padding * i : single_padding * (i + 1), : single_padding * i
-                ] = True
-            else:
-                attn_mask[
-                    single_padding * i : single_padding * (i + 1),
-                    single_padding * (i + 1) : padding_size,
-                ] = True
-                attn_mask[
-                    single_padding * i : single_padding * (i + 1), : single_padding * i
-                ] = True
-        dn_metas = {
-            "dn_num": dn_num,
-            "single_padding": single_padding,
-        }
-
-        input_query_label = input_query_label.transpose(0, 1)
-        input_query_bbox = input_query_bbox.transpose(0, 1)
-        return input_query_label, input_query_bbox, attn_mask, dn_metas
-
-    def dn_post_process(self, outputs_class, outputs_coord, dn_metas):
-        if dn_metas and dn_metas["single_padding"] > 0:
-            padding_size = dn_metas["single_padding"] * dn_metas["dn_num"]
+    def dn_post_process(self, outputs_class, outputs_coord, output):
+        if output and output["max_gt_num_per_image"] > 0:
+            padding_size = output["max_gt_num_per_image"] * output["noise_nums_per_group"]
             output_known_class = outputs_class[:, :, :padding_size, :]
             output_known_coord = outputs_coord[:, :, :padding_size, :]
             outputs_class = outputs_class[:, :, padding_size:, :]
@@ -379,7 +276,7 @@ class DNDETR(nn.Module):
             out = {"pred_logits": output_known_class[-1], "pred_boxes": output_known_coord[-1]}
             if self.aux_loss:
                 out["aux_outputs"] = self._set_aux_loss(output_known_class, output_known_coord)
-            dn_metas["output_known_lbs_bboxes"] = out
+            output["denoising_output"] = out
         return outputs_class, outputs_coord
 
     @torch.jit.unused
@@ -391,3 +288,160 @@ class DNDETR(nn.Module):
             {"pred_logits": a, "pred_boxes": b}
             for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
         ]
+
+
+
+
+def apply_label_noise(
+        labels: torch.Tensor,
+        label_noise_scale: float = 0.2,
+        num_classes: int = 80,
+):
+    """
+    Args:
+        labels (nn.Tensor): Classification labels with ``(num_labels, )``.
+
+    Returns:
+        nn.Tensor: The noised labels the same shape as ``labels``.
+    """
+    if label_noise_scale > 0:
+        p = torch.rand_like(labels.float())
+        noised_index = torch.nonzero(p < label_noise_scale).view(-1)
+        new_lebels = torch.randint_like(noised_index, 0, num_classes)
+        noised_labels = labels.scatter_(0, noised_index, new_lebels)
+        return noised_labels
+    else:
+        return labels
+
+
+def apply_box_noise(
+        boxes: torch.Tensor,
+        box_noise_scale: float = 0.4,
+):
+    if box_noise_scale > 0:
+        diff = torch.zeros_like(boxes)
+        diff[:, :2] = boxes[:, 2:] / 2
+        diff[:, 2:] = boxes[:, 2:]
+        boxes += (
+                torch.mul((torch.rand_like(boxes) * 2 - 1.0), diff) * box_noise_scale
+        )
+        boxes = boxes.clamp(min=0.0, max=1.0)
+    return boxes
+
+
+class GenerateDNQueries(nn.Module):
+    def __init__(
+            self,
+            num_queries: int = 300,
+            num_classes: int = 80,
+            label_embed_dim: int = 256,
+            noise_nums_per_group: int = 5,
+            label_noise_scale: float = 0.2,
+            box_noise_scale: float = 0.4,
+            with_indicator: bool = False,
+    ):
+        super(GenerateDNQueries, self).__init__()
+        self.num_queries = num_queries
+        self.num_classes = num_classes
+        self.label_embed_dim = label_embed_dim
+        self.noise_nums_per_group = noise_nums_per_group
+        self.label_noise_scale = label_noise_scale
+        self.box_noise_scale = box_noise_scale
+        self.with_indicator = with_indicator
+
+        # leave one dim for indicator mentioned in DN-DETR
+        if with_indicator:
+            self.label_encoder = nn.Embedding(num_classes, label_embed_dim - 1)
+        else:
+            self.label_encoder = nn.Embedding(num_classes, label_embed_dim)
+
+    def generate_query_masks(self, max_gt_num_per_image, device):
+        """
+
+        :param max_gt_num_per_image:
+        :param device:
+        :return:
+        """
+        noised_query_nums = max_gt_num_per_image * self.noise_nums_per_group
+        tgt_size = noised_query_nums + self.num_queries
+        attn_mask = torch.ones(tgt_size, tgt_size).to(device) < 0
+        # match query cannot see the reconstruct
+        attn_mask[noised_query_nums:, :noised_query_nums] = True
+        for i in range(self.noise_nums_per_group):
+            if i == 0:
+                attn_mask[
+                max_gt_num_per_image * i: max_gt_num_per_image * (i + 1),
+                max_gt_num_per_image * (i + 1): noised_query_nums,
+                ] = True
+            if i == self.noise_nums_per_group - 1:
+                attn_mask[
+                max_gt_num_per_image * i: max_gt_num_per_image * (i + 1), : max_gt_num_per_image * i
+                ] = True
+            else:
+                attn_mask[
+                max_gt_num_per_image * i: max_gt_num_per_image * (i + 1),
+                max_gt_num_per_image * (i + 1): noised_query_nums,
+                ] = True
+                attn_mask[
+                max_gt_num_per_image * i: max_gt_num_per_image * (i + 1), : max_gt_num_per_image * i
+                ] = True
+        return attn_mask
+
+    def forward(
+            self,
+            gt_labels_list,
+            gt_boxes_list,
+    ):
+        """
+        Args:
+            gt_boxes_list (list[torch.Tensor]): Ground truth bounding boxes per image
+                with normalized coordinates in format ``(x, y, w, h)`` in shape ``(num_gts, )``
+        """
+        gt_labels = torch.cat(gt_labels_list)
+        gt_boxes = torch.cat(gt_boxes_list)
+        device = gt_labels.device
+        assert len(gt_labels_list) == len(gt_boxes_list)
+
+        batch_size = len(gt_labels_list)
+
+        gt_nums_per_image = [x.numel() for x in gt_labels_list]
+        gt_labels = gt_labels.repeat(self.noise_nums_per_group, 1).flatten()
+        gt_boxes = gt_boxes.repeat(self.noise_nums_per_group, 1)
+
+        # noised labels and boxes
+        noised_labels = apply_label_noise(gt_labels, self.label_noise_scale, self.num_classes)
+        noised_boxes = apply_box_noise(gt_boxes, self.box_noise_scale)
+        noised_boxes = inverse_sigmoid(noised_boxes)
+
+        label_embedding = self.label_encoder(noised_labels)
+        query_num = label_embedding.shape[0]
+
+        if self.with_indicator:
+            label_embedding = torch.cat([label_embedding, torch.ones([query_num, 1]).to(device)], 1)
+
+
+        max_gt_num_per_image = max(gt_nums_per_image)
+
+        noised_query_nums = max_gt_num_per_image * self.noise_nums_per_group
+
+        noised_label_queries = torch.zeros(noised_query_nums, self.label_embed_dim).to(device).repeat(batch_size, 1, 1)
+        noised_box_queries = torch.zeros(noised_query_nums, 4).to(device).repeat(batch_size, 1, 1)
+
+        # batch index per image: [0, 1, 2, 3] for batch_size == 4
+        batch_idx = torch.arange(0, batch_size)
+
+        # [0, 0, 0, 0, 1, 1, 2, 2]
+        batch_idx_per_instance = torch.repeat_interleave(batch_idx, torch.tensor(gt_nums_per_image).long())
+        batch_idx_per_group = batch_idx_per_instance.repeat(self.noise_nums_per_group, 1).flatten()
+
+        if len(gt_nums_per_image):
+            valid_index_per_group = torch.cat([torch.tensor(list(range(num))) for num in gt_nums_per_image])
+            valid_index_per_group = torch.cat(
+                [valid_index_per_group + max_gt_num_per_image * i for i in range(self.noise_nums_per_group)]).long()
+        if len(batch_idx_per_group):
+            noised_label_queries[(batch_idx_per_group, valid_index_per_group)] = label_embedding
+            noised_box_queries[(batch_idx_per_group, valid_index_per_group)] = noised_boxes
+
+        attn_mask = self.generate_query_masks(max_gt_num_per_image, device)
+
+        return noised_label_queries, noised_box_queries, attn_mask, self.noise_nums_per_group, max_gt_num_per_image

@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import random
 
 import torch
 
@@ -37,6 +38,9 @@ class DNCriterion(SetCriterion):
         if "aux_outputs" in outputs:
             aux_num = len(outputs["aux_outputs"])
 
+        for k, v in losses.items():
+            losses[k] = torch.as_tensor(0.0).to("cuda")
+        # if random.randint(1, 100)<10:
         dn_losses = self.calculate_dn_loss(dn_metas, targets, aux_num, num_boxes)
         losses.update(dn_losses)
 
@@ -81,9 +85,13 @@ class DNCriterion(SetCriterion):
             l_dict = {k + f"_dn": v for k, v in l_dict.items()}
             losses.update(l_dict)
         else:
-            losses["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
-            losses["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
-            losses["loss_ce_dn"] = torch.as_tensor(0.0).to("cuda")
+            print("zero dn")
+            print("targets ", targets)
+            print("dn_metas ", dn_metas)
+            # import ipdb; ipdb.set_trace()
+            # losses["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
+            # losses["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
+            # losses["loss_ce_dn"] = torch.as_tensor(0.0).to("cuda")
 
         for i in range(aux_num):
             # dn aux loss
@@ -105,10 +113,14 @@ class DNCriterion(SetCriterion):
                         )
                     )
                 l_dict = {k + f"_dn_{i}": v for k, v in l_dict.items()}
-            else:
-                l_dict["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
-                l_dict["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
-                l_dict["loss_ce_dn"] = torch.as_tensor(0.0).to("cuda")
-                l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
+            # else:
+            #     # import ipdb; ipdb.set_trace()
+            #     l_dict["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
+            #     l_dict["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
+            #     l_dict["loss_ce_dn"] = torch.as_tensor(0.0).to("cuda")
+            #     l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
             losses.update(l_dict)
+        for k, v in losses.items():
+            losses[k] = torch.as_tensor(0.0).to("cuda")
+        # if random.randint(1, 100)<10:
         return losses

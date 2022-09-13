@@ -1,5 +1,5 @@
 from detrex.config import get_config
-from .models.dab_deformable_detr_r50 import model
+from .models.dn_deformable_detr_r50 import model
 
 dataloader = get_config("common/data/coco_detr.py").dataloader
 optimizer = get_config("common/optim.py").AdamW
@@ -7,7 +7,8 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+# train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+train.init_checkpoint = "/student/lifeng/model/detrex_dn_deformable/model_0009999.pth"
 # train.init_checkpoint = "/student/lifeng/python_pro_projects/detr/detrex/dn_deformable_converted_model0049.pth"
 train.output_dir = "./output/dab_deformable_detr_r50_50ep"
 train.max_iter = 375000

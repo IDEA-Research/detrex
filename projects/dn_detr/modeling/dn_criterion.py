@@ -22,7 +22,7 @@ from detrex.utils import get_world_size, is_dist_avail_and_initialized
 class DNCriterion(SetCriterion):
     """This class computes the loss for DN-DETR."""
 
-    def forward(self, outputs, targets, dn_metas=None):
+    def forward(self, outputs, targets):
         losses = super(DNCriterion, self).forward(outputs, targets)
 
         num_boxes = sum(len(t["labels"]) for t in targets)
@@ -37,21 +37,21 @@ class DNCriterion(SetCriterion):
         if "aux_outputs" in outputs:
             aux_num = len(outputs["aux_outputs"])
 
-        dn_losses = self.calculate_dn_loss(dn_metas, targets, aux_num, num_boxes)
+        dn_losses = self.calculate_dn_loss(outputs, targets, aux_num, num_boxes)
         losses.update(dn_losses)
 
         return losses
 
-    def calculate_dn_loss(self, dn_metas, targets, aux_num, num_boxes):
+    def calculate_dn_loss(self, outputs, targets, aux_num, num_boxes):
         """
         Calculate dn loss in criterion
         """
         losses = {}
-        if dn_metas and "output_known_lbs_bboxes" in dn_metas:
-            output_known_lbs_bboxes, dn_num, single_padding = (
-                dn_metas["output_known_lbs_bboxes"],
-                dn_metas["dn_num"],
-                dn_metas["single_padding"],
+        if outputs and "denoising_output" in outputs:
+            denoising_output, dn_num, single_padding = (
+                outputs["denoising_output"],
+                outputs["noise_nums_per_group"],
+                outputs["max_gt_num_per_image"],
             )
             dn_idx = []
             for i in range(len(targets)):
@@ -60,7 +60,7 @@ class DNCriterion(SetCriterion):
                     t = t.unsqueeze(0).repeat(dn_num, 1)
                     tgt_idx = t.flatten()
                     output_idx = (
-                        torch.tensor(range(dn_num)) * single_padding
+                        torch.tensor(range(dn_num)).cuda() * single_padding
                     ).long().cuda().unsqueeze(1) + t
                     output_idx = output_idx.flatten()
                 else:
@@ -74,7 +74,7 @@ class DNCriterion(SetCriterion):
                     kwargs = {"log": False}
                 l_dict.update(
                     self.get_loss(
-                        loss, output_known_lbs_bboxes, targets, dn_idx, num_boxes * dn_num, **kwargs
+                        loss, denoising_output, targets, dn_idx, num_boxes * dn_num, **kwargs
                     )
                 )
 
@@ -88,8 +88,8 @@ class DNCriterion(SetCriterion):
         for i in range(aux_num):
             # dn aux loss
             l_dict = {}
-            if dn_metas and "output_known_lbs_bboxes" in dn_metas:
-                output_known_lbs_bboxes_aux = output_known_lbs_bboxes["aux_outputs"][i]
+            if outputs and "denoising_output" in outputs:
+                denoising_output_aux = denoising_output["aux_outputs"][i]
                 for loss in self.losses:
                     kwargs = {}
                     if "labels" in loss:
@@ -97,7 +97,7 @@ class DNCriterion(SetCriterion):
                     l_dict.update(
                         self.get_loss(
                             loss,
-                            output_known_lbs_bboxes_aux,
+                            denoising_output_aux,
                             targets,
                             dn_idx,
                             num_boxes * dn_num,

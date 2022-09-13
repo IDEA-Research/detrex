@@ -204,6 +204,7 @@ class DNDeformableDETR(nn.Module):
         outputs_coord = torch.stack(outputs_coords)
 
         ###### dn post process
+        # print("dn_metas ", dn_metas)
         outputs_class, outputs_coord = self.dn_post_process(outputs_class, outputs_coord, dn_metas)
 
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
@@ -213,7 +214,7 @@ class DNDeformableDETR(nn.Module):
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
-            loss_dict = self.criterion(output, targets)
+            loss_dict = self.criterion(output, targets, dn_metas)
             weight_dict = self.criterion.weight_dict
             for k in loss_dict.keys():
                 if k in weight_dict:
@@ -321,6 +322,10 @@ class DNDeformableDETR(nn.Module):
         gt_labels = torch.cat([t["labels"] for t in targets])
         gt_boxes = torch.cat([t["boxes"] for t in targets])
         gt_num = [t["labels"].numel() for t in targets]
+        if int(max(gt_num))<1:
+            input_query_label = content_queries_mt.repeat(batch_size, 1, 1).transpose(0, 1)
+            input_query_bbox = refpoint_embed.weight.repeat(batch_size, 1, 1).transpose(0, 1)
+            return input_query_label, input_query_bbox, None, None
         batch_idx = torch.cat(
             [torch.full_like(t["labels"].long(), i) for i, t in enumerate(targets)]
         )
