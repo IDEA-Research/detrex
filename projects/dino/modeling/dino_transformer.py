@@ -239,7 +239,6 @@ class DINOTransformer(nn.Module):
         self.two_stage_num_proposals = two_stage_num_proposals
 
         self.embed_dim = self.encoder.embed_dim
-        self.use_dab = self.decoder.use_dab
 
         self.level_embeds = nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dim))
         self.learnt_init_query=learnt_init_query

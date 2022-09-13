@@ -17,8 +17,6 @@ from projects.dino.modeling import (
     DINOCriterion
 )
 
-num_feature_levels = 4
-
 model = L(DINO)(
     backbone=L(ResNet)(
         stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
@@ -57,7 +55,7 @@ model = L(DINO)(
             ffn_dropout=0.0,
             num_layers=6,
             post_norm=False,
-            num_feature_levels=num_feature_levels,
+            num_feature_levels="${..num_feature_levels}",
         ),
         decoder=L(DINOTransformerDecoder)(
             embed_dim=256,
@@ -67,10 +65,10 @@ model = L(DINO)(
             ffn_dropout=0.0,
             num_layers=6,
             return_intermediate=True,
-            num_feature_levels=num_feature_levels,
+            num_feature_levels="${..num_feature_levels}",
         ),
-        num_feature_levels=num_feature_levels,
-        two_stage_num_proposals=900,
+        num_feature_levels=4,
+        two_stage_num_proposals="${..num_queries}",
     ),
     num_classes=80,
     num_queries=900,
