@@ -27,7 +27,7 @@ from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
 
-class DINO(nn.Module):
+class DINO (nn.Module):
     def __init__(
         self,
         backbone,
@@ -41,7 +41,6 @@ class DINO(nn.Module):
         pixel_std,
         embed_dim=256,
         aux_loss=True,
-        as_two_stage=False,
         device="cuda",
         dn_number=100,
         label_noise_ratio=0.2,
@@ -57,21 +56,13 @@ class DINO(nn.Module):
         self.class_embed = nn.Linear(embed_dim, num_classes)
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.num_classes = num_classes
-        self.as_two_stage = as_two_stage
         self.embed_dim=embed_dim
         self.label_enc=nn.Embedding(num_classes,embed_dim)
         self.dn_number=dn_number
         self.label_noise_ratio=label_noise_ratio
         self.box_noise_scale=box_noise_scale
-        #dn_number=self, label_noise_ratio, box_noise_scale, training, num_queries,
-         #                   num_classes, hidden_dim, label_enc
-
-        if not as_two_stage:
-            self.tgt_embed = nn.Embedding(num_queries, embed_dim)
-            self.refpoint_embed = nn.Embedding(num_queries, 4)
 
         self.aux_loss = aux_loss
-        self.as_two_stage = as_two_stage
         self.criterion = criterion
 
         # normalizer for input raw images
@@ -80,43 +71,30 @@ class DINO(nn.Module):
         pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
-        # if two-stage, the last class_embed and bbox_embed is for region proposal generation
-        num_pred = (
-            (transformer.decoder.num_layers + 1) if as_two_stage else transformer.decoder.num_layers
-        )
-        self.class_embed = nn.ModuleList([copy.deepcopy(self.class_embed) for i in range(num_pred)])
-        self.bbox_embed = nn.ModuleList([copy.deepcopy(self.bbox_embed) for i in range(num_pred)])
-
-        # hack implementation for iterative bounding box refinement
-        self.transformer.decoder.bbox_embed = self.bbox_embed
-
-        # hack implementation for two-stage
-        if self.as_two_stage:
-            self.transformer.decoder.class_embed = self.class_embed
-
-        self.init_weights()
-
-    def init_weights(self):
+        # initialize weights
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
-
-        for class_embed_layer in self.class_embed:
-            class_embed_layer.bias.data = torch.ones(self.num_classes) * bias_value
-
-        for bbox_embed_layer in self.bbox_embed:
-            nn.init.constant_(bbox_embed_layer.layers[-1].weight.data, 0)
-            nn.init.constant_(bbox_embed_layer.layers[-1].bias.data, 0)
-
+        self.class_embed.bias.data = torch.ones(num_classes) * bias_value
+        nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
+        nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
         for _, neck_layer in self.neck.named_modules():
             if isinstance(neck_layer, nn.Conv2d):
                 nn.init.xavier_uniform_(neck_layer.weight, gain=1)
                 nn.init.constant_(neck_layer.bias, 0)
 
+        # if two-stage, the last class_embed and bbox_embed is for region proposal generation
+        num_pred = transformer.decoder.num_layers + 1
+        self.class_embed = nn.ModuleList([copy.deepcopy(self.class_embed) for i in range(num_pred)])
+        self.bbox_embed = nn.ModuleList([copy.deepcopy(self.bbox_embed) for i in range(num_pred)])
         nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
 
-        if self.as_two_stage:
-            for bbox_embed_layer in self.bbox_embed:
-                nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
+        # two-stage
+        self.transformer.decoder.class_embed = self.class_embed
+        self.transformer.decoder.bbox_embed = self.bbox_embed
+
+        for bbox_embed_layer in self.bbox_embed:
+            nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
+
 
     def forward(self, batched_inputs):
 
@@ -194,9 +172,8 @@ class DINO(nn.Module):
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
 
         # prepare two stage output
-        # if self.as_two_stage:
         interm_coord = enc_reference
-        interm_class = self.class_embed[-1](enc_state)
+        interm_class = self.transformer.decoder.class_embed[-1](enc_state)
         output['enc_outputs'] = {'pred_logits': interm_class, 'pred_boxes': interm_coord}
         # output['dn_meta']=dn_meta
         if self.training:
@@ -221,6 +198,7 @@ class DINO(nn.Module):
                 processed_results.append({"instances": r})
             return processed_results
 
+
     def prepare_for_cdn(self, targets, dn_number, label_noise_ratio, box_noise_scale, num_queries, num_classes, hidden_dim, label_enc):
         """
             A major difference of DINO from DN-DETR is that the author process pattern embedding pattern embedding in its detector
@@ -234,9 +212,8 @@ class DINO(nn.Module):
             :return:
             """
         if dn_number<=0:
-            return None,None,None,None
+            return None, None, None, None
             # positive and negative dn queries
-            
         dn_number = dn_number * 2
         known = [(torch.ones_like(t['labels'])).cuda() for t in targets]
         batch_size = len(known)
@@ -372,7 +349,7 @@ class DINO(nn.Module):
         # box_cls.shape: 1, 300, 80
         # box_pred.shape: 1, 300, 4
         prob = box_cls.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 100, dim=1)
+        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 300, dim=1)
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]
