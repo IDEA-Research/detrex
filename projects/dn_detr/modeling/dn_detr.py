@@ -180,7 +180,7 @@ class DNDETR(nn.Module):
         input_query_label = torch.cat([noised_label_queries, match_query_label], 1).transpose(0, 1)
         input_query_bbox = torch.cat([noised_box_queries, match_query_bbox], 1).transpose(0, 1)
 
-        # hs, reference = self.transformer(self.input_proj(src), mask, embedweight, pos[-1])
+
         hidden_states, reference_boxes = self.transformer(
             features,
             img_masks,
@@ -201,7 +201,7 @@ class DNDETR(nn.Module):
                   'max_gt_num_per_image': torch.tensor(max_gt_num_per_image).to(self.device)}
         outputs_class, outputs_coord = self.dn_post_process(outputs_class, outputs_coord, output)
 
-        output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
+        output.update({"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]})
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
 

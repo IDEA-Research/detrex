@@ -149,7 +149,7 @@ class GenerateDNQueries(nn.Module):
         # create more training denoising samples.
         # e.g. tensor([0, 1, 2, 2, 3, 4]) -> tensor([0, 1, 2, 2, 3, 4, 0, 1, 2, 2, 3, 4]) if group = 2.
         gt_labels = gt_labels.repeat(self.denoising_groups, 1).flatten()
-        gt_boxes = gt_boxes.repeat(self.denoising_groups, 1).flatten()
+        gt_boxes = gt_boxes.repeat(self.denoising_groups, 1)
 
         # set the device as "gt_labels"
         device = gt_labels.device
@@ -174,9 +174,7 @@ class GenerateDNQueries(nn.Module):
 
         # add indicator to label encoding if with_indicator == True
         if self.with_indicator:
-            label_embedding = torch.cat(
-                label_embedding, torch.ones([query_num, 1]).to(device)
-            )
+            label_embedding = torch.cat([label_embedding, torch.ones([query_num, 1]).to(device)], 1)
         
         # calculate the max number of ground truth in one image inside the batch.
         # e.g. gt_nums_per_image = [2, 3] which means the first image has 2 instances and the second image has 3 instances
@@ -199,7 +197,7 @@ class GenerateDNQueries(nn.Module):
         # batch_idx = [0, 1]
         # then the "batch_idx_per_instance" equals to [0, 0, 1, 1, 1] which indicates which image the instance belongs to.
         # cuz the instances has been flattened before.
-        batch_idx_per_instance = torch.repeat_interleave(batch_idx, gt_nums_per_image)
+        batch_idx_per_instance = torch.repeat_interleave(batch_idx, torch.tensor(gt_nums_per_image).long())
 
         # indicate which image the noised labels belong to. For example:
         # noised label: tensor([0, 1, 2, 2, 3, 4, 0, 1, 2, 2, 3, 4])

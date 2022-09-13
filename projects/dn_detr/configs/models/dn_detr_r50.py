@@ -96,10 +96,10 @@ model = L(DNDETR)(
     ),
     num_classes=80,
     num_queries=300,
+    in_channels=2048,
+    embed_dim=256,
     aux_loss=True,
-    query_dim=4,
-    iter_update=True,
-    random_refpoints_xy=False,
+    freeze_anchor_box_centers=False,
     criterion=L(DNCriterion)(
         num_classes=80,
         matcher=L(HungarianMatcher)(
@@ -125,9 +125,11 @@ model = L(DNDETR)(
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
-    dn_num=5,
-    label_noise_scale=0.2,
+    select_box_nums_for_evaluation=300,
+    denoising_groups=5,
+    label_noise_prob=0.2,
     box_noise_scale=0.4,
+    with_indicator=True,
     device="cuda",
 )
 
