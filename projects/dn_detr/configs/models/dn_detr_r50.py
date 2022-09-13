@@ -1,13 +1,6 @@
 import torch.nn as nn
 
-from detrex.layers import (
-    MultiheadAttention,
-    ConditionalSelfAttention,
-    ConditionalCrossAttention,
-    PositionEmbeddingSine,
-    FFN,
-    BaseTransformerLayer,
-)
+from detrex.layers import PositionEmbeddingSine
 from detrex.modeling import HungarianMatcher
 
 from detectron2.modeling.backbone import ResNet, BasicStem
@@ -41,57 +34,26 @@ model = L(DNDETR)(
     in_features=["res5"],  # use last level feature as DAB-DETR
     transformer=L(DNDetrTransformer)(
         encoder=L(DNDetrTransformerEncoder)(
-            transformer_layers=L(BaseTransformerLayer)(
-                attn=L(MultiheadAttention)(
-                    embed_dim=256,
-                    num_heads=8,
-                    attn_drop=0.0,
-                    batch_first=False,
-                ),
-                ffn=L(FFN)(
-                    embed_dim=256,
-                    feedforward_dim=2048,
-                    ffn_drop=0.0,
-                    activation=L(nn.PReLU)(),
-                ),
-                norm=L(nn.LayerNorm)(normalized_shape=256),
-                operation_order=("self_attn", "norm", "ffn", "norm"),
-            ),
+            embed_dim=256,
+            num_heads=8,
+            attn_dropout=0.0,
+            feedforward_dim=2048,
+            ffn_dropout=0.0,
+            activation=L(nn.PReLU)(),
             num_layers=6,
             post_norm=False,
         ),
         decoder=L(DNDetrTransformerDecoder)(
+            embed_dim=256,
+            num_heads=8,
+            attn_dropout=0.0,
+            feedforward_dim=2048,
+            ffn_dropout=0.0,
+            activation=L(nn.PReLU)(),
             num_layers=6,
-            return_intermediate=True,
-            query_dim=4,
             modulate_hw_attn=True,
             post_norm=True,
-            transformer_layers=L(BaseTransformerLayer)(
-                attn=[
-                    L(ConditionalSelfAttention)(
-                        embed_dim=256,
-                        num_heads=8,
-                        attn_drop=0.0,
-                        batch_first=False,
-                    ),
-                    L(ConditionalCrossAttention)(
-                        embed_dim=256,
-                        num_heads=8,
-                        attn_drop=0.0,
-                        batch_first=False,
-                    ),
-                ],
-                ffn=L(FFN)(
-                    embed_dim=256,
-                    feedforward_dim=2048,
-                    ffn_drop=0.0,
-                    activation=L(nn.PReLU)(),
-                ),
-                norm=L(nn.LayerNorm)(
-                    normalized_shape=256,
-                ),
-                operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
-            ),
+            return_intermediate=True,
         ),
     ),
     num_classes=80,

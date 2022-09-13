@@ -153,40 +153,48 @@ class DNDETR(nn.Module):
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
         pos_embed = self.position_embedding(img_masks)
 
-        ####### prepare for dn
+        # collect ground truth for denoising generation
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
+            gt_labels_list = [t["labels"] for t in targets]
+            gt_boxes_list = [t["boxes"] for t in targets]
         else:
+            # set to None during inference
             targets = None
 
-        gt_labels_list = [t["labels"] for t in targets]
-        gt_boxes_list = [t["boxes"] for t in targets]
-
-        # generate denoising queries and attention masks
-        noised_label_queries, noised_box_queries, attn_mask, denoising_groups, max_gt_num_per_image = \
-            self.denoising_generator(gt_labels_list, gt_boxes_list,)
 
         # for vallina dn-detr, label queries in the matching part is encoded as "no object" (the last class)
         # in the label encoder.
-        match_query_label = self.denoising_generator.label_encoder(torch.tensor(self.num_classes).to(self.device)).repeat(
+        matching_label_query = self.denoising_generator.label_encoder(torch.tensor(self.num_classes).to(self.device)).repeat(
             self.num_queries, 1
         )
         indicator_for_matching_part = torch.zeros([self.num_queries, 1]).to(self.device)
-        match_query_label = torch.cat([match_query_label, indicator_for_matching_part], 1).repeat(batch_size, 1, 1)
-        match_query_bbox = self.anchor_box_embed.weight.repeat(batch_size, 1, 1)
-        
-        # concate dn queries and matching queries
-        input_query_label = torch.cat([noised_label_queries, match_query_label], 1).transpose(0, 1)
-        input_query_bbox = torch.cat([noised_box_queries, match_query_bbox], 1).transpose(0, 1)
+        matching_label_query = torch.cat([matching_label_query, indicator_for_matching_part], 1).repeat(batch_size, 1, 1)
+        matching_box_query = self.anchor_box_embed.weight.repeat(batch_size, 1, 1)
+
+        if targets is None:
+            input_label_query = matching_label_query.transpose(0, 1)  # (num_queries, bs, embed_dim)
+            input_box_query = matching_box_query.transpose(0, 1)  # (num_queries, bs, 4)
+            attn_mask = None
+            denoising_groups = self.denoising_groups
+            max_gt_num_per_image = 0
+        else:
+            # generate denoising queries and attention masks
+            noised_label_queries, noised_box_queries, attn_mask, denoising_groups, max_gt_num_per_image = \
+                self.denoising_generator(gt_labels_list, gt_boxes_list)        
+
+            # concate dn queries and matching queries as input
+            input_label_query = torch.cat([noised_label_queries, matching_label_query], 1).transpose(0, 1)
+            input_box_query = torch.cat([noised_box_queries, matching_box_query], 1).transpose(0, 1)
 
 
         hidden_states, reference_boxes = self.transformer(
             features,
             img_masks,
-            input_query_bbox,
+            input_box_query,
             pos_embed,
-            target=input_query_label,
+            target=input_label_query,
             attn_mask=[attn_mask, None],  # None mask for cross attention
         )
 
@@ -225,6 +233,20 @@ class DNDETR(nn.Module):
                 r = detector_postprocess(results_per_image, height, width)
                 processed_results.append({"instances": r})
             return processed_results
+
+    def dn_post_process(self, outputs_class, outputs_coord, output):
+        if output and output["max_gt_num_per_image"] > 0:
+            padding_size = output["max_gt_num_per_image"] * output["denoising_groups"]
+            output_known_class = outputs_class[:, :, :padding_size, :]
+            output_known_coord = outputs_coord[:, :, :padding_size, :]
+            outputs_class = outputs_class[:, :, padding_size:, :]
+            outputs_coord = outputs_coord[:, :, padding_size:, :]
+
+            out = {"pred_logits": output_known_class[-1], "pred_boxes": output_known_coord[-1]}
+            if self.aux_loss:
+                out["aux_outputs"] = self._set_aux_loss(output_known_class, output_known_coord)
+            output["denoising_output"] = out
+        return outputs_class, outputs_coord
 
     @torch.jit.unused
     def _set_aux_loss(self, outputs_class, outputs_coord):
@@ -292,16 +314,3 @@ class DNDETR(nn.Module):
         images = ImageList.from_tensors(images)
         return images
 
-    def dn_post_process(self, outputs_class, outputs_coord, output):
-        if output and output["max_gt_num_per_image"] > 0:
-            padding_size = output["max_gt_num_per_image"] * output["denoising_groups"]
-            output_known_class = outputs_class[:, :, :padding_size, :]
-            output_known_coord = outputs_coord[:, :, :padding_size, :]
-            outputs_class = outputs_class[:, :, padding_size:, :]
-            outputs_coord = outputs_coord[:, :, padding_size:, :]
-
-            out = {"pred_logits": output_known_class[-1], "pred_boxes": output_known_coord[-1]}
-            if self.aux_loss:
-                out["aux_outputs"] = self._set_aux_loss(output_known_class, output_known_coord)
-            output["denoising_output"] = out
-        return outputs_class, outputs_coord
