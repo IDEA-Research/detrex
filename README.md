@@ -31,7 +31,7 @@
 
 
 <details open>
-<summary> Major Features <summary>
+<summary> Major Features </summary>
 
 - **Modular Design.** detrex decompose the transformer based detection framework into various components which help the users to easily build their own customized models.
 
