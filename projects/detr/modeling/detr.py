@@ -32,34 +32,67 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DETR(nn.Module):
-    """This is the DETR module that performs object detection"""
-
+    """Implement DAB-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
+    <https://arxiv.org/abs/2201.12329>`_
+    
+    Args:
+        backbone (nn.Module): Backbone module for feature extraction.
+        in_features (List[str]): Selected backbone output features for transformer module.
+        in_channels (int): Dimension of the last feature in `in_features`.
+        position_embedding (nn.Module): Position encoding layer for generating position embeddings.
+        transformer (nn.Module): Transformer module used for further processing features and input queries.
+        embed_dim (int): Hidden dimension for transformer module.
+        num_classes (int): Number of total categories.
+        num_queries (int): Number of proposal dynamic anchor boxes in Transformer
+        criterion (nn.Module): Criterion for calculating the total losses.
+        aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
+        pixel_mean (List[float]): Pixel mean value for image normalization. 
+            Default: [123.675, 116.280, 103.530].
+        pixel_std (List[float]): Pixel std value for image normalization.
+            Default: [58.395, 57.120, 57.375].
+        device (str): Training device. Default: "cuda".
+    """
     def __init__(
         self,
         backbone: nn.Module,
         in_features: List[str],
+        in_channels: int,
         position_embedding: nn.Module,
         transformer: nn.Module,
+        embed_dim: int,
         num_classes: int,
         num_queries: int,
         criterion: nn.Module,
-        pixel_mean: List[float],
-        pixel_std: List[float],
-        in_channels: int = 2048,
-        embed_dim: int = 256,
-        aux_loss: bool = False,
+        aux_loss: bool = True,
+        pixel_mean: List[float] = [123.675, 116.280, 103.530],
+        pixel_std: List[float] = [58.395, 57.120, 57.375],
         device: str = "cuda",
     ):
         super().__init__()
-        self.num_queries = num_queries
-        self.transformer = transformer
-        self.class_embed = nn.Linear(embed_dim, num_classes + 1)
-        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
-        self.query_embed = nn.Embedding(num_queries, embed_dim)
-        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
+        # define backbone and position embedding module
         self.backbone = backbone
-        self.position_embedding = position_embedding
         self.in_features = in_features
+        self.position_embedding = position_embedding
+        
+        # project the backbone output feature 
+        # into the required dim for transformer block
+        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
+
+        # define learnable object queries and transformer module
+        self.transformer = transformer
+        self.query_embed = nn.Embedding(num_queries, embed_dim)
+        
+        # define classification head and box head
+        self.class_embed = nn.Linear(embed_dim, num_classes + 1)
+        self.bbox_embed = MLP(
+            input_dim=embed_dim, 
+            hidden_dim=embed_dim, 
+            output_dim=4, 
+            num_layers=3
+        )
+        self.num_classes = num_classes
+
+        # where to calculate auxiliary loss in criterion
         self.aux_loss = aux_loss
         self.criterion = criterion
 
@@ -144,12 +177,13 @@ class DETR(nn.Module):
         ]
 
     def inference(self, box_cls, box_pred, image_sizes):
-        """
-        Arguments:
-            box_cls (Tensor): tensor of shape (batch_size, num_queries, K).
+        """Inference function for DETR
+        
+        Args:
+            box_cls (torch.Tensor): tensor of shape ``(batch_size, num_queries, K)``.
                 The tensor predicts the classification probability for each query.
-            box_pred (Tensor): tensors of shape (batch_size, num_queries, 4).
-                The tensor predicts 4-vector (x,y,w,h) box
+            box_pred (torch.Tensor): tensors of shape ``(batch_size, num_queries, 4)``.
+                The tensor predicts 4-vector ``(x, y, w, h)`` box
                 regression values for every queryx
             image_sizes (List[torch.Size]): the input image sizes
 
@@ -167,7 +201,6 @@ class DETR(nn.Module):
         ):
             result = Instances(image_size)
             result.pred_boxes = Boxes(box_cxcywh_to_xyxy(box_pred_per_image))
-
             result.pred_boxes.scale(scale_x=image_size[1], scale_y=image_size[0])
             result.scores = scores_per_image
             result.pred_classes = labels_per_image
