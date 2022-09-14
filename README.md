@@ -1,56 +1,28 @@
-# detrex
-IDEA open source toolbox for visual recognition tasks
+<h2 align="center">detrex</h2>
+<p align="center">
+    <a href="">
+        <img alt="docs" src="https://img.shields.io/badge/docs-latest-blue">
+    </a>
+    <a href="">
+        <img alt="GitHub" src="https://img.shields.io/github/license/Oneflow-Inc/libai.svg?color=blue">
+    </a>
+    <a href="https://github.com/Oneflow-Inc/libai/issues">
+        <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-pink.svg">
+    </a>
+    <a href="">
+        <img alt="open issues" src="https://img.shields.io/github/issues-raw/Westlake-AI/openmixup?color=%23FF9600">
+    </a>
+    <a href="">
+        <img alt="issue resolution" src="https://img.shields.io/badge/issue%20resolution-1%20d-%23009763">
+    </a>
+</p>
+
+[📘Documentation]() |
+[🛠️Installation]() |
+[👀Model Zoo]() |
+[🚀Awesome DETR](https://github.com/IDEACVR/awesome-detection-transformer) |
+[🆕News]() |
+[🤔Reporting Issues](https://github.com/rentainhe/detrex/issues/new/choose)
 
 
-## Environments Setting
-- install `detectron2 == 0.6.0`
-
-```bash
-git clone https://github.com/facebookresearch/detectron2.git
-python -m pip install -e detectron2
-```
-
-- install `detrex`
-
-```bash
-git clone https://github.com/rentainhe/IDEADet
-cd IDEADet
-pip install -r requirements.txt
-pip install -e .
-```
-
-## Datasets Preparation
-- `COCO 2017`
-
-Prepare the datasets as follows:
-```bash
-datasets/
-    coco/
-    annotations/
-        instances_{train,val}2017.json
-        person_keypoints_{train,val}2017.json
-    {train,val}2017/
-        # image files that are mentioned in the corresponding json
-```
-
-Set the datasets path:
-```bash
-export DETECTRON2_DATASETS="path/to/datasets/"
-```
-
-Use the prepared datasets in `dgx061`:
-```bash
-export DETECTRON2_DATASETS=/comp_robot/rentianhe/code/IDEADet/datasets
-```
-
-## Training DAB-DETR
-```bash
-cd projects/dab_detr
-python train_net.py --config-file configs/dab_detr_r50_50epoch.py --num-gpus 1
-```
-
-## Evaluate DAB-DETR
-```bash
-cd projects/dab_detr
-python train_net.py --config-file configs/dab_detr_r50_50epoch.py --num-gpus 1 --eval-only
-```
+## Introduction
