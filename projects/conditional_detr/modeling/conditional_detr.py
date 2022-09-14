@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------------------------
+# Copyright (c) 2021 Microsoft. All Rights Reserved.
+# Copyright (c) 2020 SenseTime. All Rights Reserved.
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # ------------------------------------------------------------------------------------------------
 # Modified from:
+# https://github.com/Atten4Vis/ConditionalDETR/blob/main/models/conditional_detr.py
+# https://github.com/fundamentalvision/Deformable-DETR/blob/main/models/deformable_detr.py
 # https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
 # ------------------------------------------------------------------------------------------------
+
 
 import math
 from typing import List

@@ -7,8 +7,7 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep
 train = get_config("common/train.py").train
 
 # modify training config
-# train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.init_checkpoint = "tmp/ckpts/ConditionalDETR_r50_epoch50-converted.pth"
+train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
 train.output_dir = "./output/conditional_detr_r50_50ep"
 train.max_iter = 375000
 train.clip_grad.enabled = True
