@@ -178,8 +178,8 @@ class FocalLoss(nn.Module):
             loss_func = focal_loss_with_prob
         else:
             num_classes = preds.size(1)
-            target = F.one_hot(target, num_classes=num_classes + 1)
-            target = target[:, :num_classes]
+            targets = F.one_hot(targets, num_classes=num_classes + 1)
+            targets = targets[:, :num_classes]
             loss_func = sigmoid_focal_loss
 
         loss_class = self.loss_weight * loss_func(

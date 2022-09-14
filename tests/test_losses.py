@@ -31,8 +31,9 @@ from utils import sigmoid_focal_loss
 
 class TestLosses(unittest.TestCase):
     def test_sigmoid_focal_loss(self):
+        num_classes = 3
         preds = torch.randn(2, 3)
-        targets = torch.ones(2, 3)
+        targets = torch.Tensor([0, 1]).long()
         num_boxes = 3
         loss_weight=2.0
 
@@ -40,10 +41,14 @@ class TestLosses(unittest.TestCase):
             alpha=0.25, 
             gamma=2.0, 
             reduction="mean", 
-            loss_weight=loss_weight
+            loss_weight=loss_weight,
+            activated=False,
         )
         
         detrex_output = focal_loss_detrex(preds, targets, avg_factor=num_boxes)
+        
+        targets = F.one_hot(targets, num_classes=num_classes + 1)
+        targets = targets[:, :num_classes]
         original_output = sigmoid_focal_loss(preds, targets, num_boxes=num_boxes) * 3
         original_output *= loss_weight
 
