@@ -11,13 +11,11 @@ from detrex.layers import PositionEmbeddingSine
 
 from projects.dino.modeling import (
     DINO,
-    DINOTransformer,
     DINOTransformerEncoder,
     DINOTransformerDecoder,
-    DINOCriterion,
+    DINOTransformer,
+    DINOCriterion
 )
-
-num_feature_levels = 4
 
 model = L(DINO)(
     backbone=L(ResNet)(
@@ -45,6 +43,7 @@ model = L(DINO)(
         in_features=["res3", "res4", "res5"],
         out_channels=256,
         num_outs=4,
+        kernel_size=1,
         norm_layer=L(nn.GroupNorm)(num_groups=32, num_channels=256),
     ),
     transformer=L(DINOTransformer)(
@@ -56,7 +55,7 @@ model = L(DINO)(
             ffn_dropout=0.0,
             num_layers=6,
             post_norm=False,
-            num_feature_levels=num_feature_levels,
+            num_feature_levels="${..num_feature_levels}",
         ),
         decoder=L(DINOTransformerDecoder)(
             embed_dim=256,
@@ -66,19 +65,16 @@ model = L(DINO)(
             ffn_dropout=0.0,
             num_layers=6,
             return_intermediate=True,
-            use_dab=True,
-            num_feature_levels=num_feature_levels,
+            num_feature_levels="${..num_feature_levels}",
         ),
-        as_two_stage="${..as_two_stage}",
-        num_feature_levels=num_feature_levels,
-        two_stage_num_proposals=900,
+        num_feature_levels=4,
+        two_stage_num_proposals="${..num_queries}",
     ),
     num_classes=80,
     num_queries=900,
     aux_loss=True,
-    as_two_stage=True,
-    criterion = L(DINOCriterion)(
-        num_classes=80,
+    criterion=L(DINOCriterion)(
+        num_classes="${..num_classes}",
         matcher=L(HungarianMatcher)(
             cost_class=2.0,
             cost_bbox=5.0,
@@ -105,11 +101,11 @@ model = L(DINO)(
         gamma=2.0,
         two_stage_binary_cls=False,
     ),
-    pixel_mean=[123.675, 116.280, 103.530],
-    pixel_std=[58.395, 57.120, 57.375],
     dn_number=100,
     label_noise_ratio=0.2,
     box_noise_scale=1.0,
+    pixel_mean=[123.675, 116.280, 103.530],
+    pixel_std=[58.395, 57.120, 57.375],
     device="cuda",
 )
 
@@ -118,13 +114,8 @@ base_weight_dict = copy.deepcopy(model.criterion.weight_dict)
 if model.aux_loss:
     weight_dict = model.criterion.weight_dict
     aux_weight_dict = {}
+    aux_weight_dict.update({k + f"_enc": v for k, v in base_weight_dict.items()})
     for i in range(model.transformer.decoder.num_layers - 1):
         aux_weight_dict.update({k + f"_{i}": v for k, v in base_weight_dict.items()})
-    weight_dict.update(aux_weight_dict)
-    model.criterion.weight_dict = weight_dict
-if model.as_two_stage:
-    weight_dict = model.criterion.weight_dict
-    aux_weight_dict = {}
-    aux_weight_dict.update({k + f"_enc": v for k, v in base_weight_dict.items()})
     weight_dict.update(aux_weight_dict)
     model.criterion.weight_dict = weight_dict
