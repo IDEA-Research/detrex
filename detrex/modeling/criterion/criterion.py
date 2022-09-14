@@ -101,7 +101,7 @@ class SetCriterion(nn.Module):
             target_classes_onehot = target_classes_onehot[:, :, :-1]
             loss_class = (
                 sigmoid_focal_loss(
-                    src_logits, target_classes_onehot, num_boxes, alpha=self.alpha, gamma=self.gamma
+                    src_logits, target_classes_onehot, avg_factor=num_boxes, alpha=self.alpha, gamma=self.gamma
                 )
                 * src_logits.shape[1]
             )
