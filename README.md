@@ -26,3 +26,21 @@
 
 
 ## Introduction
+
+`detrex` is an open-source toolbox that provides state-of-the-art transformer based detection algorithms on top of [Detectron2](https://github.com/facebookresearch/detectron2) and the module designs are partially borrowed from [mmdetection](https://github.com/open-mmlab/mmdetection) and [detr official repo](https://github.com/facebookresearch/detr). Many thanks for the nicely organized code. The main branch works with **Pytorch 1.9+** or higher (we recommend **Pytorch 1.12**).
+
+
+<details open>
+<summary> Major Features <summary>
+
+- **Modular Design.** detrex decompose the transformer based detection framework into various components which help the users to easily build their own customized models.
+
+- **State-of-the-art methods.** detrex provides a series of transformer based detection algorithms including `DINO` which reach the new SOTA of DETR-like models with **63.3mAP**!
+
+- **Easy to Use.** detrex is designed to be **light-weight** and easier for the users as follows:
+  - [LazyConfig System](https://detectron2.readthedocs.io/en/latest/tutorials/lazyconfigs.html) for more flexible syntax and cleaner config files.
+  - Light-weight training engine modified from detectron2 [lazyconfig_train_net.py](https://github.com/facebookresearch/detectron2/blob/main/tools/lazyconfig_train_net.py)
+
+
+
+</details>
