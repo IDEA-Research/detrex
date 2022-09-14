@@ -8,6 +8,24 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
   <img src="./assets/dino_arch.png"/>
 </div><br/>
 
+## Pretrained Models
+<table><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+<!-- ROW: dino_r50_12ep -->
+ <tr><td align="left"><a href="configs/dino_r50_12ep.py">DINO-R50</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">49.05</td>
+<td align="center"> <a href="">model</a>&nbsp;|&nbsp;<a href="">config</a></td>
+</tr>
+</tbody></table>
 
 ## Training
 All configs can be trained with:

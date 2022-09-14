@@ -1,6 +1,19 @@
+# coding=utf-8
+# Copyright 2022 The IDEA Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 from detrex.modeling.criterion import SetCriterion
 from detrex.utils import (
@@ -10,11 +23,22 @@ from detrex.utils import (
 
 
 class TwoStageCriterion(SetCriterion):
-    def __init__(self, num_classes, matcher, weight_dict, losses, eos_coef=None, loss_class_type="focal_loss", alpha: float = 0.25, gamma: float = 2, two_stage_binary_cls=False):
+    def __init__(
+        self, 
+        num_classes, 
+        matcher, 
+        weight_dict, 
+        losses, 
+        eos_coef=None, 
+        loss_class_type="focal_loss", 
+        alpha: float = 0.25, 
+        gamma: float = 2, 
+        two_stage_binary_cls=False
+    ):
         super().__init__(num_classes, matcher, weight_dict, losses, eos_coef, loss_class_type, alpha, gamma)
         self.two_stage_binary_cls = two_stage_binary_cls
 
-    def forward(self, outputs, targets, return_indices=False):
+    def forward(self, outputs, targets):
         """This performs the loss computation.
         Parameters:
              outputs: dict of tensors, see the output specification of the model for the format
@@ -29,9 +53,6 @@ class TwoStageCriterion(SetCriterion):
 
         # Retrieve the matching between the outputs of the last layer and the targets
         indices = self.matcher(outputs_without_aux, targets)
-        if return_indices:
-            indices0_copy = indices
-            indices_list = []
 
         # Compute the average number of target boxes accross all nodes, for normalization purposes
         num_boxes = sum(len(t["labels"]) for t in targets)
@@ -51,8 +72,6 @@ class TwoStageCriterion(SetCriterion):
         if "aux_outputs" in outputs:
             for i, aux_outputs in enumerate(outputs["aux_outputs"]):
                 indices = self.matcher(aux_outputs, targets)
-                if return_indices:
-                    indices_list.append(indices)
                 for loss in self.losses:
                     l_dict = self.get_loss(loss, aux_outputs, targets, indices, num_boxes)
                     l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
@@ -66,19 +85,8 @@ class TwoStageCriterion(SetCriterion):
                     bt["labels"] = torch.zeros_like(bt["labels"])
             indices = self.matcher(enc_outputs, targets)
             for loss in self.losses:
-                if loss == "masks":
-                    # Intermediate masks losses are too costly to compute, we ignore them.
-                    continue
-                kwargs = {}
-                if loss == "labels":
-                    # Logging is enabled only for the last layer
-                    kwargs["log"] = False
-                l_dict = self.get_loss(loss, enc_outputs, targets, indices, num_boxes, **kwargs)
+                l_dict = self.get_loss(loss, enc_outputs, targets, indices, num_boxes)
                 l_dict = {k + f"_enc": v for k, v in l_dict.items()}
                 losses.update(l_dict)
-
-        if return_indices:
-            indices_list.append(indices0_copy)
-            return losses, indices_list
 
         return losses
