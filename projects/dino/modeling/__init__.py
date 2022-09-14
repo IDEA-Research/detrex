@@ -15,9 +15,9 @@
 
 
 from .dino_transformer import (
-    DINOTransformer,
     DINOTransformerEncoder,
     DINOTransformerDecoder,
+    DINOTransformer,
 )
 from .dino import DINO
-from .dino_criterion import DINOCriterion
+from .dn_criterion import DINOCriterion
