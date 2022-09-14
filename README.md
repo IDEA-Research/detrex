@@ -1,5 +1,5 @@
-<h2 align="center">detrex</h2>
-<p align="center">
+<h2 align="left">detrex</h2>
+<p align="left">
     <a href="">
         <img alt="docs" src="https://img.shields.io/badge/docs-latest-blue">
     </a>
