@@ -6,7 +6,7 @@
     <a href="">
         <img alt="GitHub" src="https://img.shields.io/github/license/Oneflow-Inc/libai.svg?color=blue">
     </a>
-    <a href="https://github.com/Oneflow-Inc/libai/issues">
+    <a href="">
         <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-pink.svg">
     </a>
     <a href="">
@@ -27,7 +27,7 @@
 
 ## Introduction
 
-`detrex` is an open-source toolbox that provides state-of-the-art transformer based detection algorithms on top of [Detectron2](https://github.com/facebookresearch/detectron2) and the module designs are partially borrowed from [MMDetection](https://github.com/open-mmlab/mmdetection) and [DETR](https://github.com/facebookresearch/detr). Many thanks for their nicely organized code. The main branch works with **Pytorch 1.9+** or higher (we recommend **Pytorch 1.12**).
+detrex is an open-source toolbox that provides state-of-the-art transformer based detection algorithms on top of [Detectron2](https://github.com/facebookresearch/detectron2) and the module designs are partially borrowed from [MMDetection](https://github.com/open-mmlab/mmdetection) and [DETR](https://github.com/facebookresearch/detr). Many thanks for their nicely organized code. The main branch works with **Pytorch 1.9+** or higher (we recommend **Pytorch 1.12**).
 
 
 <details open>
@@ -58,20 +58,30 @@ Please refer to [Getting Started with detrex]() for the basic usage of detrex.
 
 Please see [documentation]() for full API documentation and tutorials.
 
-## Overview of Model Zoo
-To data, detrex implements the following algorithms:
-- [DETR](./projects/detr/)
-- [Deformable-DETR](./projects/dab_deformable_detr/)
-- [Conditional DETR]()
-- [DAB-DETR](./projects/dab_detr/)
-- [DAB-Deformable-DETR](./projects/dab_deformable_detr/)
-- [DN-DETR](./projects/dn_detr/)
-- [DN-Deformable-DETR](./projects/dn_deformable_detr/)
-- [DINO](./projects/dino/)
+## Model Zoo
+Results and models are available in [model zoo]()
 
-Please see [projects](./projects/)
+<details open>
+<summary> Supported methods </summary>
+
+- [x] [DETR](./projects/detr/)
+- [x] [Deformable-DETR](./projects/dab_deformable_detr/)
+- [x] [Conditional DETR]()
+- [x] [DAB-DETR](./projects/dab_detr/)
+- [x] [DAB-Deformable-DETR](./projects/dab_deformable_detr/)
+- [x] [DN-DETR](./projects/dn_detr/)
+- [x] [DN-Deformable-DETR](./projects/dn_deformable_detr/)
+- [x] [DINO](./projects/dino/)
+
+Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
 ## Change Log
+
+The beta v0.1.0 version was released in 30/09/2022. Highlights of the released version:
+- Support various backbones including: [FocalNet](https://arxiv.org/abs/2203.11926), [Swin-T](https://arxiv.org/pdf/2103.14030.pdf), [ResNet](https://arxiv.org/abs/1512.03385) and other [detectron2 builtin backbones](https://github.com/facebookresearch/detectron2/tree/main/detectron2/modeling/backbone).
+- Add [timm](https://github.com/rwightman/pytorch-image-models) backbones wrapper and [torchvision](https://github.com/pytorch/vision) backbones wrapper.
+- Support various transformer based detection algorithms including: [DETR](https://arxiv.org/abs/2005.12872), [Deformable-DETR](https://arxiv.org/abs/2010.04159), [Conditional-DETR](https://arxiv.org/abs/2108.06152), [DAB-DETR](https://arxiv.org/abs/2201.12329), [DN-DETR](https://arxiv.org/abs/2203.01305), [DINO](https://arxiv.org/abs/2203.03605).
+- Support flexible config system based on [Lazy Configs](https://detectron2.readthedocs.io/en/latest/tutorials/lazyconfigs.html)
 
 Please see [changelog.md](./changlog.md) for details and release history.
 
