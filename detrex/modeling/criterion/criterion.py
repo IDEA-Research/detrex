@@ -91,6 +91,8 @@ class SetCriterion(nn.Module):
                 src_logits.transpose(1, 2), target_classes, self.empty_weight
             )
         elif self.loss_class_type == "focal_loss":
+            # src_logits: (b, num_queries, num_classes) = (2, 300, 80)
+            # target_classes_one_hot = (2, 300, 80)
             target_classes_onehot = torch.zeros(
                 [src_logits.shape[0], src_logits.shape[1], src_logits.shape[2] + 1],
                 dtype=src_logits.dtype,

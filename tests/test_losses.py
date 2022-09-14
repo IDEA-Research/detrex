@@ -31,12 +31,13 @@ from utils import sigmoid_focal_loss
 
 class TestLosses(unittest.TestCase):
     def test_sigmoid_focal_loss(self):
-        num_classes = 3
-        preds = torch.randn(2, 3)
-        targets = torch.Tensor([0, 1]).long()
-        num_boxes = 3
+        num_classes = 80
+        preds = torch.randn(2, 300, num_classes)
+        targets = torch.randint(size=[2, 300], high=num_classes).long()
+        num_boxes = 16
         loss_weight=2.0
 
+        # detrex focal loss
         focal_loss_detrex = FocalLoss(
             alpha=0.25, 
             gamma=2.0, 
@@ -44,12 +45,20 @@ class TestLosses(unittest.TestCase):
             loss_weight=loss_weight,
             activated=False,
         )
-        
-        detrex_output = focal_loss_detrex(preds, targets, avg_factor=num_boxes)
-        
-        targets = F.one_hot(targets, num_classes=num_classes + 1)
-        targets = targets[:, :num_classes]
-        original_output = sigmoid_focal_loss(preds, targets, num_boxes=num_boxes) * 3
+        detrex_input_preds = preds.view(-1, num_classes)  # (N, num_classes)
+        detrex_input_targets = targets.flatten()  # (N, )
+        detrex_output = focal_loss_detrex(detrex_input_preds, detrex_input_targets, avg_factor=num_boxes)
+
+        # original focal loss
+        targets_classes_onehot = torch.zeros(
+            [preds.shape[0], preds.shape[1], preds.shape[2] + 1],
+            dtype=preds.dtype,
+            layout=preds.layout,
+            device=preds.device,
+        )
+        targets_classes_onehot.scatter_(2, targets.unsqueeze(-1), 1)
+        targets_classes_onehot = targets_classes_onehot[:, :, :-1]
+        original_output = sigmoid_focal_loss(preds, targets_classes_onehot, num_boxes=num_boxes) * preds.shape[1]
         original_output *= loss_weight
 
         self.assertTrue(

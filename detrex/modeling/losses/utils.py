@@ -66,7 +66,7 @@ def weight_reduce_loss(loss, weight=None, reduction="mean", avg_factor=None):
         # if reduction is mean, then average the loss by avg_factor
         if reduction == "mean":
             # Avoid causing ZeroDivisionError when avg_factor is 0.0.
-            eps = torch.finfo(torch.float32).eps
+            eps = torch.finfo(loss.dtype).eps
             loss = loss.sum() / (avg_factor + eps)
         # if reduction is 'none', then do nothing, otherwise raise an error
         elif reduction != 'none':
