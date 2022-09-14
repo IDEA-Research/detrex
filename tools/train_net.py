@@ -91,6 +91,7 @@ class Trainer(SimpleTrainer):
         If you want to do something with the losses, you can wrap the model.
         """
         loss_dict = self.model(data)
+        # import ipdb; ipdb.set_trace()
         with autocast(enabled=self.amp):
             if isinstance(loss_dict, torch.Tensor):
                 losses = loss_dict

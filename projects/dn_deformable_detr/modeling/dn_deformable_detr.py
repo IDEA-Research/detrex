@@ -59,13 +59,14 @@ class DNDeformableDETR(nn.Module):
         self.embed_dim = embed_dim
 
         # leave one dim for indicator
-        self.label_encoder = nn.Embedding(num_classes + 1, embed_dim - 1)
+        # self.label_encoder = nn.Embedding(num_classes + 1, embed_dim - 1)
+        self.label_encoder = nn.Embedding(num_classes + 1, embed_dim)
         self.dn_num = dn_num
         self.label_noise_scale = label_noise_scale
         self.box_noise_scale = box_noise_scale
 
         if not as_two_stage:
-            self.tgt_embed = nn.Embedding(num_queries, embed_dim-1)
+            self.tgt_embed = nn.Embedding(num_queries, embed_dim)
             self.refpoint_embed = nn.Embedding(num_queries, 4)
 
         self.aux_loss = aux_loss
@@ -165,8 +166,8 @@ class DNDeformableDETR(nn.Module):
             batch_size=len(batched_inputs),
             tgt_embed=tgt_embed,
         )
-
-        query_embeds = torch.cat((input_query_label, input_query_bbox), dim=2).transpose(0, 1).contiguous()
+        # import ipdb; ipdb.set_trace()
+        query_embeds = torch.cat((input_query_label, input_query_bbox), dim=2).transpose(0, 1)
         # indicator_mt = torch.zeros([self.num_queries, 1]).to(self.device)
         # input_query_label = torch.cat([tgt_embed, indicator_mt], dim=1).repeat(batch_size, 1, 1)
         # query_embeds = torch.cat((input_query_label, refanchor.repeat(batch_size, 1, 1)), dim=2)
@@ -178,7 +179,9 @@ class DNDeformableDETR(nn.Module):
             enc_outputs_class,
             enc_outputs_coord_unact,
         ) = self.transformer(
-            multi_level_feats, multi_level_masks, multi_level_position_embeddings, query_embeds,
+            multi_level_feats, multi_level_masks, multi_level_position_embeddings,
+            query_embeds,
+            # input_query_label.transpose(0, 1), input_query_bbox.transpose(0, 1),
             attn_masks=[attn_mask, None],  # None mask for cross attention
         )
 
@@ -305,7 +308,7 @@ class DNDeformableDETR(nn.Module):
         batch_size,
         tgt_embed,
     ):
-        indicator_mt = torch.zeros([num_queries, 1]).to(self.device).contiguous()
+        # indicator_mt = torch.zeros([num_queries, 1]).to(self.device)
         # use learnable tgt embedding in dab_deformable
         if tgt_embed is not None:
             content_queries_mt = tgt_embed
@@ -313,7 +316,7 @@ class DNDeformableDETR(nn.Module):
             content_queries_mt = label_encoder(torch.tensor(num_classes).to(self.device)).repeat(
                 num_queries, 1
             )
-        content_queries_mt = torch.cat([content_queries_mt, indicator_mt], dim=1)
+        # content_queries_mt = torch.cat([content_queries_mt, indicator_mt], dim=1)
 
         if targets is None:
             input_query_label = content_queries_mt.repeat(batch_size, 1, 1).transpose(0, 1)
@@ -362,8 +365,8 @@ class DNDeformableDETR(nn.Module):
         m = dn_labels.long().to(self.device)
         input_label_embed = label_encoder(m)
         # add dn part indicator
-        indicator_dn = torch.ones([input_label_embed.shape[0], 1]).to(self.device).contiguous()
-        input_label_embed = torch.cat([input_label_embed, indicator_dn], dim=1)
+        # indicator_dn = torch.ones([input_label_embed.shape[0], 1]).to(self.device)
+        # input_label_embed = torch.cat([input_label_embed, indicator_dn], dim=1)
         dn_boxes = inverse_sigmoid(dn_boxes)
         single_padding = int(max(gt_num))
         padding_size = int(single_padding * dn_num)

@@ -359,6 +359,8 @@ class DNDeformableDetrTransformer(nn.Module):
         multi_level_masks,
         multi_level_pos_embeds,
         query_embed,
+        # input_query_label,
+        # input_query_bbox,
         attn_masks,
         **kwargs,
     ):
@@ -438,8 +440,14 @@ class DNDeformableDetrTransformer(nn.Module):
             )
             query_embed, target = torch.split(pos_trans_out, c, dim=2)
         elif self.use_dab:
-            reference_points = query_embed[..., self.embed_dim :].sigmoid()
+            # input_query_label, input_query_bbox
+            # reference_points = input_query_bbox.sigmoid()
+            # target = input_query_label
+            reference_points = query_embed[..., self.embed_dim:].sigmoid()
             target = query_embed[..., : self.embed_dim]
+            # reference_points = input_query_bbox.sigmoid()
+            # target = input_query_label
+
             # target = target.unsqueeze(0).expand(bs, -1, -1)
             init_reference_out = reference_points
             # (300, 4)
