@@ -295,7 +295,7 @@ class DabDetrTransformer(nn.Module):
             key=memory,
             value=memory,
             key_pos=pos_embed,
-            refpoints_embed=anchor_box_embed,
+            anchor_box_embed=anchor_box_embed,
         )
 
         return hidden_state, reference_boxes
