@@ -29,6 +29,9 @@
 
 detrex is an open-source toolbox that provides state-of-the-art transformer based detection algorithms on top of [Detectron2](https://github.com/facebookresearch/detectron2) and the module designs are partially borrowed from [MMDetection](https://github.com/open-mmlab/mmdetection) and [DETR](https://github.com/facebookresearch/detr). Many thanks for their nicely organized code. The main branch works with **Pytorch 1.9+** or higher (we recommend **Pytorch 1.12**).
 
+<div align="center">
+  <img src="./assets/detr_arch.png" width="100%"/>
+</div>
 
 <details open>
 <summary> Major Features </summary>
@@ -96,3 +99,4 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 
 ## Citation
+If you find this project useful in your research, please consider cite:
