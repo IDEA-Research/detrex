@@ -67,19 +67,18 @@ Results and models are available in [model zoo]().
 <details open>
 <summary> Supported methods </summary>
 
-- [DETR (ECCV'2020)](./projects/detr/)
-- [Deformable-DETR (ICLR'2021)](./projects/dab_deformable_detr/)
-- [Conditional DETR (ICCV'2021)](./projects/conditional_detr/)
-- [DAB-DETR (ICLR'2022)](./projects/dab_detr/)
-- [DAB-Deformable-DETR (ICLR'2022)](./projects/dab_deformable_detr/)
+- [x] [DETR (ECCV'2020)](./projects/detr/)
+- [x] [Deformable-DETR (ICLR'2021)](./projects/dab_deformable_detr/)
+- [x] [Conditional DETR (ICCV'2021)](./projects/conditional_detr/)
+- [x] [DAB-DETR (ICLR'2022)](./projects/dab_detr/)
+- [x] [DAB-Deformable-DETR (ICLR'2022)](./projects/dab_deformable_detr/)
 - [x] [DN-DETR (CVPR'2022)](./projects/dn_detr/)
 - [x] [DN-Deformable-DETR (CVPR'2022)](./projects/dn_deformable_detr/)
 - [x] [DINO (ArXiv'2022)](./projects/dino/)
 
-</details>
-
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
+</details>
 
 
 ## Change Log
