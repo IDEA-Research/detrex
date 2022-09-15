@@ -27,6 +27,7 @@ model = L(ConditionalDETR)(
         freeze_at=1,
     ),
     in_features=["res5"],  # only use last level feature in Conditional-DETR
+    in_channels=2048,
     position_embedding=L(PositionEmbeddingSine)(
         num_pos_feats=128,
         temperature=10000,
@@ -40,7 +41,6 @@ model = L(ConditionalDETR)(
             feedforward_dim=2048,
             ffn_dropout=0.1,
             activation=L(nn.ReLU)(),
-            operation_order=("self_attn", "norm", "ffn", "norm"),
             num_layers=6,
             post_norm=False,
             batch_first=False,
@@ -52,7 +52,6 @@ model = L(ConditionalDETR)(
             feedforward_dim=2048,
             ffn_dropout=0.1,
             activation=L(nn.ReLU)(),
-            operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
             num_layers=6,
             post_norm=True,
             return_intermediate=True,
@@ -60,10 +59,8 @@ model = L(ConditionalDETR)(
         ),
     ),
     embed_dim=256,
-    in_channels=2048,
     num_classes=80,
     num_queries=300,
-    aux_loss=True,
     criterion=L(SetCriterion)(
         num_classes=80,
         matcher=L(HungarianMatcher)(
@@ -87,6 +84,7 @@ model = L(ConditionalDETR)(
         alpha=0.25,
         gamma=2.0,
     ),
+    aux_loss=True,
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
     device="cuda",

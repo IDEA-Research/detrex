@@ -39,7 +39,6 @@ class ConditionalDetrTransformerEncoder(TransformerLayerSequence):
         feedforward_dim: int = 2048,
         ffn_dropout: float = 0.1,
         activation: nn.Module = nn.PReLU(),
-        operation_order: Tuple = ("self_attn", "norm", "ffn", "norm"),
         post_norm: bool = False,
         num_layers: int = 6,
         batch_first: bool = False,
@@ -59,7 +58,7 @@ class ConditionalDetrTransformerEncoder(TransformerLayerSequence):
                     activation=activation,
                 ),
                 norm=nn.LayerNorm(normalized_shape=embed_dim),
-                operation_order=operation_order,
+                operation_order=("self_attn", "norm", "ffn", "norm"),
             ),
             num_layers=num_layers,
         )
@@ -110,7 +109,6 @@ class ConditionalDetrTransformerDecoder(TransformerLayerSequence):
         feedforward_dim: int = 2048,
         ffn_dropout: float = 0.0,
         activation: nn.Module = nn.PReLU(),
-        operation_order: Tuple = ("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
         num_layers: int = None,
         batch_first: bool = False,
         post_norm: bool = True,
@@ -141,7 +139,7 @@ class ConditionalDetrTransformerDecoder(TransformerLayerSequence):
                 norm=nn.LayerNorm(
                     normalized_shape=embed_dim,
                 ),
-                operation_order=operation_order,
+                operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
             ),
             num_layers=num_layers,
         )
