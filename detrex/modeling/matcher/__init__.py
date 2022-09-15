@@ -20,3 +20,4 @@ from .match_cost import (
     L1Cost,
     GIoUCost
 )
+from .modified_matcher import HungarianMatcher as ModifedMatcher

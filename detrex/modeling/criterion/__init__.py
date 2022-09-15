@@ -14,3 +14,4 @@
 # limitations under the License.
 
 from .criterion import SetCriterion
+from .base_criterion import BaseCriterion
