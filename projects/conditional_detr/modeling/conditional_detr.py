@@ -12,6 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ------------------------------------------------------------------------------------------------
+# Copyright (c) 2021 Microsoft. All Rights Reserved.
+# Copyright (c) 2020 SenseTime. All Rights Reserved.
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# ------------------------------------------------------------------------------------------------
+# Modified from:
+# https://github.com/Atten4Vis/ConditionalDETR/blob/main/models/conditional_detr.py
+# https://github.com/fundamentalvision/Deformable-DETR/blob/main/models/deformable_detr.py
+# https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
+# ------------------------------------------------------------------------------------------------
+
 
 import math
 from typing import List
@@ -19,14 +30,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from detrex.layers import MLP, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh, GenerateDNQueries
+from detrex.layers.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
+from detrex.layers.mlp import MLP
 from detrex.utils.misc import inverse_sigmoid
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
 
-class DNDETR(nn.Module):
+class ConditionalDETR(nn.Module):
     """Implement DAB-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
     <https://arxiv.org/abs/2201.12329>`_
     
@@ -45,15 +57,8 @@ class DNDETR(nn.Module):
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
-        freeze_anchor_box_centers (bool): If True, freeze the center param ``(x, y)`` for the initialized dynamic anchor boxes
-            in format ``(x, y, w, h)`` and only train ``(w, h)``. Default: True.
         select_box_nums_for_evaluation (int): Select the top-k confidence predicted boxes for inference.
             Default: 300.
-        denoising_groups (int): Number of groups for noised ground truths. Default: 5.
-        label_noise_prob (float): The probability of the label being noised. Default: 0.2.
-        box_noise_scale (float): Scaling factor for box noising. Default: 0.4.
-        with_indicator (bool): If True, add indicator in denoising queries part and matching queries part. 
-            Default: True.
         device (str): Training device. Default: "cuda".
     """
     def __init__(
@@ -70,15 +75,10 @@ class DNDETR(nn.Module):
         aux_loss: bool = True,
         pixel_mean: List[float] = [123.675, 116.280, 103.530],
         pixel_std: List[float] = [58.395, 57.120, 57.375],
-        freeze_anchor_box_centers: bool = True,
         select_box_nums_for_evaluation: int = 300,
-        denoising_groups: int = 5,
-        label_noise_prob: float = 0.2,
-        box_noise_scale: float = 0.4,
-        with_indicator: bool = True,
-        device="cuda",
+        device: str = "cuda",
     ):
-        super(DNDETR, self).__init__()
+        super(ConditionalDETR, self).__init__()
         # define backbone and position embedding module
         self.backbone = backbone
         self.in_features = in_features
@@ -87,28 +87,10 @@ class DNDETR(nn.Module):
         # project the backbone output feature 
         # into the required dim for transformer block
         self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
-
-        # generate denoising label/box queries
-        self.denoising_generator = GenerateDNQueries(
-            num_queries=num_queries,
-            num_classes=num_classes+1,
-            label_embed_dim=embed_dim,
-            denoising_groups=denoising_groups,
-            label_noise_prob=label_noise_prob,
-            box_noise_scale=box_noise_scale,
-            with_indicator=with_indicator,
-        )
-        self.denoising_groups = denoising_groups
-        self.label_noise_prob = label_noise_prob
-        self.box_noise_scale = box_noise_scale
-
-        # define leanable anchor boxes and transformer module
+        
+        # define leanable object query embed and transformer module
         self.transformer = transformer
-        self.anchor_box_embed = nn.Embedding(num_queries, 4)
-        self.num_queries = num_queries
-
-        # whether to freeze the initilized anchor box centers during training
-        self.freeze_anchor_box_centers = freeze_anchor_box_centers
+        self.query_embed = nn.Embedding(num_queries, embed_dim)
 
         # define classification head and box head
         self.class_embed = nn.Linear(embed_dim, num_classes)
@@ -119,11 +101,6 @@ class DNDETR(nn.Module):
             num_layers=3
         )
         self.num_classes = num_classes
-
-        # predict offsets to update anchor boxes after each decoder layer
-        # with shared box embedding head
-        # this is a hack implementation which will be modified in the future
-        self.transformer.decoder.bbox_embed = self.bbox_embed
 
         # where to calculate auxiliary loss in criterion
         self.aux_loss = aux_loss
@@ -141,15 +118,7 @@ class DNDETR(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        """Initialize weights for DN-DETR"""
-        if self.freeze_anchor_box_centers:
-            self.anchor_box_embed.weight.data[:, :2].uniform_(0, 1)
-            self.anchor_box_embed.weight.data[:, :2] = inverse_sigmoid(
-                self.anchor_box_embed.weight.data[:, :2]
-            )
-            self.anchor_box_embed.weight.data[:, :2].requires_grad = False
-
-        # init prior_prob setting for focal loss
+        """Initialize weights for Conditioanl-DETR."""
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         self.class_embed.bias.data = torch.ones(self.num_classes) * bias_value
@@ -191,73 +160,33 @@ class DNDETR(nn.Module):
             batch_size, _, H, W = images.tensor.shape
             img_masks = images.tensor.new_zeros(batch_size, H, W)
 
-        # only use last level feature as DAB-DETR
+        # only use last level feature in Conditional-DETR
         features = self.backbone(images.tensor)[self.in_features[-1]]
         features = self.input_proj(features)
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
         pos_embed = self.position_embedding(img_masks)
 
-        # collect ground truth for denoising generation
-        if self.training:
-            gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
-            targets = self.prepare_targets(gt_instances)
-            gt_labels_list = [t["labels"] for t in targets]
-            gt_boxes_list = [t["boxes"] for t in targets]
-        else:
-            # set to None during inference
-            targets = None
+        # hidden_states: transformer output hidden feature
+        # reference: reference points in format (x, y)  with normalized coordinates in range of [0, 1].
+        hidden_states, reference = self.transformer(features, img_masks, self.query_embed.weight, pos_embed)
 
-
-        # for vallina dn-detr, label queries in the matching part is encoded as "no object" (the last class)
-        # in the label encoder.
-        matching_label_query = self.denoising_generator.label_encoder(torch.tensor(self.num_classes).to(self.device)).repeat(
-            self.num_queries, 1
-        )
-        indicator_for_matching_part = torch.zeros([self.num_queries, 1]).to(self.device)
-        matching_label_query = torch.cat([matching_label_query, indicator_for_matching_part], 1).repeat(batch_size, 1, 1)
-        matching_box_query = self.anchor_box_embed.weight.repeat(batch_size, 1, 1)
-
-        if targets is None:
-            input_label_query = matching_label_query.transpose(0, 1)  # (num_queries, bs, embed_dim)
-            input_box_query = matching_box_query.transpose(0, 1)  # (num_queries, bs, 4)
-            attn_mask = None
-            denoising_groups = self.denoising_groups
-            max_gt_num_per_image = 0
-        else:
-            # generate denoising queries and attention masks
-            noised_label_queries, noised_box_queries, attn_mask, denoising_groups, max_gt_num_per_image = \
-                self.denoising_generator(gt_labels_list, gt_boxes_list)        
-
-            # concate dn queries and matching queries as input
-            input_label_query = torch.cat([noised_label_queries, matching_label_query], 1).transpose(0, 1)
-            input_box_query = torch.cat([noised_box_queries, matching_box_query], 1).transpose(0, 1)
-
-
-        hidden_states, reference_boxes = self.transformer(
-            features,
-            img_masks,
-            input_box_query,
-            pos_embed,
-            target=input_label_query,
-            attn_mask=[attn_mask, None],  # None mask for cross attention
-        )
-
-        # Calculate output coordinates and classes.
-        reference_boxes = inverse_sigmoid(reference_boxes)
-        anchor_box_offsets = self.bbox_embed(hidden_states)
-        outputs_coord = (reference_boxes + anchor_box_offsets).sigmoid()
+        reference_before_sigmoid = inverse_sigmoid(reference)
+        outputs_coords = []
+        for lvl in range(hidden_states.shape[0]):
+            tmp = self.bbox_embed(hidden_states[lvl])
+            tmp[..., :2] += reference_before_sigmoid
+            outputs_coord = tmp.sigmoid()
+            outputs_coords.append(outputs_coord)
+        outputs_coord = torch.stack(outputs_coords)
         outputs_class = self.class_embed(hidden_states)
 
-        # denoising post process
-        output = {'denoising_groups': torch.tensor(denoising_groups).to(self.device),
-                  'max_gt_num_per_image': torch.tensor(max_gt_num_per_image).to(self.device)}
-        outputs_class, outputs_coord = self.dn_post_process(outputs_class, outputs_coord, output)
-
-        output.update({"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]})
+        output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
 
         if self.training:
+            gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
+            targets = self.prepare_targets(gt_instances)
             loss_dict = self.criterion(output, targets)
             weight_dict = self.criterion.weight_dict
             for k in loss_dict.keys():
@@ -278,20 +207,6 @@ class DNDETR(nn.Module):
                 processed_results.append({"instances": r})
             return processed_results
 
-    def dn_post_process(self, outputs_class, outputs_coord, output):
-        if output and output["max_gt_num_per_image"] > 0:
-            padding_size = output["max_gt_num_per_image"] * output["denoising_groups"]
-            output_known_class = outputs_class[:, :, :padding_size, :]
-            output_known_coord = outputs_coord[:, :, :padding_size, :]
-            outputs_class = outputs_class[:, :, padding_size:, :]
-            outputs_coord = outputs_coord[:, :, padding_size:, :]
-
-            out = {"pred_logits": output_known_class[-1], "pred_boxes": output_known_coord[-1]}
-            if self.aux_loss:
-                out["aux_outputs"] = self._set_aux_loss(output_known_class, output_known_coord)
-            output["denoising_output"] = out
-        return outputs_class, outputs_coord
-
     @torch.jit.unused
     def _set_aux_loss(self, outputs_class, outputs_coord):
         # this is a workaround to make torchscript happy, as torchscript
@@ -303,7 +218,7 @@ class DNDETR(nn.Module):
         ]
 
     def inference(self, box_cls, box_pred, image_sizes):
-        """Inference function for DN-DETR
+        """Inference function for DAB-DETR
         
         Args:
             box_cls (torch.Tensor): tensor of shape ``(batch_size, num_queries, K)``.
@@ -312,14 +227,13 @@ class DNDETR(nn.Module):
                 The tensor predicts 4-vector ``(x, y, w, h)`` box
                 regression values for every queryx
             image_sizes (List[torch.Size]): the input image sizes
-        
+
         Returns:
             results (List[Instances]): a list of #images elements.
         """
         assert len(box_cls) == len(image_sizes)
         results = []
 
-        # Select top-k confidence boxes for inference
         prob = box_cls.sigmoid()
         topk_values, topk_indexes = torch.topk(
             prob.view(box_cls.shape[0], -1), 
@@ -357,4 +271,3 @@ class DNDETR(nn.Module):
         images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
         images = ImageList.from_tensors(images)
         return images
-

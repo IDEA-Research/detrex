@@ -7,15 +7,15 @@ from detrex.modeling.backbone import ResNet, BasicStem
 
 from detectron2.config import LazyCall as L
 
-from projects.dab_detr.modeling import (
-    DABDETR,
-    DabDetrTransformer,
-    DabDetrTransformerDecoder,
-    DabDetrTransformerEncoder,
+from projects.conditional_detr.modeling import (
+    ConditionalDETR,
+    ConditionalDetrTransformer,
+    ConditionalDetrTransformerDecoder,
+    ConditionalDetrTransformerEncoder,
 )
 
 
-model = L(DABDETR)(
+model = L(ConditionalDETR)(
     backbone=L(ResNet)(
         stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
         stages=L(ResNet.make_default_stages)(
@@ -26,32 +26,36 @@ model = L(DABDETR)(
         out_features=["res2", "res3", "res4", "res5"],
         freeze_at=1,
     ),
-    in_features=["res5"],  # only use last level feature in DAB-DETR
+    in_features=["res5"],  # only use last level feature in Conditional-DETR
     in_channels=2048,
     position_embedding=L(PositionEmbeddingSine)(
         num_pos_feats=128,
-        temperature=20,
+        temperature=10000,
         normalize=True,
     ),
-    transformer=L(DabDetrTransformer)(
-        encoder=L(DabDetrTransformerEncoder)(
+    transformer=L(ConditionalDetrTransformer)(
+        encoder=L(ConditionalDetrTransformerEncoder)(
             embed_dim=256,
             num_heads=8,
-            attn_dropout=0.0,
+            attn_dropout=0.1,
             feedforward_dim=2048,
-            ffn_dropout=0.0,
-            activation=L(nn.PReLU)(),
+            ffn_dropout=0.1,
+            activation=L(nn.ReLU)(),
             num_layers=6,
+            post_norm=False,
+            batch_first=False,
         ),
-        decoder=L(DabDetrTransformerDecoder)(
+        decoder=L(ConditionalDetrTransformerDecoder)(
             embed_dim=256,
             num_heads=8,
-            attn_dropout=0.0,
+            attn_dropout=0.1,
             feedforward_dim=2048,
-            ffn_dropout=0.0,
-            activation=L(nn.PReLU)(),
+            ffn_dropout=0.1,
+            activation=L(nn.ReLU)(),
             num_layers=6,
-            modulate_hw_attn=True,
+            post_norm=True,
+            return_intermediate=True,
+            batch_first=False,
         ),
     ),
     embed_dim=256,
@@ -68,7 +72,7 @@ model = L(DABDETR)(
             gamma=2.0,
         ),
         weight_dict={
-            "loss_class": 1,
+            "loss_class": 2.0,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
@@ -83,8 +87,6 @@ model = L(DABDETR)(
     aux_loss=True,
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
-    freeze_anchor_box_centers=True,
-    select_box_nums_for_evaluation=300,
     device="cuda",
 )
 

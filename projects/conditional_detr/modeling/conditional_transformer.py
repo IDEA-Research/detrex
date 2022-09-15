@@ -30,7 +30,7 @@ from detrex.layers import (
 from detrex.utils import inverse_sigmoid
 
 
-class DabDetrTransformerEncoder(TransformerLayerSequence):
+class ConditionalDetrTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -43,7 +43,7 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
         num_layers: int = 6,
         batch_first: bool = False,
     ):
-        super(DabDetrTransformerEncoder, self).__init__(
+        super(ConditionalDetrTransformerEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=MultiheadAttention(
                     embed_dim=embed_dim,
@@ -64,7 +64,6 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
         )
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
-        self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
 
         if post_norm:
             self.post_norm_layer = nn.LayerNorm(self.embed_dim)
@@ -85,12 +84,11 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
     ):
 
         for layer in self.layers:
-            position_scales = self.query_scale(query)
             query = layer(
                 query,
                 key,
                 value,
-                query_pos=query_pos * position_scales,
+                query_pos=query_pos,
                 attn_masks=attn_masks,
                 query_key_padding_mask=query_key_padding_mask,
                 key_padding_mask=key_padding_mask,
@@ -102,7 +100,7 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
         return query
 
 
-class DabDetrTransformerDecoder(TransformerLayerSequence):
+class ConditionalDetrTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
         embed_dim: int = 256,
@@ -112,12 +110,11 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         ffn_dropout: float = 0.0,
         activation: nn.Module = nn.PReLU(),
         num_layers: int = None,
-        modulate_hw_attn: bool = True,
         batch_first: bool = False,
         post_norm: bool = True,
         return_intermediate: bool = True,
     ):
-        super(DabDetrTransformerDecoder, self).__init__(
+        super(ConditionalDetrTransformerDecoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
                 attn=[
                     ConditionalSelfAttention(
@@ -150,14 +147,10 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         self.embed_dim = self.layers[0].embed_dim
         self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
         self.ref_point_head = MLP(
-            2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
+            self.embed_dim, self.embed_dim, 2, 2
         )
 
         self.bbox_embed = None
-
-        if modulate_hw_attn:
-            self.ref_anchor_head = MLP(self.embed_dim, self.embed_dim, 2, 2)
-        self.modulate_hw_attn = modulate_hw_attn
 
         if post_norm:
             self.post_norm_layer = nn.LayerNorm(self.embed_dim)
@@ -177,18 +170,14 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         attn_masks=None,
         query_key_padding_mask=None,
         key_padding_mask=None,
-        anchor_box_embed=None,
         **kwargs,
     ):
         intermediate = []
-
-        reference_boxes = anchor_box_embed.sigmoid()
-        intermediate_ref_boxes = [reference_boxes]
+        reference_points_before_sigmoid = self.ref_point_head(query_pos)    # [num_queries, batch_size, 2]
+        reference_points: torch.Tensor = reference_points_before_sigmoid.sigmoid().transpose(0, 1)
 
         for idx, layer in enumerate(self.layers):
-            obj_center = reference_boxes[..., : self.embed_dim]
-            query_sine_embed = get_sine_pos_embed(obj_center)
-            query_pos = self.ref_point_head(query_sine_embed)
+            obj_center = reference_points[..., :2].transpose(0, 1)      # [num_queries, batch_size, 2]
 
             # do not apply transform in position in the first decoder layer
             if idx == 0:
@@ -196,19 +185,12 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
             else:
                 position_transform = self.query_scale(query)
 
+            # get sine embedding for the query vector
+            query_sine_embed = get_sine_pos_embed(obj_center)     
             # apply position transform
             query_sine_embed = query_sine_embed[..., : self.embed_dim] * position_transform
 
-            if self.modulate_hw_attn:
-                ref_hw_cond = self.ref_anchor_head(query).sigmoid()
-                query_sine_embed[..., self.embed_dim // 2 :] *= (
-                    ref_hw_cond[..., 0] / obj_center[..., 2]
-                ).unsqueeze(-1)
-                query_sine_embed[..., : self.embed_dim // 2] *= (
-                    ref_hw_cond[..., 1] / obj_center[..., 3]
-                ).unsqueeze(-1)
-
-            query = layer(
+            query: torch.Tensor = layer(
                 query,
                 key,
                 value,
@@ -221,17 +203,6 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
                 is_first_layer=(idx == 0),
                 **kwargs,
             )
-
-            # update anchor boxes after each decoder layer using shared box head.
-            if self.bbox_embed is not None:
-                # predict offsets and added to the input normalized anchor boxes.
-                offsets = self.bbox_embed(query)
-                offsets[..., : self.embed_dim] += inverse_sigmoid(reference_boxes)
-                new_reference_boxes = offsets[..., : self.embed_dim].sigmoid()
-
-                if idx != self.num_layers - 1:
-                    intermediate_ref_boxes.append(new_reference_boxes)
-                reference_boxes = new_reference_boxes.detach()
 
             if self.return_intermediate:
                 if self.post_norm_layer is not None:
@@ -246,23 +217,17 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
                 intermediate.append(query)
 
         if self.return_intermediate:
-            if self.bbox_embed is not None:
-                return [
+            return [
                     torch.stack(intermediate).transpose(1, 2),
-                    torch.stack(intermediate_ref_boxes).transpose(1, 2),
-                ]
-            else:
-                return [
-                    torch.stack(intermediate).transpose(1, 2),
-                    reference_boxes.unsqueeze(0).transpose(1, 2),
+                    reference_points,
                 ]
 
         return query.unsqueeze(0)
 
 
-class DabDetrTransformer(nn.Module):
+class ConditionalDetrTransformer(nn.Module):
     def __init__(self, encoder=None, decoder=None):
-        super(DabDetrTransformer, self).__init__()
+        super(ConditionalDetrTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.embed_dim = self.encoder.embed_dim
@@ -274,11 +239,11 @@ class DabDetrTransformer(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, x, mask, anchor_box_embed, pos_embed):
+    def forward(self, x, mask, query_embed, pos_embed):
         bs, c, h, w = x.shape
-        x = x.view(bs, c, -1).permute(2, 0, 1)  # (c, bs, num_queries)
+        x = x.view(bs, c, -1).permute(2, 0, 1)
         pos_embed = pos_embed.view(bs, c, -1).permute(2, 0, 1)
-        anchor_box_embed = anchor_box_embed.unsqueeze(1).repeat(1, bs, 1)
+        query_embed = query_embed.unsqueeze(1).repeat(1, bs, 1)
         mask = mask.view(bs, -1)
         memory = self.encoder(
             query=x,
@@ -287,15 +252,14 @@ class DabDetrTransformer(nn.Module):
             query_pos=pos_embed,
             query_key_padding_mask=mask,
         )
-        num_queries = anchor_box_embed.shape[0]
-        target = torch.zeros(num_queries, bs, self.embed_dim, device=anchor_box_embed.device)
+        target = torch.zeros_like(query_embed)
 
-        hidden_state, reference_boxes = self.decoder(
+        hidden_state, references = self.decoder(
             query=target,
             key=memory,
             value=memory,
             key_pos=pos_embed,
-            anchor_box_embed=anchor_box_embed,
+            query_pos=query_embed,
         )
 
-        return hidden_state, reference_boxes
+        return hidden_state, references

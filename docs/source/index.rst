@@ -11,3 +11,4 @@ Welcome to detrex's documentation!
 
    tutorials/index
    modules/index
+   changelog.md
