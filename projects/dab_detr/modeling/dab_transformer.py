@@ -39,7 +39,6 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
         feedforward_dim: int = 2048,
         ffn_dropout: float = 0.1,
         activation: nn.Module = nn.PReLU(),
-        operation_order: Tuple = ("self_attn", "norm", "ffn", "norm"),
         post_norm: bool = False,
         num_layers: int = 6,
         batch_first: bool = False,
@@ -59,7 +58,7 @@ class DabDetrTransformerEncoder(TransformerLayerSequence):
                     activation=activation,
                 ),
                 norm=nn.LayerNorm(normalized_shape=embed_dim),
-                operation_order=operation_order,
+                operation_order=("self_attn", "norm", "ffn", "norm"),
             ),
             num_layers=num_layers,
         )
@@ -112,9 +111,7 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         feedforward_dim: int = 2048,
         ffn_dropout: float = 0.0,
         activation: nn.Module = nn.PReLU(),
-        operation_order: Tuple = ("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
         num_layers: int = None,
-        query_dim: int = 4,
         modulate_hw_attn: bool = True,
         batch_first: bool = False,
         post_norm: bool = True,
@@ -145,7 +142,7 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
                 norm=nn.LayerNorm(
                     normalized_shape=embed_dim,
                 ),
-                operation_order=operation_order,
+                operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
             ),
             num_layers=num_layers,
         )
@@ -153,7 +150,7 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         self.embed_dim = self.layers[0].embed_dim
         self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
         self.ref_point_head = MLP(
-            query_dim // 2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
+            2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
         )
 
         self.bbox_embed = None
@@ -292,7 +289,7 @@ class DabDetrTransformer(nn.Module):
         num_queries = refpoints_embed.shape[0]
         target = torch.zeros(num_queries, bs, self.embed_dim, device=refpoints_embed.device)
 
-        hidden_state, references = self.decoder(
+        hidden_state, reference_boxes = self.decoder(
             query=target,
             key=memory,
             value=memory,
@@ -300,4 +297,4 @@ class DabDetrTransformer(nn.Module):
             refpoints_embed=refpoints_embed,
         )
 
-        return hidden_state, references
+        return hidden_state, reference_boxes
