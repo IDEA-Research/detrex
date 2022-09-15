@@ -12,12 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ------------------------------------------------------------------------------------------------
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-# ------------------------------------------------------------------------------------------------
-# Modified from:
-# https://github.com/facebookresearch/detr/blob/main/d2/detr/detr.py
-# ------------------------------------------------------------------------------------------------
 
 import math
 from typing import List
@@ -33,6 +27,35 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DNDETR(nn.Module):
+    """Implement DAB-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
+    <https://arxiv.org/abs/2201.12329>`_
+    
+    Args:
+        backbone (nn.Module): Backbone module for feature extraction.
+        in_features (List[str]): Selected backbone output features for transformer module.
+        in_channels (int): Dimension of the last feature in `in_features`.
+        position_embedding (nn.Module): Position encoding layer for generating position embeddings.
+        transformer (nn.Module): Transformer module used for further processing features and input queries.
+        embed_dim (int): Hidden dimension for transformer module.
+        num_classes (int): Number of total categories.
+        num_queries (int): Number of proposal dynamic anchor boxes in Transformer
+        criterion (nn.Module): Criterion for calculating the total losses.
+        aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
+        pixel_mean (List[float]): Pixel mean value for image normalization. 
+            Default: [123.675, 116.280, 103.530].
+        pixel_std (List[float]): Pixel std value for image normalization.
+            Default: [58.395, 57.120, 57.375].
+        freeze_anchor_box_centers (bool): If True, freeze the center param ``(x, y)`` for the initialized dynamic anchor boxes
+            in format ``(x, y, w, h)`` and only train ``(w, h)``. Default: True.
+        select_box_nums_for_evaluation (int): Select the top-k confidence predicted boxes for inference.
+            Default: 300.
+        denoising_groups (int): Number of groups for noised ground truths. Default: 5.
+        label_noise_prob (float): The probability of the label being noised. Default: 0.2.
+        box_noise_scale (float): Scaling factor for box noising. Default: 0.4.
+        with_indicator (bool): If True, add indicator in denoising queries part and matching queries part. 
+            Default: True.
+        device (str): Training device. Default: "cuda".
+    """
     def __init__(
         self,
         backbone: nn.Module,
@@ -134,7 +157,28 @@ class DNDETR(nn.Module):
         nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
     def forward(self, batched_inputs):
+        """Forward function of `DAB-DETR` which excepts a list of dict as inputs.
 
+        Args:
+            batched_inputs (List[dict]): A list of instance dict, and each instance dict must consists of:
+                - dict["image"] (torch.Tensor): The unnormalized image tensor.
+                - dict["height"] (int): The original image height.
+                - dict["width"] (int): The original image width.
+                - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
+                    Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
+                    for the basic usage of Instances.
+        
+        Returns:
+            dict: Returns a dict with the following elements:
+                - dict["pred_logits"]: the classification logits for all queries (anchor boxes in DAB-DETR).
+                            with shape ``[batch_size, num_queries, num_classes]``
+                - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
+                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 
+                    each individual image (disregarding possible padding). See PostProcess for information 
+                    on how to retrieve the unnormalized bounding box.
+                - dict["aux_outputs"]: Optional, only returned when auxilary losses are activated. It is a list of
+                            dictionnaries containing the two above keys for each decoder layer.
+        """
         images = self.preprocess_image(batched_inputs)
 
         if self.training:
@@ -147,7 +191,7 @@ class DNDETR(nn.Module):
             batch_size, _, H, W = images.tensor.shape
             img_masks = images.tensor.new_zeros(batch_size, H, W)
 
-        # only use last level feature in DAB-DETR
+        # only use last level feature as DAB-DETR
         features = self.backbone(images.tensor)[self.in_features[-1]]
         features = self.input_proj(features)
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
