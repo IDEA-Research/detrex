@@ -19,15 +19,15 @@ Depu Meng, Xiaokang Chen, Zejia Fan, Gang Zeng, Houqiang Li, Yuhui Yuan, Lei Sun
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
 <!-- ROW: dab_detr_r50_50ep -->
- <tr><td align="left"><a href="configs/dab_detr_r50_50ep.py">Conditional DETR-R50</a></td>
+ <tr><td align="left"><a href="configs/conditional_detr_r50_50ep.py">Conditional DETR-R50</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
-<td align="center">43.2</td>
-<td align="center"> <a href="">Google Drive</a></td>
+<td align="center">41.0</td>
+<td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
 
-**Note:** DC5 means using dilated convolution in `res5`.
+**Note:** Here we borrowed the pretrained weight from [ConditionalDETR](https://github.com/Atten4Vis/ConditionalDETR). And our detrex training results will be released in the future version.
 
 
 ## Training

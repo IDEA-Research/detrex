@@ -177,16 +177,16 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         attn_masks=None,
         query_key_padding_mask=None,
         key_padding_mask=None,
-        refpoints_embed=None,
+        anchor_box_embed=None,
         **kwargs,
     ):
         intermediate = []
 
-        reference_points = refpoints_embed.sigmoid()
-        refpoints = [reference_points]
+        reference_boxes = anchor_box_embed.sigmoid()
+        intermediate_ref_boxes = [reference_boxes]
 
         for idx, layer in enumerate(self.layers):
-            obj_center = reference_points[..., : self.embed_dim]
+            obj_center = reference_boxes[..., : self.embed_dim]
             query_sine_embed = get_sine_pos_embed(obj_center)
             query_pos = self.ref_point_head(query_sine_embed)
 
@@ -222,15 +222,16 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
                 **kwargs,
             )
 
-            # iter update
+            # update anchor boxes after each decoder layer using shared box head.
             if self.bbox_embed is not None:
-                temp = self.bbox_embed(query)
-                temp[..., : self.embed_dim] += inverse_sigmoid(reference_points)
-                new_reference_points = temp[..., : self.embed_dim].sigmoid()
+                # predict offsets and added to the input normalized anchor boxes.
+                offsets = self.bbox_embed(query)
+                offsets[..., : self.embed_dim] += inverse_sigmoid(reference_boxes)
+                new_reference_boxes = offsets[..., : self.embed_dim].sigmoid()
 
                 if idx != self.num_layers - 1:
-                    refpoints.append(new_reference_points)
-                reference_points = new_reference_points.detach()
+                    intermediate_ref_boxes.append(new_reference_boxes)
+                reference_boxes = new_reference_boxes.detach()
 
             if self.return_intermediate:
                 if self.post_norm_layer is not None:
@@ -248,12 +249,12 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
             if self.bbox_embed is not None:
                 return [
                     torch.stack(intermediate).transpose(1, 2),
-                    torch.stack(refpoints).transpose(1, 2),
+                    torch.stack(intermediate_ref_boxes).transpose(1, 2),
                 ]
             else:
                 return [
                     torch.stack(intermediate).transpose(1, 2),
-                    reference_points.unsqueeze(0).transpose(1, 2),
+                    reference_boxes.unsqueeze(0).transpose(1, 2),
                 ]
 
         return query.unsqueeze(0)
@@ -273,11 +274,11 @@ class DabDetrTransformer(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, x, mask, refpoints_embed, pos_embed):
+    def forward(self, x, mask, anchor_box_embed, pos_embed):
         bs, c, h, w = x.shape
-        x = x.view(bs, c, -1).permute(2, 0, 1)
+        x = x.view(bs, c, -1).permute(2, 0, 1)  # (c, bs, num_queries)
         pos_embed = pos_embed.view(bs, c, -1).permute(2, 0, 1)
-        refpoints_embed = refpoints_embed.unsqueeze(1).repeat(1, bs, 1)
+        anchor_box_embed = anchor_box_embed.unsqueeze(1).repeat(1, bs, 1)
         mask = mask.view(bs, -1)
         memory = self.encoder(
             query=x,
@@ -286,15 +287,15 @@ class DabDetrTransformer(nn.Module):
             query_pos=pos_embed,
             query_key_padding_mask=mask,
         )
-        num_queries = refpoints_embed.shape[0]
-        target = torch.zeros(num_queries, bs, self.embed_dim, device=refpoints_embed.device)
+        num_queries = anchor_box_embed.shape[0]
+        target = torch.zeros(num_queries, bs, self.embed_dim, device=anchor_box_embed.device)
 
         hidden_state, reference_boxes = self.decoder(
             query=target,
             key=memory,
             value=memory,
             key_pos=pos_embed,
-            refpoints_embed=refpoints_embed,
+            anchor_box_embed=anchor_box_embed,
         )
 
         return hidden_state, reference_boxes
