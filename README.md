@@ -59,19 +59,19 @@ Please refer to [Getting Started with detrex]() for the basic usage of detrex.
 Please see [documentation]() for full API documentation and tutorials.
 
 ## Model Zoo
-Results and models are available in [model zoo]()
+Results and models are available in [model zoo]().
 
 <details open>
 <summary> Supported methods </summary>
 
-- [x] [DETR](./projects/detr/)
-- [x] [Deformable-DETR](./projects/dab_deformable_detr/)
-- [x] [Conditional DETR]()
-- [x] [DAB-DETR](./projects/dab_detr/)
-- [x] [DAB-Deformable-DETR](./projects/dab_deformable_detr/)
-- [x] [DN-DETR](./projects/dn_detr/)
-- [x] [DN-Deformable-DETR](./projects/dn_deformable_detr/)
-- [x] [DINO](./projects/dino/)
+- [x] [DETR (ECCV'2020)](./projects/detr/)
+- [x] [Deformable-DETR (ICLR'2021)](./projects/dab_deformable_detr/)
+- [x] [Conditional DETR (ICCV'2021)](./projects/conditional_detr/)
+- [x] [DAB-DETR (ICLR'2022)](./projects/dab_detr/)
+- [x] [DAB-Deformable-DETR (ICLR'2022)](./projects/dab_deformable_detr/)
+- [x] [DN-DETR (CVPR'2022)](./projects/dn_detr/)
+- [x] [DN-Deformable-DETR (CVPR'2022)](./projects/dn_deformable_detr/)
+- [x] [DINO (ArXiv'2022)](./projects/dino/)
 
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
