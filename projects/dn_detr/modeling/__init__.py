@@ -4,4 +4,4 @@ from .dn_transformers import (
     DNDetrTransformerDecoder,
     DNDetrTransformer,
 )
-from .modified_dn_criterion import DNCriterion
+from .dn_criterion import DNCriterion
