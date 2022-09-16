@@ -17,6 +17,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from detrex.layers.box_ops import box_cxcywh_to_xyxy
 from detrex.modeling.matcher import FocalLossCost, L1Cost, GIoUCost, ModifedMatcher
 from detrex.modeling.losses import FocalLoss, L1Loss, GIoULoss
 from detrex.utils import get_world_size, is_dist_avail_and_initialized
@@ -107,6 +108,10 @@ class BaseCriterion(nn.Module):
         pred_boxes = pred_boxes[idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices)], dim=0)
 
+        # Convert box format to (x1, y1, x2, y2)
+        pred_boxes = box_cxcywh_to_xyxy(pred_boxes)
+        target_boxes = box_cxcywh_to_xyxy(target_boxes)
+
         # Compute iou loss
         losses = self.loss_giou(pred_boxes, target_boxes, avg_factor=num_boxes)
         return losses
@@ -143,7 +148,7 @@ class BaseCriterion(nn.Module):
         losses["loss_class"] = self.calculate_class_loss(pred_logits, targets, indices, num_boxes)
         losses["loss_bbox"] = self.calculate_bbox_loss(pred_boxes, targets, indices, num_boxes)
         losses["loss_giou"] = self.calculate_giou_loss(pred_boxes, targets, indices, num_boxes)
-
+        
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if "aux_outputs" in outputs:
             for i, aux_output in enumerate(outputs["aux_outputs"]):

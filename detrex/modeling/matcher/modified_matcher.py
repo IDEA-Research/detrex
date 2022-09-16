@@ -77,7 +77,7 @@ class HungarianMatcher(nn.Module):
                 (cx, cy, w, h) for each image, which are all in range [0, 1] with shape
                 ``(num_queries, 4)``.
         """
-        bs, num_queries, _ = pred_logits.shape()
+        bs, num_queries, _ = pred_logits.size()
         
         # flatten to compute the cost matrices in a batch
         pred_logits = pred_logits.flatten(0, 1)  # [batch_size * num_queries, num_classes]
