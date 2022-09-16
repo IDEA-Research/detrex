@@ -96,12 +96,3 @@ model = L(DABDETR)(
     select_box_nums_for_evaluation=300,
     device="cuda",
 )
-
-# # set aux loss weight dict
-# if model.aux_loss:
-#     weight_dict = model.criterion.weight_dict
-#     aux_weight_dict = {}
-#     for i in range(model.transformer.decoder.num_layers - 1):
-#         aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
-#     weight_dict.update(aux_weight_dict)
-#     model.criterion.weight_dict = weight_dict

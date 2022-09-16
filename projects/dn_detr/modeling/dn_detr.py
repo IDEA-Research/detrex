@@ -259,10 +259,6 @@ class DNDETR(nn.Module):
 
         if self.training:
             loss_dict = self.criterion(output, targets)
-            weight_dict = self.criterion.weight_dict
-            for k in loss_dict.keys():
-                if k in weight_dict:
-                    loss_dict[k] *= weight_dict[k]
             return loss_dict
         else:
             box_cls = output["pred_logits"]

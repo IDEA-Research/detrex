@@ -89,7 +89,7 @@ class BaseCriterion(nn.Module):
         target_classes[idx] = target_classes_o
 
         # Compute classification loss
-        pred_logits = pred_logits.view(-1, self.num_classes)
+        pred_logits = pred_logits.reshape(-1, self.num_classes)
         target_classes = target_classes.flatten()
         losses = self.loss_class(pred_logits, target_classes, avg_factor=num_boxes)
         return losses

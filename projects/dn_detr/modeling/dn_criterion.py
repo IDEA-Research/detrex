@@ -53,6 +53,8 @@ class DNCriterion(SetCriterion):
                 outputs["denoising_groups"],
                 outputs["max_gt_num_per_image"],
             )
+            import pdb
+            pdb.set_trace()
             dn_idx = []
             for i in range(len(targets)):
                 if len(targets[i]["labels"]) > 0:
