@@ -1,17 +1,6 @@
 import torch.nn as nn
 
-from detrex.modeling.matcher import (
-    ModifedMatcher,
-    FocalLossCost,
-    L1Cost,
-    GIoUCost
-)
-from detrex.modeling.losses import (
-    FocalLoss,
-    L1Loss,
-    GIoULoss,
-)
-from detrex.modeling.criterion import BaseCriterion
+from detrex.modeling import HungarianMatcher, SetCriterion
 from detrex.layers import PositionEmbeddingSine
 from detrex.modeling.backbone import ResNet, BasicStem
 
@@ -67,27 +56,28 @@ model = L(DABDETR)(
     embed_dim=256,
     num_classes=80,
     num_queries=300,
-    criterion=L(BaseCriterion)(
-        num_classes="${..num_classes}",
-        matcher=L(ModifedMatcher)(
-            cost_class=L(FocalLossCost)(
-                alpha=0.25,
-                gamma=2.0,
-                weight=2.0,
-            ),
-            cost_bbox=L(L1Cost)(weight=5.0),
-            cost_giou=L(GIoUCost)(weight=2.0),
-        ),
-        loss_class=L(FocalLoss)(
+    criterion=L(SetCriterion)(
+        num_classes=80,
+        matcher=L(HungarianMatcher)(
+            cost_class=2.0,
+            cost_bbox=5.0,
+            cost_giou=2.0,
+            cost_class_type="focal_loss_cost",
             alpha=0.25,
             gamma=2.0,
-            loss_weight=1.0,
         ),
-        loss_bbox=L(L1Loss)(loss_weight=5.0),
-        loss_giou=L(GIoULoss)(
-            eps=1e-6,
-            loss_weight=2.0,
-        ),
+        weight_dict={
+            "loss_class": 1,
+            "loss_bbox": 5.0,
+            "loss_giou": 2.0,
+        },
+        losses=[
+            "class",
+            "boxes",
+        ],
+        loss_class_type="focal_loss",
+        alpha=0.25,
+        gamma=2.0,
     ),
     aux_loss=True,
     pixel_mean=[123.675, 116.280, 103.530],
@@ -97,11 +87,11 @@ model = L(DABDETR)(
     device="cuda",
 )
 
-# # set aux loss weight dict
-# if model.aux_loss:
-#     weight_dict = model.criterion.weight_dict
-#     aux_weight_dict = {}
-#     for i in range(model.transformer.decoder.num_layers - 1):
-#         aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
-#     weight_dict.update(aux_weight_dict)
-#     model.criterion.weight_dict = weight_dict
+# set aux loss weight dict
+if model.aux_loss:
+    weight_dict = model.criterion.weight_dict
+    aux_weight_dict = {}
+    for i in range(model.transformer.decoder.num_layers - 1):
+        aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
+    weight_dict.update(aux_weight_dict)
+    model.criterion.weight_dict = weight_dict
