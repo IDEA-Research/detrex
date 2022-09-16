@@ -194,10 +194,10 @@ class DABDETR(nn.Module):
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
             loss_dict = self.criterion(output, targets)
-            weight_dict = self.criterion.weight_dict
-            for k in loss_dict.keys():
-                if k in weight_dict:
-                    loss_dict[k] *= weight_dict[k]
+            # weight_dict = self.criterion.weight_dict
+            # for k in loss_dict.keys():
+            #     if k in weight_dict:
+            #         loss_dict[k] *= weight_dict[k]
             return loss_dict
         else:
             box_cls = output["pred_logits"]

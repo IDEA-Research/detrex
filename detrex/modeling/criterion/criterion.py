@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This is the original implementation of SetCriterion which will be deprecated in the next version.
+
+We keep it here because our modified Criterion module is still under test.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -20,7 +26,36 @@ import torch.nn.functional as F
 from detrex.layers import box_cxcywh_to_xyxy, generalized_box_iou
 from detrex.utils import get_world_size, is_dist_avail_and_initialized
 
-from ..losses import sigmoid_focal_loss
+
+def sigmoid_focal_loss(inputs, targets, num_boxes, alpha: float = 0.25, gamma: float = 2):
+    """
+    Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
+    
+    Args:
+        inputs (torch.Tensor): A float tensor of arbitrary shape.
+            The predictions for each example.
+        targets (torch.Tensor): A float tensor with the same shape as inputs. Stores the binary
+            classification label for each element in inputs
+            (0 for the negative class and 1 for the positive class).
+        num_boxes (int): The number of boxes.
+        alpha (float, optional): Weighting factor in range (0, 1) to balance
+            positive vs negative examples. Default: 0.25.
+        gamma (float): Exponent of the modulating factor (1 - p_t) to
+            balance easy vs hard examples. Default: 2.
+    
+    Returns:
+        torch.Tensor: The computed sigmoid focal loss.
+    """
+    prob = inputs.sigmoid()
+    ce_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
+    p_t = prob * targets + (1 - prob) * (1 - targets)
+    loss = ce_loss * ((1 - p_t) ** gamma)
+
+    if alpha >= 0:
+        alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
+        loss = alpha_t * loss
+
+    return loss.mean(1).sum() / num_boxes
 
 
 class SetCriterion(nn.Module):
@@ -68,6 +103,7 @@ class SetCriterion(nn.Module):
             empty_weight[-1] = eos_coef
             self.register_buffer("empty_weight", empty_weight)
 
+
     def loss_labels(self, outputs, targets, indices, num_boxes):
         """Classification loss (Binary focal loss)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
@@ -91,6 +127,8 @@ class SetCriterion(nn.Module):
                 src_logits.transpose(1, 2), target_classes, self.empty_weight
             )
         elif self.loss_class_type == "focal_loss":
+            # src_logits: (b, num_queries, num_classes) = (2, 300, 80)
+            # target_classes_one_hot = (2, 300, 80)
             target_classes_onehot = torch.zeros(
                 [src_logits.shape[0], src_logits.shape[1], src_logits.shape[2] + 1],
                 dtype=src_logits.dtype,
@@ -101,7 +139,7 @@ class SetCriterion(nn.Module):
             target_classes_onehot = target_classes_onehot[:, :, :-1]
             loss_class = (
                 sigmoid_focal_loss(
-                    src_logits, target_classes_onehot, num_boxes, alpha=self.alpha, gamma=self.gamma
+                    src_logits, target_classes_onehot, num_boxes=num_boxes, alpha=self.alpha, gamma=self.gamma
                 )
                 * src_logits.shape[1]
             )
@@ -120,6 +158,8 @@ class SetCriterion(nn.Module):
         src_boxes = outputs["pred_boxes"][idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices)], dim=0)
 
+        import pdb
+        pdb.set_trace()
         loss_bbox = F.l1_loss(src_boxes, target_boxes, reduction="none")
 
         losses = {}
@@ -165,7 +205,6 @@ class SetCriterion(nn.Module):
              return_indices: used for vis. if True, the layer0-5 indices will be returned as well.
 
         """
-
         outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
 
         # Retrieve the matching between the outputs of the last layer and the targets

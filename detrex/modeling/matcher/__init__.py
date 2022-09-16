@@ -14,3 +14,10 @@
 # limitations under the License.
 
 from .matcher import HungarianMatcher
+from .match_cost import (
+    FocalLossCost,
+    CrossEntropyCost,
+    L1Cost,
+    GIoUCost
+)
+from .modified_matcher import HungarianMatcher as ModifedMatcher
