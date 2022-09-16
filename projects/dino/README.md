@@ -23,7 +23,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">49.05</td>
-<td align="center"> <a href="">model</a>&nbsp;|&nbsp;<a href="">config</a></td>
+<td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
 

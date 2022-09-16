@@ -22,19 +22,11 @@ Feng Li, Hao Zhang, Shilong Liu, Jian Guo, Lionel M.Ni, Lei Zhang
  <tr><td align="left"><a href="configs/dab_detr_r50_50ep.py">DN-DETR-R50</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
-<td align="center"></td>
-<td align="center"> <a href="">Google Drive</a>&nbsp;|&nbsp;<a href="">Tsinghua Cloud</a></td>
-</tr>
-<!-- ROW: dab_detr_r101_50ep -->
- <tr><td align="left"><a href="configs/dab_detr_r101_50ep.py">DN-DETR-R101</a></td>
-<td align="center">R-101</td>
-<td align="center">IN1k</td>
-<td align="center"></td>
-<td align="center"> <a href="">Google Drive</a>&nbsp;|&nbsp;<a href="">Tsinghua Cloud</a></td>
+<td align="center">44.73</td>
+<td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
 
-**Note:** DC5 means using dilated convolution in `res5`.
 
 
 ## Training
