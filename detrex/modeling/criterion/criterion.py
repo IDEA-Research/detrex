@@ -19,6 +19,7 @@ This is the original implementation of SetCriterion which will be deprecated in 
 We keep it here because our modified Criterion module is still under test.
 """
 
+from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -70,7 +71,7 @@ class SetCriterion(nn.Module):
         num_classes,
         matcher,
         weight_dict,
-        losses,
+        losses: List[str] = ["class", "boxes"],
         eos_coef: float = 0.1,
         loss_class_type: str = "focal_loss",
         alpha: float = 0.25,
