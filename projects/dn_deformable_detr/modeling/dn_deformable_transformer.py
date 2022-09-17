@@ -355,7 +355,8 @@ class DNDeformableDetrTransformer(nn.Module):
         multi_level_feats,
         multi_level_masks,
         multi_level_pos_embeds,
-        query_embed,
+        input_label_query,
+        input_box_query,
         attn_masks,
         **kwargs,
     ):
@@ -392,9 +393,6 @@ class DNDeformableDetrTransformer(nn.Module):
             spatial_shapes, valid_ratios, device=feat.device
         )
 
-        # feat_flatten = feat_flatten.permute(1, 0, 2)  # (H*W, bs, embed_dims)
-        # lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
-        #     1, 0, 2)  # (H*W, bs, embed_dims)
 
         memory = self.encoder(
             query=feat_flatten,
@@ -412,34 +410,38 @@ class DNDeformableDetrTransformer(nn.Module):
 
         bs, _, c = memory.shape
         if self.as_two_stage:
-            # TODO: to support two stage
+            assert input_box_query is None, "query_embed should be None in two-stage"
             output_memory, output_proposals = self.gen_encoder_output_proposals(
                 memory, mask_flatten, spatial_shapes
-            )
+            ) 
+            # output_memory: bs, num_tokens, c
+            # output_proposals: bs, num_tokens, 4. unsigmoided.
+            # output_proposals: bs, num_tokens, 4
 
             enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
             enc_outputs_coord_unact = (
                 self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
-            )
+            ) # unsigmoided.
 
             topk = self.two_stage_num_proposals
-            topk_proposals = torch.topk(enc_outputs_class[..., 0], topk, dim=1)[1]
+            topk_proposals = torch.topk(enc_outputs_class.max(-1)[0], topk, dim=1)[1]
+            
+            # extract region proposal boxes
             topk_coords_unact = torch.gather(
                 enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
-            )
-            topk_coords_unact = topk_coords_unact.detach()
-            reference_points = topk_coords_unact.sigmoid()
+            ) # unsigmoided.
+            reference_points = topk_coords_unact.detach().sigmoid()
             init_reference_out = reference_points
-            pos_trans_out = self.pos_trans_norm(
-                self.pos_trans(self.get_proposal_pos_embed(topk_coords_unact))
+
+            # extract region features
+            target_unact = torch.gather(
+                output_memory, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, output_memory.shape[-1])
             )
-            query_embed, target = torch.split(pos_trans_out, c, dim=2)
+            target = target_unact.detach()
         else:
-            reference_points = query_embed[..., self.embed_dim :].sigmoid()
-            target = query_embed[..., : self.embed_dim]
-            # target = target.unsqueeze(0).expand(bs, -1, -1)
+            reference_points = input_box_query.sigmoid()
+            target = input_label_query
             init_reference_out = reference_points
-            # (300, 4)
 
         # decoder
         inter_states, inter_references = self.decoder(
