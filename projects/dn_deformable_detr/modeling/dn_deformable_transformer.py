@@ -111,7 +111,6 @@ class DNDeformableDetrTransformerDecoder(TransformerLayerSequence):
         ffn_dropout: float = 0.1,
         num_layers: int = 6,
         return_intermediate: bool = True,
-        use_dab: bool = True,
         num_feature_levels: int = 4,
     ):
         super(DNDeformableDetrTransformerDecoder, self).__init__(
@@ -144,10 +143,8 @@ class DNDeformableDetrTransformerDecoder(TransformerLayerSequence):
         )
         self.return_intermediate = return_intermediate
 
-        if use_dab:
-            self.query_scale = MLP(embed_dim, embed_dim, embed_dim, 2)
-            self.ref_point_head = MLP(2 * embed_dim, embed_dim, embed_dim, 2)
-        self.use_dab = use_dab
+        self.query_scale = MLP(embed_dim, embed_dim, embed_dim, 2)
+        self.ref_point_head = MLP(2 * embed_dim, embed_dim, embed_dim, 2)
 
         self.bbox_embed = None
         self.class_embed = None
@@ -182,11 +179,10 @@ class DNDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 assert reference_points.shape[-1] == 2
                 reference_points_input = reference_points[:, :, None] * valid_ratios[:, None]
 
-            if self.use_dab:
-                query_sine_embed = get_sine_pos_embed(reference_points_input[:, :, 0, :])
-                raw_query_pos = self.ref_point_head(query_sine_embed)
-                pos_scale = self.query_scale(output) if layer_idx != 0 else 1
-                query_pos = pos_scale * raw_query_pos
+            query_sine_embed = get_sine_pos_embed(reference_points_input[:, :, 0, :])
+            raw_query_pos = self.ref_point_head(query_sine_embed)
+            pos_scale = self.query_scale(output) if layer_idx != 0 else 1
+            query_pos = pos_scale * raw_query_pos
 
             output = layer(
                 output,
@@ -241,7 +237,6 @@ class DNDeformableDetrTransformer(nn.Module):
         self.two_stage_num_proposals = two_stage_num_proposals
 
         self.embed_dim = self.encoder.embed_dim
-        self.use_dab = self.decoder.use_dab
 
         self.level_embeds = nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dim))
 
@@ -439,7 +434,7 @@ class DNDeformableDetrTransformer(nn.Module):
                 self.pos_trans(self.get_proposal_pos_embed(topk_coords_unact))
             )
             query_embed, target = torch.split(pos_trans_out, c, dim=2)
-        elif self.use_dab:
+        else:
             reference_points = query_embed[..., self.embed_dim :].sigmoid()
             target = query_embed[..., : self.embed_dim]
             # target = target.unsqueeze(0).expand(bs, -1, -1)
