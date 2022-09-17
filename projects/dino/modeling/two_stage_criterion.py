@@ -28,7 +28,7 @@ class TwoStageCriterion(SetCriterion):
         num_classes, 
         matcher, 
         weight_dict, 
-        losses, 
+        losses=["class", "boxes"], 
         eos_coef=None, 
         loss_class_type="focal_loss", 
         alpha: float = 0.25, 
