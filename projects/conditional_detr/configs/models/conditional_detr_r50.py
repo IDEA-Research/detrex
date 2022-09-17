@@ -43,7 +43,6 @@ model = L(ConditionalDETR)(
             activation=L(nn.ReLU)(),
             num_layers=6,
             post_norm=False,
-            batch_first=False,
         ),
         decoder=L(ConditionalDetrTransformerDecoder)(
             embed_dim=256,
@@ -55,7 +54,6 @@ model = L(ConditionalDETR)(
             num_layers=6,
             post_norm=True,
             return_intermediate=True,
-            batch_first=False,
         ),
     ),
     embed_dim=256,
@@ -76,10 +74,6 @@ model = L(ConditionalDETR)(
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
-        losses=[
-            "class",
-            "boxes",
-        ],
         loss_class_type="focal_loss",
         alpha=0.25,
         gamma=2.0,

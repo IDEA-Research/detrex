@@ -32,8 +32,8 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DETR(nn.Module):
-    """Implement DAB-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
-    <https://arxiv.org/abs/2201.12329>`_
+    """Implement DETR in `End-to-End Object Detection with Transformers 
+    <https://arxiv.org/abs/2005.12872>`_
     
     Args:
         backbone (nn.Module): Backbone module for feature extraction.
