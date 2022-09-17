@@ -39,8 +39,8 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class ConditionalDETR(nn.Module):
-    """Implement DAB-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
-    <https://arxiv.org/abs/2201.12329>`_
+    """Implement Conditional-DETR in `Conditional DETR for Fast Training Convergence 
+    <https://arxiv.org/abs/2108.06152>`_
     
     Args:
         backbone (nn.Module): Backbone module for feature extraction.

@@ -16,18 +16,45 @@
 import torch
 import torch.nn as nn
 
-from detrex.layers import BaseTransformerLayer, TransformerLayerSequence
+from detrex.layers import (
+    FFN,
+    MultiheadAttention,
+    BaseTransformerLayer, 
+    TransformerLayerSequence
+)
 
 
 class DetrTransformerEncoder(TransformerLayerSequence):
     def __init__(
         self,
-        transformer_layers: BaseTransformerLayer = None,
+        embed_dim: int = 256,
+        num_heads: int = 8,
+        attn_dropout: float = 0.1,
+        feedforward_dim: int = 2048,
+        ffn_dropout: float = 0.1,
+        num_layers: int = 6,
         post_norm: bool = True,
-        num_layers: int = None,
+        batch_first: bool = False
     ):
         super(DetrTransformerEncoder, self).__init__(
-            transformer_layers=transformer_layers, num_layers=num_layers
+            transformer_layers=BaseTransformerLayer(
+                attn=MultiheadAttention(
+                    embed_dim=embed_dim,
+                    num_heads=num_heads,
+                    attn_drop=attn_dropout,
+                    batch_first=batch_first,
+                ),
+                ffn=FFN(
+                    embed_dim=embed_dim,
+                    feedforward_dim=feedforward_dim,
+                    ffn_drop=ffn_dropout,
+                ),
+                norm=nn.LayerNorm(
+                    normalized_shape=embed_dim,
+                ),
+                operation_order=("self_attn", "norm", "ffn", "norm"),
+            ), 
+            num_layers=num_layers
         )
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
@@ -71,13 +98,35 @@ class DetrTransformerEncoder(TransformerLayerSequence):
 class DetrTransformerDecoder(TransformerLayerSequence):
     def __init__(
         self,
-        transformer_layers: BaseTransformerLayer = None,
-        num_layers: int = None,
+        embed_dim: int = 256,
+        num_heads: int = 8,
+        attn_dropout: float = 0.1,
+        feedforward_dim: int = 2048,
+        ffn_dropout: float = 0.1,
+        num_layers: int = 6,
         post_norm: bool = True,
         return_intermediate: bool = True,
+        batch_first: bool = False,
     ):
         super(DetrTransformerDecoder, self).__init__(
-            transformer_layers=transformer_layers, num_layers=num_layers
+            transformer_layers=BaseTransformerLayer(
+                attn=MultiheadAttention(
+                    embed_dim=embed_dim,
+                    num_heads=num_heads,
+                    attn_drop=attn_dropout,
+                    batch_first=batch_first,
+                ),
+                ffn=FFN(
+                    embed_dim=embed_dim,
+                    feedforward_dim=feedforward_dim,
+                    ffn_drop=ffn_dropout,
+                ),
+                norm=nn.LayerNorm(
+                    normalized_shape=embed_dim,
+                ),
+                operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
+            ), 
+            num_layers=num_layers,
         )
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim
