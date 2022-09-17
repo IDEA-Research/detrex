@@ -50,9 +50,9 @@ class DetrTransformerEncoder(TransformerLayerSequence):
                     ffn_drop=ffn_dropout,
                 ),
                 norm=nn.LayerNorm(
-                    normalized_shape=("self_attn", "norm", "ffn", "norm"),
+                    normalized_shape=embed_dim,
                 ),
-                operation_order=()
+                operation_order=("self_attn", "norm", "ffn", "norm"),
             ), 
             num_layers=num_layers
         )
@@ -126,7 +126,7 @@ class DetrTransformerDecoder(TransformerLayerSequence):
                 ),
                 operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
             ), 
-            num_layers=num_layers
+            num_layers=num_layers,
         )
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim

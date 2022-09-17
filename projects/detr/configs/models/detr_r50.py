@@ -28,7 +28,7 @@ model = L(DETR)(
     position_embedding=L(PositionEmbeddingSine)(
         num_pos_feats=128, 
         temperature=10000,
-        normalize=True
+        normalize=True,
     ),
     transformer=L(DetrTransformer)(
         encoder=L(DetrTransformerEncoder)(

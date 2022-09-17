@@ -99,7 +99,7 @@ class SetCriterion(nn.Module):
             "focal_loss",
         ], "only support ce loss and focal loss for computing classification loss"
 
-        if self.loss_class_type == "ce":
+        if self.loss_class_type == "ce_loss":
             empty_weight = torch.ones(self.num_classes + 1)
             empty_weight[-1] = eos_coef
             self.register_buffer("empty_weight", empty_weight)
