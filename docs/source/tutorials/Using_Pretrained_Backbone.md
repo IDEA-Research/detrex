@@ -56,3 +56,4 @@ backbone=L(ResNet)(
 
 
 ## Timm Backbone
+detrex provides a wrapper for [Pytorch Image Models(timm)](https://github.com/rwightman/pytorch-image-models) to use its pretrained backbone networks. Support you want to 
