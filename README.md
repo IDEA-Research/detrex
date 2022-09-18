@@ -27,7 +27,7 @@
 
 ## Introduction
 
-detrex is an open-source toolbox that provides state-of-the-art transformer based detection algorithms on top of [Detectron2](https://github.com/facebookresearch/detectron2) and the module designs are partially borrowed from [MMDetection](https://github.com/open-mmlab/mmdetection) and [DETR](https://github.com/facebookresearch/detr). Many thanks for their nicely organized code. The main branch works with **Pytorch 1.9+** or higher (we recommend **Pytorch 1.12**).
+detrex is an open-source toolbox that provides state-of-the-art Transformer-based detection algorithms. It is built on top of [Detectron2](https://github.com/facebookresearch/detectron2) and its module design is partially borrowed from [MMDetection](https://github.com/open-mmlab/mmdetection) and [DETR](https://github.com/facebookresearch/detr). Many thanks for their nicely organized code. The main branch works with **Pytorch 1.9+** or higher (we recommend **Pytorch 1.12**).
 
 <div align="center">
   <img src="./assets/detr_arch.png" width="100%"/>
@@ -36,17 +36,25 @@ detrex is an open-source toolbox that provides state-of-the-art transformer base
 <details open>
 <summary> Major Features </summary>
 
-- **Modular Design.** detrex decompose the transformer based detection framework into various components which help the users to easily build their own customized models.
+- **Modular Design.** detrex decomposes the Transformer-based detection framework into various components which help users easily build their own customized models.
 
-- **State-of-the-art methods.** detrex provides a series of transformer based detection algorithms including [DINO](https://arxiv.org/abs/2203.03605) which reach the new SOTA of DETR-like models with **63.3mAP**!
+- **State-of-the-art Methods.** detrex provides a series of Transformer-based detection algorithms, including [DINO](https://arxiv.org/abs/2203.03605) which reached the SOTA of DETR-like models with **63.3mAP**!
 
-- **Easy to Use.** detrex is designed to be **light-weight** and easier for the users as follows:
+- **Easy to Use.** detrex is designed to be **light-weight** and easy for users to use:
   - [LazyConfig System](https://detectron2.readthedocs.io/en/latest/tutorials/lazyconfigs.html) for more flexible syntax and cleaner config files.
   - Light-weight [training engine](./tools/train_net.py) modified from detectron2 [lazyconfig_train_net.py](https://github.com/facebookresearch/detectron2/blob/main/tools/lazyconfig_train_net.py)
 
-Apart from detrex, we also released a repo [Awesome Detection Transformer](https://github.com/IDEA-Research/awesome-detection-transformer) to present papers about transformer for detection and segmentation.
+Apart from detrex, we also released a repo [Awesome Detection Transformer](https://github.com/IDEA-Research/awesome-detection-transformer) to present papers about Transformer for detection and segmentation.
 
 </details>
+
+## Fun Facts
+The repo name detrex has several interpretations:
+- detr-ex: We take our hats off to DETR and regard this repo as an extension of Transformer-based detection algorithms.
+
+- det-rex: rex literally means ‘king’ in Latin. We hope this repo can help advance the state of the art on object detection by providing the best Transformer-based detection algorithms from the research community.
+
+- de-t.rex: de means 'the' in Gemany. T.rex means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
 
 
 ## Installation
@@ -84,9 +92,9 @@ Please see [projects](./projects/) for the details about projects that are built
 ## Change Log
 
 The **beta v0.1.0** version was released in 30/09/2022. Highlights of the released version:
-- Support various backbones including: [FocalNet](https://arxiv.org/abs/2203.11926), [Swin-T](https://arxiv.org/pdf/2103.14030.pdf), [ResNet](https://arxiv.org/abs/1512.03385) and other [detectron2 builtin backbones](https://github.com/facebookresearch/detectron2/tree/main/detectron2/modeling/backbone).
-- Add [timm](https://github.com/rwightman/pytorch-image-models) backbones wrapper and [torchvision](https://github.com/pytorch/vision) backbones wrapper.
-- Support various transformer based detection algorithms including: [DETR](https://arxiv.org/abs/2005.12872), [Deformable-DETR](https://arxiv.org/abs/2010.04159), [Conditional-DETR](https://arxiv.org/abs/2108.06152), [DAB-DETR](https://arxiv.org/abs/2201.12329), [DN-DETR](https://arxiv.org/abs/2203.01305), [DINO](https://arxiv.org/abs/2203.03605).
+- Support various backbones, including: [FocalNet](https://arxiv.org/abs/2203.11926), [Swin-T](https://arxiv.org/pdf/2103.14030.pdf), [ResNet](https://arxiv.org/abs/1512.03385) and other [detectron2 builtin backbones](https://github.com/facebookresearch/detectron2/tree/main/detectron2/modeling/backbone).
+- Add [timm](https://github.com/rwightman/pytorch-image-models) backbone wrapper and [torchvision](https://github.com/pytorch/vision) backbone wrapper.
+- Support various Transformer-based detection algorithms, including: [DETR](https://arxiv.org/abs/2005.12872), [Deformable-DETR](https://arxiv.org/abs/2010.04159), [Conditional-DETR](https://arxiv.org/abs/2108.06152), [DAB-DETR](https://arxiv.org/abs/2201.12329), [DN-DETR](https://arxiv.org/abs/2203.01305), and [DINO](https://arxiv.org/abs/2203.03605).
 - Support flexible config system based on [Lazy Configs](https://detectron2.readthedocs.io/en/latest/tutorials/lazyconfigs.html)
 
 Please see [changelog.md](./changlog.md) for details and release history.
@@ -97,8 +105,8 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 
 ## Acknowledgement
-- detrex is an open-source toolbox for transformer based detection algorithms created by researchers of **IDEACVR**. We appreciate all contributions to detrex!
-- detrex is built based on [Detectron2](https://github.com/facebookresearch/detectron2) and part of the module design borrows from [MMDetection](https://github.com/open-mmlab/mmdetection), [DETR](https://github.com/facebookresearch/detr) and [Deformable-DETR](https://github.com/fundamentalvision/Deformable-DETR).
+- detrex is an open-source toolbox for Transformer-based detection algorithms created by researchers of **IDEACVR**. We appreciate all contributions to detrex!
+- detrex is built based on [Detectron2](https://github.com/facebookresearch/detectron2) and part of its module design is borrowed from [MMDetection](https://github.com/open-mmlab/mmdetection), [DETR](https://github.com/facebookresearch/detr), and [Deformable-DETR](https://github.com/fundamentalvision/Deformable-DETR).
 
 
 ## Citation
