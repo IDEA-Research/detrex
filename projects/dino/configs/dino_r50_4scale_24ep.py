@@ -11,5 +11,8 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_24ep
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/dino_r50_4scale_24ep"
+train.output_dir = "./output/dino_24ep_retrain"
 train.max_iter = 180000
+
+# modify lr_multiplier
+lr_multiplier.scheduler.milestones = [155000, 180000]
