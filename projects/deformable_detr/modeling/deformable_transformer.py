@@ -207,19 +207,28 @@ class DeformableDetrTransformerDecoder(TransformerLayerSequence):
 
 
 class DeformableDetrTransformer(nn.Module):
+    """ Transformer module for Deformable DETR
+
+    Args:
+        encoder (nn.Module): encoder module.
+        decoder (nn.Module): decoder module.
+        as_two_stage (bool): whether to use two-stage transformer. Default False.
+        num_feature_levels (int): number of feature levels. Default 4.
+        two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 100. Only used when as_two_stage is True.
+    """
     def __init__(
         self,
         encoder=None,
         decoder=None,
-        as_two_stage=False,
         num_feature_levels=4,
+        as_two_stage=False,
         two_stage_num_proposals=300,
     ):
         super(DeformableDetrTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
-        self.as_two_stage = as_two_stage
         self.num_feature_levels = num_feature_levels
+        self.as_two_stage = as_two_stage
         self.two_stage_num_proposals = two_stage_num_proposals
 
         self.embed_dim = self.encoder.embed_dim
