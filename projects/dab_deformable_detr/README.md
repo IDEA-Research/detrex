@@ -27,8 +27,6 @@ Implement `DAB-Deformable-DETR` which is a strong baseline of [DAB-DETR: Dynamic
 </tr>
 </tbody></table>
 
-**Note:** DC5 means using dilated convolution in `res5`.
-
 
 ## Training
 All configs can be trained with:

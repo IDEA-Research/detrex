@@ -103,18 +103,26 @@ class DETR(nn.Module):
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
     def forward(self, batched_inputs):
-        """The forward expects a NestedTensor, which consists of:
-           - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
-           - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
+        """Forward function of `DAB-DETR` which excepts a list of dict as inputs.
 
-        It returns a dict with the following elements:
-           - "pred_logits": the classification logits (including no-object) for all queries.
-                            Shape= [batch_size x num_queries x (num_classes + 1)]
-           - "pred_boxes": The normalized boxes coordinates for all queries, represented as
-                           (center_x, center_y, height, width). These values are normalized in [0, 1],
-                           relative to the size of each individual image (disregarding possible padding).
-                           See PostProcess for information on how to retrieve the unnormalized bounding box.
-           - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
+        Args:
+            batched_inputs (List[dict]): A list of instance dict, and each instance dict must consists of:
+                - dict["image"] (torch.Tensor): The unnormalized image tensor.
+                - dict["height"] (int): The original image height.
+                - dict["width"] (int): The original image width.
+                - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
+                    Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
+                    for the basic usage of Instances.
+        
+        Returns:
+            dict: Returns a dict with the following elements:
+                - dict["pred_logits"]: the classification logits for all queries (anchor boxes in DAB-DETR).
+                            with shape ``[batch_size, num_queries, num_classes]``
+                - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
+                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 
+                    each individual image (disregarding possible padding). See PostProcess for information 
+                    on how to retrieve the unnormalized bounding box.
+                - dict["aux_outputs"]: Optional, only returned when auxilary losses are activated. It is a list of
                             dictionnaries containing the two above keys for each decoder layer.
         """
         images = self.preprocess_image(batched_inputs)
