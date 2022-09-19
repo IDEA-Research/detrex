@@ -48,11 +48,11 @@ class DeformableDETR(nn.Module):
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
-        aux_loss (bool): whether to use auxiliary loss. default: True.
-        with_box_refine (bool): whether to use box refinement. default: False.
-        as_two_stage (bool): whether to use two-stage. default: False.
+        aux_loss (bool): whether to use auxiliary loss. Default: True.
+        with_box_refine (bool): whether to use box refinement. Default: False.
+        as_two_stage (bool): whether to use two-stage. Default: False.
         select_box_nums_for_evaluation (int): the number of topk candidates 
-            slected at postprocess for evaluation. default: 100.
+            slected at postprocess for evaluation. Default: 100.
 
     """
     def __init__(

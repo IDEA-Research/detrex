@@ -50,7 +50,7 @@ class DabDeformableDETR(nn.Module):
             Default: [58.395, 57.120, 57.375].
         aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
         select_box_nums_for_evaluation (int): the number of topk candidates 
-            slected at postprocess for evaluation. default: 100.
+            slected at postprocess for evaluation. Default: 100.
         device (str): Training device. Default: "cuda".
     """
     def __init__(
