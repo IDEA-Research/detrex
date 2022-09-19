@@ -56,4 +56,8 @@ backbone=L(ResNet)(
 
 
 ## Timm Backbone
-detrex provides a wrapper for [Pytorch Image Models(timm)](https://github.com/rwightman/pytorch-image-models) to use its pretrained backbone networks. Support you want to 
+detrex provides a wrapper for [Pytorch Image Models(timm)](https://github.com/rwightman/pytorch-image-models) to use its pretrained backbone networks. Support you want to use `GhostNet` as the backbone of `DAB-Deformable-DETR`, you can modify your config as following:
+
+```python
+
+```

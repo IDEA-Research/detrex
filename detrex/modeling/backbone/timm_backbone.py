@@ -28,6 +28,7 @@ import torch.nn as nn
 
 from detectron2.modeling.backbone import Backbone
 from detectron2.utils.logger import setup_logger
+from detectron2.utils.comm import get_rank
 
 try:
     import timm
@@ -124,19 +125,21 @@ class TimmBackbone(Backbone):
                 )
             else:
                 logger.info(error)
+                exit()
 
         self.out_indices = out_indices
         self.out_features = out_features
 
         feature_info = getattr(self.timm_model, "feature_info", None)
-        log_timm_feature_info(feature_info)
+        if get_rank() == 0:
+            log_timm_feature_info(feature_info)
 
         if feature_info is not None:
             output_feature_channels = {
-                "p{}".format(i): feature_info.channels()[i] for i in out_indices
+                "p{}".format(out_indices[i]): feature_info.channels()[i] for i in range(len(out_indices))
             }
             out_feature_strides = {
-                "p{}".format(i): feature_info.reduction()[i] for i in out_indices
+                "p{}".format(out_indices[i]): feature_info.reduction()[i] for i in range(len(out_indices))
             }
 
             self._out_features = out_features
@@ -156,9 +159,9 @@ class TimmBackbone(Backbone):
         """
         features = self.timm_model(x)
         outs = {}
-        for i in self.out_indices:
+        for i in range(len(self.out_indices)):
             out = features[i]
-            outs["p{}".format(i)] = out
+            outs["p{}".format(self.out_indices[i])] = out
 
         output = {feat: outs[feat] for feat in self.out_features}
         return output
