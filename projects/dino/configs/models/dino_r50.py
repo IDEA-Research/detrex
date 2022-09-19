@@ -84,7 +84,7 @@ model = L(DINO)(
             gamma=2.0,
         ),
         weight_dict={
-            "loss_class": 2.0,
+            "loss_class": 1,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
             "loss_class_dn":1,
