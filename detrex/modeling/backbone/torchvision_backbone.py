@@ -15,28 +15,18 @@
 
 
 import torchvision
-from torchvision.models.feature_extraction import (
-    get_graph_node_names,
-    create_feature_extractor,
-)
+
 from detectron2.modeling.backbone import Backbone
 from detectron2.utils.logger import setup_logger
 
-
-def log_model_graph_info(
-    model,
-    training=False
-):
-    """Print graph info of torchvision backbone to help development and debug.
-
-    Args:
-        model (nn.Module): Model created on top of PyTorch.
-        training (bool): Training mode or eval mode of model,
-            cause there might be difference of the computational
-            graph between training and inference time.
-    """
-    logger = setup_logger(name="torchvision backbone")
-
+try:
+    from torchvision.models.feature_extraction import (
+        get_graph_node_names,
+        create_feature_extractor,
+    )
+    has_feature_extractor = True
+except ImportError:
+    has_feature_extractor = False
 
 
 class TorchvisionBackbone(Backbone):
@@ -52,6 +42,11 @@ class TorchvisionBackbone(Backbone):
                 ):
         super(TorchvisionBackbone, self).__init__()
         self.model = getattr(torchvision.models, model_name)(**kwargs)
+        
+        if has_feature_extractor is False:
+            raise RuntimeError('Failed to import create_feature_extractor from torchvision. \
+            Please install torchvision 1.10+.')
+        
         self.feature_extractor = create_feature_extractor(
             model = self.model,
             return_nodes=return_nodes

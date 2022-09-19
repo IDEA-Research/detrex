@@ -27,7 +27,7 @@
 
 ## Introduction
 
-detrex is an open-source toolbox that provides state-of-the-art Transformer-based detection algorithms. It is built on top of [Detectron2](https://github.com/facebookresearch/detectron2) and its module design is partially borrowed from [MMDetection](https://github.com/open-mmlab/mmdetection) and [DETR](https://github.com/facebookresearch/detr). Many thanks for their nicely organized code. The main branch works with **Pytorch 1.9+** or higher (we recommend **Pytorch 1.12**).
+detrex is an open-source toolbox that provides state-of-the-art Transformer-based detection algorithms. It is built on top of [Detectron2](https://github.com/facebookresearch/detectron2) and its module design is partially borrowed from [MMDetection](https://github.com/open-mmlab/mmdetection) and [DETR](https://github.com/facebookresearch/detr). Many thanks for their nicely organized code. The main branch works with **Pytorch 1.10+** or higher (we recommend **Pytorch 1.12**).
 
 <div align="center">
   <img src="./assets/detr_arch.png" width="100%"/>
@@ -50,11 +50,11 @@ Apart from detrex, we also released a repo [Awesome Detection Transformer](https
 
 ## Fun Facts
 The repo name detrex has several interpretations:
-- detr-ex: We take our hats off to DETR and regard this repo as an extension of Transformer-based detection algorithms.
+- <font color=blue> <b> detr-ex </b> </font>: We take our hats off to DETR and regard this repo as an extension of Transformer-based detection algorithms.
 
-- det-rex: rex literally means ‘king’ in Latin. We hope this repo can help advance the state of the art on object detection by providing the best Transformer-based detection algorithms from the research community.
+- <font color=#db7093> <b> det-rex </b> </font>: rex literally means ‘king’ in Latin. We hope this repo can help advance the state of the art on object detection by providing the best Transformer-based detection algorithms from the research community.
 
-- de-t.rex: de means 'the' in Gemany. T.rex means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
+- <font color=#008000> <b> de-t.rex </b> </font>: de means 'the' in Gemany. T.rex means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
 
 
 ## Installation
