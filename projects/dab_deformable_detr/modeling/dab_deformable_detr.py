@@ -30,10 +30,10 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 class DabDeformableDETR(nn.Module):
     """Implement DAB-Deformable-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
-    <https://arxiv.org/abs/2201.12329>`
+    <https://arxiv.org/abs/2201.12329>`_.
 
     Code is modified from the `official github repo
-    <https://github.com/IDEA-opensource/DAB-DETR>`.
+    <https://github.com/IDEA-opensource/DAB-DETR>`_.
 
     Args:
         backbone (nn.Module): backbone module
