@@ -62,6 +62,8 @@ detrex provides a wrapper for [Pytorch Image Models(timm)](https://github.com/rw
 from detectron2.config import LazyCall as L
 from detectron2.modeling import ShapeSpec
 from detectron2.layers import FrozenBatchNorm2d
+
+# inherit configs from "dino_r50_4scale_12ep"
 from .dino_r50_4scale_12ep import (
     train,
     dataloader,
@@ -101,3 +103,47 @@ train.init_checkpoint = ""
 
 More details can be found in [timm_example.py]()
 
+## Torchvision Backbone
+detrex also provides a wrapper for [Torchvision]() to use its pretrained backbone networks. Support you want to use [ResNet-50] model as the backbone of `DINO`, you can modify your config as following:
+
+```python
+from detectron2.config import LazyCall as L
+from detectron2.modeling import ShapeSpec
+
+# inherit configs from "dino_r50_4scale_12ep"
+from .dino_r50_4scale_12ep import (
+    train,
+    dataloader,
+    optimizer,
+    lr_multiplier,
+)
+from .models.dino_r50 import model
+
+from detrex.modeling.backbone import TorchvisionBackbone
+
+# modify backbone configs
+model.backbone = L(TorchvisionBackbone)(
+    model_name="resnet50",
+    pretrained=True,
+    # specify the return nodes
+    return_nodes = {
+        "layer2": "res3",
+        "layer3": "res4",
+        "layer4": "res5",
+    },
+)
+
+# modify neck configs
+model.neck.input_shapes = {
+    "res3": ShapeSpec(channels=512),
+    "res4": ShapeSpec(channels=1024),
+    "res5": ShapeSpec(channels=2048),
+}
+model.neck.in_features = ["res3", "res4", "res5"]
+
+# modify training configs
+train.init_checkpoint = ""
+```
+After **torchvision 1.10**, torchvision provides `torchvision.models.feature_extraction` package for feature extraction utilities which help the users to access intermediate outputs of the model. More details can be found in [Feature extraction for model inspection](https://pytorch.org/vision/stable/feature_extraction.html). 
+
+Users need to specify the `return_nodes` args to be the output nodes for extracted features, which requires the users to be familiar with the node naming. Please check the [About Node Names](https://pytorch.org/vision/stable/feature_extraction.html#) part of the official documentation for more details. Or check the usage of [get_graph_node_names](https://pytorch.org/vision/stable/generated/torchvision.models.feature_extraction.get_graph_node_names.html#torchvision.models.feature_extraction.get_graph_node_names).
