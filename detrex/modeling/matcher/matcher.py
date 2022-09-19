@@ -21,6 +21,12 @@
 # https://github.com/alibaba/EasyCV/blob/master/easycv/models/detection/utils/matcher.py
 # ------------------------------------------------------------------------------------------------
 
+"""
+This is the original implementation of HungarianMatcher which will be deprecated in the next version.
+
+We keep it here because our modified HungarianMatcher module is still under test.
+"""
+
 import torch
 import torch.nn as nn
 from scipy.optimize import linear_sum_assignment

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List
 import copy
 import torch
 
@@ -30,7 +31,7 @@ class DeformableCriterion(SetCriterion):
         num_classes,
         matcher,
         weight_dict,
-        losses,
+        losses: List[str] = ["class", "boxes"],
         eos_coef: float = 0.1,
         loss_class_type: str = "focal_loss",
         alpha: float = 0.25,

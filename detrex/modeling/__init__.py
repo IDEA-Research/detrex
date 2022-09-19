@@ -13,9 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .criterion import SetCriterion
+from .criterion import SetCriterion, BaseCriterion
 from .matcher import HungarianMatcher
-from .losses import dice_loss, sigmoid_focal_loss
+from .losses import (
+    cross_entropy,
+    CrossEntropyLoss,
+    sigmoid_focal_loss,
+    FocalLoss,
+    dice_loss,
+    DiceLoss,
+    smooth_l1_loss,
+    l1_loss,
+    L1Loss,
+    giou_loss,
+    GIoULoss,
+    reduce_loss,
+    weight_reduce_loss,
+)
 from .neck import ChannelMapper
 from .backbone import (
     BasicStem,

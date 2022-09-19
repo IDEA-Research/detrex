@@ -25,3 +25,7 @@ from .potision_embedding import (
     DABPositionEmbeddingLearned,
 )
 from .mlp import MLP
+from .losses import (
+    sigmoid_focal_loss,
+    dice_loss,
+)

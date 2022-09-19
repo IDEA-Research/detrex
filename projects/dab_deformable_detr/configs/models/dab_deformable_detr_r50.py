@@ -92,10 +92,6 @@ model = L(DabDeformableDETR)(
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
-        losses=[
-            "class",
-            "boxes",
-        ],
         loss_class_type="focal_loss",
         alpha=0.25,
         gamma=2.0,

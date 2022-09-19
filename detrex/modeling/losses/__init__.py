@@ -13,5 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .focal_loss import sigmoid_focal_loss
-from .dice_loss import dice_loss
+from .cross_entropy_loss import cross_entropy, CrossEntropyLoss
+from .focal_loss import sigmoid_focal_loss, FocalLoss
+from .dice_loss import dice_loss, DiceLoss
+from .smooth_l1_loss import smooth_l1_loss, l1_loss, L1Loss
+from .giou_loss import giou_loss, GIoULoss
+from .utils import reduce_loss, weight_reduce_loss
