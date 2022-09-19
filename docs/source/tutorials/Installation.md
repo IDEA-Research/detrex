@@ -3,7 +3,7 @@
 
 ## Requirements
 - Linux with Python ≥ **3.7**
-- PyTorch ≥ **1.9** and [torchvision](https://github.com/pytorch/vision/) matches the PyTorch insallation. Install them following the official instructions from [pytorch.org](https://pytorch.org) to make sure of this.
+- PyTorch ≥ **1.10** and [torchvision](https://github.com/pytorch/vision/) matches the PyTorch insallation. Install them following the official instructions from [pytorch.org](https://pytorch.org) to make sure of this.
 
 
 ## Build detrex from Source

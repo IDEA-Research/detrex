@@ -12,6 +12,7 @@ backbone
         ConvNeXt,
         FocalNet,
         TimmBackbone,
+        TorchvisionBackbone,
 
 neck
 ------------------------------
