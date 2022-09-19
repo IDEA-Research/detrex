@@ -138,7 +138,7 @@ class DINO (nn.Module):
         self.select_box_nums_for_evaluation = select_box_nums_for_evaluation
 
     def forward(self, batched_inputs):
-        """Forward function of `DAB-DETR` which excepts a list of dict as inputs.
+        """Forward function of `DINO` which excepts a list of dict as inputs.
 
         Args:
             batched_inputs (List[dict]): A list of instance dict, and each instance dict must consists of:
