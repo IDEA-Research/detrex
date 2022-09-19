@@ -226,6 +226,15 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
 
 
 class DabDeformableDetrTransformer(nn.Module):
+    """ Transformer module for DAB-Deformable-DETR
+
+    Args:
+        encoder (nn.Module): encoder module.
+        decoder (nn.Module): decoder module.
+        as_two_stage (bool): whether to use two-stage transformer. Default False.
+        num_feature_levels (int): number of feature levels. Default 4.
+        two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 100. Only used when as_two_stage is True.
+    """
     def __init__(
         self,
         encoder=None,
@@ -383,10 +392,6 @@ class DabDeformableDetrTransformer(nn.Module):
         reference_points = self.get_reference_points(
             spatial_shapes, valid_ratios, device=feat.device
         )
-
-        # feat_flatten = feat_flatten.permute(1, 0, 2)  # (H*W, bs, embed_dims)
-        # lvl_pos_embed_flatten = lvl_pos_embed_flatten.permute(
-        #     1, 0, 2)  # (H*W, bs, embed_dims)
 
         memory = self.encoder(
             query=feat_flatten,

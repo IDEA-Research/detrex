@@ -73,6 +73,7 @@ model = L(DNDeformableDETR)(
         num_feature_levels=num_feature_levels,
         two_stage_num_proposals=300,
     ),
+    embed_dim=256,
     num_classes=80,
     num_queries=300,
     aux_loss=True,

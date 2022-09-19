@@ -16,6 +16,7 @@
 
 import copy
 import math
+from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -28,31 +29,70 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DNDeformableDETR(nn.Module):
+    """Implement DAB-Deformable-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
+    <https://arxiv.org/abs/2203.01305>`_.
+
+    Code is modified from the `official github repo
+    <https://github.com/IDEA-opensource/DN-DETR>`_.
+
+    Args:
+        backbone (nn.Module): backbone module
+        position_embedding (nn.Module): position embedding module
+        neck (nn.Module): neck module
+        transformer (nn.Module): transformer module
+        embed_dim (int): dimension of embedding
+        num_classes (int): Number of total categories.
+        num_queries (int): Number of proposal dynamic anchor boxes in Transformer
+        criterion (nn.Module): Criterion for calculating the total losses.
+        pixel_mean (List[float]): Pixel mean value for image normalization. 
+            Default: [123.675, 116.280, 103.530].
+        pixel_std (List[float]): Pixel std value for image normalization.
+            Default: [58.395, 57.120, 57.375].
+        aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
+        select_box_nums_for_evaluation (int): the number of topk candidates 
+            slected at postprocess for evaluation. Default: 100.
+        device (str): Training device. Default: "cuda".
+    """
+
     def __init__(
         self,
-        backbone,
-        position_embedding,
-        neck,
-        transformer,
-        num_classes,
-        num_queries,
-        criterion,
-        pixel_mean,
-        pixel_std,
-        embed_dim=256,
-        aux_loss=True,
-        as_two_stage=False,
-        dn_num=5,
-        label_noise_scale=0.2,
-        box_noise_scale=0.4,
+        backbone: nn.Module,
+        position_embedding: nn.Module,
+        neck: nn.Module,
+        transformer: nn.Module,
+        embed_dim: int,
+        num_classes: int,
+        num_queries: int,
+        criterion: nn.Module,
+        pixel_mean: List[float] = [123.675, 116.280, 103.530],
+        pixel_std: List[float] = [58.395, 57.120, 57.375],
+        aux_loss: bool = True,
+        as_two_stage: bool = False,
+        dn_num: int = 5,
+        label_noise_scale: float = 0.2,
+        box_noise_scale: float = 0.4,
+        select_box_nums_for_evaluation: int = 300,
         device="cuda",
     ):
         super().__init__()
+        # define backbone and position embedding module
         self.backbone = backbone
-        self.neck = neck
         self.position_embedding = position_embedding
-        self.transformer = transformer
+
+        # define neck module
+        self.neck = neck
+
+        # define leanable anchor boxes and learnable tgt embedings.
+        # tgt embedings corresponding to content queries in original paper.
         self.num_queries = num_queries
+        if not as_two_stage:
+            self.tgt_embed = nn.Embedding(num_queries, embed_dim-1)
+            self.refpoint_embed = nn.Embedding(num_queries, 4)
+
+        # define transformer module
+        self.transformer = transformer
+
+        # define classification head and box head
         self.class_embed = nn.Linear(embed_dim, num_classes)
         self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.num_classes = num_classes
@@ -64,13 +104,12 @@ class DNDeformableDETR(nn.Module):
         self.label_noise_scale = label_noise_scale
         self.box_noise_scale = box_noise_scale
 
-        if not as_two_stage:
-            self.tgt_embed = nn.Embedding(num_queries, embed_dim-1)
-            self.refpoint_embed = nn.Embedding(num_queries, 4)
-
+        # where to calculate auxiliary loss in criterion
         self.aux_loss = aux_loss
-        self.as_two_stage = as_two_stage
         self.criterion = criterion
+
+        # define contoller for two-stage variants
+        self.as_two_stage = as_two_stage
 
         # normalizer for input raw images
         self.device = device
@@ -91,6 +130,9 @@ class DNDeformableDETR(nn.Module):
         # hack implementation for two-stage
         if self.as_two_stage:
             self.transformer.decoder.class_embed = self.class_embed
+
+        # set topk boxes selected for inference
+        self.select_box_nums_for_evaluation = select_box_nums_for_evaluation
 
         self.init_weights()
 
@@ -117,7 +159,28 @@ class DNDeformableDETR(nn.Module):
                 nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
 
     def forward(self, batched_inputs):
+        """Forward function of `DN-Deformable-DETR` which excepts a list of dict as inputs.
 
+        Args:
+            batched_inputs (List[dict]): A list of instance dict, and each instance dict must consists of:
+                - dict["image"] (torch.Tensor): The unnormalized image tensor.
+                - dict["height"] (int): The original image height.
+                - dict["width"] (int): The original image width.
+                - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
+                    Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
+                    for the basic usage of Instances.
+        
+        Returns:
+            dict: Returns a dict with the following elements:
+                - dict["pred_logits"]: the classification logits for all queries (anchor boxes in DAB-DETR).
+                            with shape ``[batch_size, num_queries, num_classes]``
+                - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
+                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 
+                    each individual image (disregarding possible padding). See PostProcess for information 
+                    on how to retrieve the unnormalized bounding box.
+                - dict["aux_outputs"]: Optional, only returned when auxilary losses are activated. It is a list of
+                            dictionnaries containing the two above keys for each decoder layer.
+        """
         images = self.preprocess_image(batched_inputs)
 
         if self.training:
@@ -149,9 +212,11 @@ class DNDeformableDETR(nn.Module):
             )
             multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
 
+        # initialize content and postional embeddings
         tgt_embed = self.tgt_embed.weight  # nq, 255
         refanchor = self.refpoint_embed.weight  # nq, 4
 
+        # denoising preprocessing
         input_query_label, input_query_bbox, attn_mask, dn_metas = self.generate_dn_queries(
             targets,
             dn_num=self.dn_num,
@@ -182,6 +247,7 @@ class DNDeformableDETR(nn.Module):
             attn_masks=[attn_mask, None],  # None mask for cross attention
         )
 
+        # Calculate output coordinates and classes.
         outputs_classes = []
         outputs_coords = []
         for lvl in range(inter_states.shape[0]):
@@ -201,11 +267,14 @@ class DNDeformableDETR(nn.Module):
             outputs_classes.append(outputs_class)
             outputs_coords.append(outputs_coord)
         outputs_class = torch.stack(outputs_classes)
+            # tensor shape: [num_decoder_layers, bs, num_query, num_classes]
         outputs_coord = torch.stack(outputs_coords)
+            # tensor shape: [num_decoder_layers, bs, num_query, 4]
 
-        ###### dn post process
+        # denoising postprocessing
         outputs_class, outputs_coord = self.dn_post_process(outputs_class, outputs_coord, dn_metas)
 
+        # prepare for loss computation
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
             output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
@@ -257,7 +326,7 @@ class DNDeformableDETR(nn.Module):
         # box_cls.shape: 1, 300, 80
         # box_pred.shape: 1, 300, 4
         prob = box_cls.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 100, dim=1)
+        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), self.select_box_nums_for_evaluation, dim=1)
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]

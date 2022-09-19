@@ -224,12 +224,22 @@ class DINOTransformerDecoder(TransformerLayerSequence):
 
 
 class DINOTransformer(nn.Module):
+    """ Transformer module for DINO
+
+    Args:
+        encoder (nn.Module): encoder module.
+        decoder (nn.Module): decoder module.
+        as_two_stage (bool): whether to use two-stage transformer. Default False.
+        num_feature_levels (int): number of feature levels. Default 4.
+        two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 900. 
+    """
+
     def __init__(
         self,
         encoder=None,
         decoder=None,
         num_feature_levels=4,
-        two_stage_num_proposals=300,
+        two_stage_num_proposals=900,
         learnt_init_query=True,
     ):
         super(DINOTransformer, self).__init__()
