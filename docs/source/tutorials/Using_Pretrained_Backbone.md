@@ -56,8 +56,48 @@ backbone=L(ResNet)(
 
 
 ## Timm Backbone
-detrex provides a wrapper for [Pytorch Image Models(timm)](https://github.com/rwightman/pytorch-image-models) to use its pretrained backbone networks. Support you want to use `GhostNet` as the backbone of `DAB-Deformable-DETR`, you can modify your config as following:
+detrex provides a wrapper for [Pytorch Image Models(timm)](https://github.com/rwightman/pytorch-image-models) to use its pretrained backbone networks. Support you want to use the pretrained [ResNet-152-D](https://github.com/rwightman/pytorch-image-models/blob/a520da9b495422bc773fb5dfe10819acb8bd7c5c/timm/models/resnet.py#L867) model as the backbone of `DINO`, you can modify your config as following:
 
 ```python
+from detectron2.config import LazyCall as L
+from detectron2.modeling import ShapeSpec
+from detectron2.layers import FrozenBatchNorm2d
+from .dino_r50_4scale_12ep import (
+    train,
+    dataloader,
+    optimizer,
+    lr_multiplier,
+)
+from .models.dino_r50 import model
 
+from detrex.modeling.backbone import TimmBackbone
+
+# modify backbone configs
+model.backbone = L(TimmBackbone)(
+    model_name="resnet152d",  # name in timm
+    features_only=True,
+    pretrained=True,
+    in_channels=3,
+    out_indices=(1, 2, 3),
+    norm_layer=FrozenBatchNorm2d,
+)
+
+# modify neck configs
+model.neck.input_shapes = {
+    "p1": ShapeSpec(channels=256),
+    "p2": ShapeSpec(channels=512),
+    "p3": ShapeSpec(channels=1024),
+}
+model.neck.in_features = ["p1", "p2", "p3"]
+
+# modify training configs
+train.init_checkpoint = ""
 ```
+- Set `pretrained=True` which will automatically download pretrained weights from timm.
+- Set `features_only=True` to turn timm models into feature extractor.
+- Set `out_indices=(1, 2, 3)` which will return the intermediate output feature dict as `{"p1": torch.Tensor, "p2": torch.Tensor, "p3": torch.Tensor}`. 
+- Set `norm_layer=nn.Module` to specify the norm layers in backbone, e.g., `norm_layer=FrozenBatchNorm2d` to freeze the norm layers.
+- If you want to use timm backbone with your own pretrained weight, please set `pretrained=False` and update `train.init_checkpoint = "path/to/your/own/pretrained_weight/"`
+
+More details can be found in [timm_example.py]()
+

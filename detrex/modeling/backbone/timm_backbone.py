@@ -26,9 +26,13 @@ import warnings
 from typing import Tuple
 import torch.nn as nn
 
+from detectron2.layers.batch_norm import (
+    NaiveSyncBatchNorm,
+    FrozenBatchNorm2d,
+)
 from detectron2.modeling.backbone import Backbone
 from detectron2.utils.logger import setup_logger
-from detectron2.utils.comm import get_rank
+from detectron2.utils import comm, env
 
 try:
     import timm
@@ -90,7 +94,6 @@ class TimmBackbone(Backbone):
         checkpoint_path: str = "",
         in_channels: int = 3,
         out_indices: Tuple[int] = (0, 1, 2, 3),
-        out_features: Tuple[str] = ("p0", "p1", "p2", "p3"),
         norm_layer: nn.Module = None,
     ):
         super().__init__()
@@ -123,15 +126,18 @@ class TimmBackbone(Backbone):
                     " in timm, cause there's no feature_info attribute in some models. See "
                     "https://github.com/rwightman/pytorch-image-models/issues/1438"
                 )
+            elif "norm_layer" in str(error):
+                raise ValueError(
+                    f"{model_name} does not support specified norm layer, please set 'norm_layer=None'"
+                )
             else:
                 logger.info(error)
                 exit()
 
         self.out_indices = out_indices
-        self.out_features = out_features
 
         feature_info = getattr(self.timm_model, "feature_info", None)
-        if get_rank() == 0:
+        if comm.get_rank() == 0:
             log_timm_feature_info(feature_info)
 
         if feature_info is not None:
@@ -142,11 +148,11 @@ class TimmBackbone(Backbone):
                 "p{}".format(out_indices[i]): feature_info.reduction()[i] for i in range(len(out_indices))
             }
 
-            self._out_features = out_features
+            self._out_features = {"p{}".format(out_indices[i]) for i in range(len(out_indices))}
             self._out_feature_channels = {
-                feat: output_feature_channels[feat] for feat in out_features
+                feat: output_feature_channels[feat] for feat in self._out_features
             }
-            self._out_feature_strides = {feat: out_feature_strides[feat] for feat in out_features}
+            self._out_feature_strides = {feat: out_feature_strides[feat] for feat in self._out_features}
 
     def forward(self, x):
         """Forward function of `TimmBackbone`.
@@ -163,5 +169,33 @@ class TimmBackbone(Backbone):
             out = features[i]
             outs["p{}".format(self.out_indices[i])] = out
 
-        output = {feat: outs[feat] for feat in self.out_features}
-        return output
+        return outs
+
+
+def get_norm(norm):
+    """
+    Get the specified normalization layer, modified from:
+    https://github.com/facebookresearch/detectron2/blob/main/detectron2/layers/batch_norm.py
+
+    Args:
+        norm (str or callable): either one of BN, SyncBN, FrozenBN, GN;
+            or a callable that takes a channel number and returns
+            the normalization layer as a nn.Module before instantiation
+    
+    Returns:
+        nn.Module or None: the normalization layer
+    """
+    if norm is None:
+        return None
+    if isinstance(norm, str):
+        if len(norm) == 0:
+            return None
+        norm = {
+            "BN": nn.BatchNorm2d,
+            # Fixed in https://github.com/pytorch/pytorch/pull/36382
+            "SyncBN": NaiveSyncBatchNorm if env.TORCH_VERSION <= (1, 5) else nn.SyncBatchNorm,
+            "FrozenBN": FrozenBatchNorm2d,
+            "GN": lambda channels: nn.GroupNorm(32, channels),
+            "LN": nn.LayerNorm,
+        }[norm]
+    return norm
