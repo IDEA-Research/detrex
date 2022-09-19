@@ -144,7 +144,7 @@ class DabDeformableDETR(nn.Module):
         self.normalizer = lambda x: (x - pixel_mean) / pixel_std
 
     def forward(self, batched_inputs):
-        """Forward function of `DAB-DETR` which excepts a list of dict as inputs.
+        """Forward function of `DAB-Deformable-DETR` which excepts a list of dict as inputs.
 
         Args:
             batched_inputs (List[dict]): A list of instance dict, and each instance dict must consists of:
@@ -248,7 +248,6 @@ class DabDeformableDETR(nn.Module):
                 'pred_logits': interm_class, 
                 'pred_boxes': interm_coord
             }
-
 
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]

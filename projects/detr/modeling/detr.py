@@ -116,7 +116,7 @@ class DETR(nn.Module):
         
         Returns:
             dict: Returns a dict with the following elements:
-                - dict["pred_logits"]: the classification logits for all queries (anchor boxes in DAB-DETR).
+                - dict["pred_logits"]: the classification logits for all queries.
                             with shape ``[batch_size, num_queries, num_classes]``
                 - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
                     ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 

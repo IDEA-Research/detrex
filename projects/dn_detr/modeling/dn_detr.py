@@ -27,7 +27,7 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DNDETR(nn.Module):
-    """Implement DAB-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
+    """Implement DN-DETR in `DN-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
     <https://arxiv.org/abs/2201.12329>`_
     
     Args:
@@ -157,7 +157,7 @@ class DNDETR(nn.Module):
         nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
 
     def forward(self, batched_inputs):
-        """Forward function of `DAB-DETR` which excepts a list of dict as inputs.
+        """Forward function of `DN-DETR` which excepts a list of dict as inputs.
 
         Args:
             batched_inputs (List[dict]): A list of instance dict, and each instance dict must consists of:
