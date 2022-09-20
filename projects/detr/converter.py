@@ -28,7 +28,7 @@ import torch
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("D2 model converter")
+    parser = argparse.ArgumentParser("detrex model converter")
 
     parser.add_argument(
         "--source_model", default="", type=str, help="Path or url to the DETR model to convert"
