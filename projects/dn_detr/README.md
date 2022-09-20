@@ -9,6 +9,7 @@ Feng Li, Hao Zhang, Shilong Liu, Jian Guo, Lionel M.Ni, Lei Zhang
 </div><br/>
 
 ## Pretrained Models
+Here we provide the pretrained `DN-DETR` weights based on detrex.
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
@@ -19,12 +20,12 @@ Feng Li, Hao Zhang, Shilong Liu, Jian Guo, Lionel M.Ni, Lei Zhang
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
-<!-- ROW: dab_detr_r50_50ep -->
- <tr><td align="left"><a href="configs/dab_detr_r50_50ep.py">DN-DETR-R50</a></td>
+<!-- ROW: dn_detr_r50_50ep -->
+ <tr><td align="left"><a href="configs/dn_detr_r50_50ep.py">DN-DETR-R50</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">47.73</td>
+<td align="center">44.73</td>
 <td align="center"> <a href="">model</a></td>
 </tr>
 </tr>

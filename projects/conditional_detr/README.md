@@ -37,7 +37,7 @@ Depu Meng, Xiaokang Chen, Zejia Fan, Gang Zeng, Houqiang Li, Yuhui Yuan, Lei Sun
 </tr>
 </tbody></table>
 
-**Note:** Here we borrowed the pretrained weight from [ConditionalDETR](https://github.com/Atten4Vis/ConditionalDETR). And our detrex training results will be released in the future version.
+**Note:** Here we borrowed the pretrained weight from [ConditionalDETR](https://github.com/Atten4Vis/ConditionalDETR) official repo. And our detrex training results will be released in the future version.
 
 
 ## Training

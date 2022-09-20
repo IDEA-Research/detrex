@@ -92,10 +92,6 @@ model = L(DNDeformableDETR)(
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
-        losses=[
-            "class",
-            "boxes",
-        ],
         loss_class_type="focal_loss",
         alpha=0.25,
         gamma=2.0,
@@ -105,6 +101,7 @@ model = L(DNDeformableDETR)(
     box_noise_scale=0.4,
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
+    select_box_nums_for_evaluation=300,
     device="cuda",
 )
 
