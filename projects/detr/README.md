@@ -36,10 +36,12 @@ Here we provides the weights which are converted by [converter.py](./converter.p
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">500</td>
-<td align="center">42.01</td>
+<td align="center">43.52</td>
 <td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
+
+**Note:** Here we borrowed the pretrained weight from [DETR](https://github.com/facebookresearch/detr) official repo. And our detrex training results will be released in the future version.
 
 ## Training
 Training DETR model for 300 epochs:

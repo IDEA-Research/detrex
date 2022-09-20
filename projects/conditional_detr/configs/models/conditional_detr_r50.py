@@ -81,6 +81,7 @@ model = L(ConditionalDETR)(
     aux_loss=True,
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
+    select_box_nums_for_evaluation=300,
     device="cuda",
 )
 

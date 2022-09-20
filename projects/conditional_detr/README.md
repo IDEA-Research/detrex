@@ -8,21 +8,31 @@ Depu Meng, Xiaokang Chen, Zejia Fan, Gang Zeng, Houqiang Li, Yuhui Yuan, Lei Sun
   <img src="./assets/attention-maps.png"/>
 </div><br/>
 
-## Pretrained Models
+## Converted Weights
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
 <th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
-<!-- ROW: dab_detr_r50_50ep -->
- <tr><td align="left"><a href="configs/conditional_detr_r50_50ep.py">Conditional DETR-R50</a></td>
+<!-- ROW: conditional_detr_r50_50ep -->
+ <tr><td align="left"><a href="configs/conditional_detr_r50_50ep.py">Conditional-DETR-R50</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
-<td align="center">41.0</td>
+<td align="center">50</td>
+<td align="center">41.02</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+<!-- ROW: conditional_detr_r101_50ep -->
+ <tr><td align="left"><a href="configs/conditional_detr_r101_50ep.py">Conditional-DETR-R101</a></td>
+<td align="center">R-101</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">42.97</td>
 <td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
