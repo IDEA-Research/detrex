@@ -20,8 +20,8 @@ Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, Jifeng Dai
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
-<!-- ROW: deformable_detr_r50 -->
- <tr><td align="left"><a>Deformable-DETR-R50</a></td>
+<!-- ROW: deformable_detr_r50_50ep -->
+ <tr><td align="left"><a href="configs/deformable_detr_r50_50ep.py">Deformable-DETR-R50</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
@@ -29,7 +29,7 @@ Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, Jifeng Dai
 <td align="center"> <a href="">model</a></td>
 </tr>
 <!-- ROW: deformable_detr_r50_with_box_refinement -->
- <tr><td align="left"><a>Deformable-DETR-R50-Box-Refinement</a></td>
+ <tr><td align="left"><a href="configs/deformable_detr_r50_with_box_refinement_50ep.py">Deformable-DETR-R50-Box-Refinement</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
@@ -37,7 +37,7 @@ Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, Jifeng Dai
 <td align="center"> <a href="">model</a></td>
 </tr>
 <!-- ROW: deformable_detr_r50_two_stage -->
- <tr><td align="left"><a>Deformable-DETR-R50-Two-Stage</a></td>
+ <tr><td align="left"><a href="configs/deformable_detr_r50_two_stage_50ep.py">Deformable-DETR-R50-Two-Stage</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
