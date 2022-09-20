@@ -38,7 +38,7 @@ class DINO (nn.Module):
     Args:
         backbone (nn.Module): backbone module
         position_embedding (nn.Module): position embedding module
-        neck (nn.Module): neck module
+        neck (nn.Module): neck module to handle the intermediate outputs features
         transformer (nn.Module): transformer module
         embed_dim (int): dimension of embedding
         num_classes (int): Number of total categories.
