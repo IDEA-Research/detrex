@@ -253,8 +253,6 @@ class DabDeformableDetrTransformer(nn.Module):
         if self.as_two_stage:
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
             self.enc_output_norm = nn.LayerNorm(self.embed_dim)
-            self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
-            self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
 
         self.init_weights()
 

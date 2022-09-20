@@ -33,7 +33,7 @@ Here we provide the pretrained `DAB-Deformable-DETR` weights based on detrex.
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">49.3</td>
+<td align="center">49.54</td>
 <td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
