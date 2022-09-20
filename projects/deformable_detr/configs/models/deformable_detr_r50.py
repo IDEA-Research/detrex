@@ -68,7 +68,7 @@ model = L(DeformableDETR)(
         ),
         as_two_stage="${..as_two_stage}",
         num_feature_levels=4,
-        two_stage_num_proposals=300,
+        two_stage_num_proposals="${..num_queries}",
     ),
     embed_dim=256,
     num_classes=80,
@@ -97,6 +97,7 @@ model = L(DeformableDETR)(
     ),
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
+    select_box_nums_for_evaluation=100,
     device="cuda",
 )
 
