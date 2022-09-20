@@ -295,7 +295,10 @@ class DabDeformableDETR(nn.Module):
 
         # Select top-k confidence boxes for inference
         prob = box_cls.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), 100, dim=1)
+        topk_values, topk_indexes = torch.topk(
+            prob.view(box_cls.shape[0], -1), 
+            self.select_box_nums_for_evaluation, 
+            dim=1)
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]

@@ -111,7 +111,6 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         ffn_dropout: float = 0.1,
         num_layers: int = 6,
         return_intermediate: bool = True,
-        use_dab: bool = True,
         num_feature_levels: int = 4,
     ):
         super(DabDeformableDetrTransformerDecoder, self).__init__(
@@ -144,10 +143,8 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
         )
         self.return_intermediate = return_intermediate
 
-        if use_dab:
-            self.query_scale = MLP(embed_dim, embed_dim, embed_dim, 2)
-            self.ref_point_head = MLP(2 * embed_dim, embed_dim, embed_dim, 2)
-        self.use_dab = use_dab
+        self.query_scale = MLP(embed_dim, embed_dim, embed_dim, 2)
+        self.ref_point_head = MLP(2 * embed_dim, embed_dim, embed_dim, 2)
 
         self.bbox_embed = None
         self.class_embed = None
@@ -183,11 +180,10 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 assert reference_points.shape[-1] == 2
                 reference_points_input = reference_points[:, :, None] * valid_ratios[:, None]
 
-            if self.use_dab:
-                query_sine_embed = get_sine_pos_embed(reference_points_input[:, :, 0, :])
-                raw_query_pos = self.ref_point_head(query_sine_embed)
-                pos_scale = self.query_scale(output) if layer_idx != 0 else 1
-                query_pos = pos_scale * raw_query_pos
+            query_sine_embed = get_sine_pos_embed(reference_points_input[:, :, 0, :])
+            raw_query_pos = self.ref_point_head(query_sine_embed)
+            pos_scale = self.query_scale(output) if layer_idx != 0 else 1
+            query_pos = pos_scale * raw_query_pos
 
             output = layer(
                 output,
@@ -251,7 +247,6 @@ class DabDeformableDetrTransformer(nn.Module):
         self.two_stage_num_proposals = two_stage_num_proposals
 
         self.embed_dim = self.encoder.embed_dim
-        self.use_dab = self.decoder.use_dab
 
         self.level_embeds = nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dim))
 
