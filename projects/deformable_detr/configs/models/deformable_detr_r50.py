@@ -16,8 +16,6 @@ from projects.deformable_detr.modeling import (
     DeformableCriterion,
 )
 
-num_feature_levels = 4
-
 model = L(DeformableDETR)(
     backbone=L(ResNet)(
         stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
@@ -56,7 +54,7 @@ model = L(DeformableDETR)(
             ffn_dropout=0.1,
             num_layers=6,
             post_norm=False,
-            num_feature_levels=num_feature_levels,
+            num_feature_levels="${..num_feature_levels}",
         ),
         decoder=L(DeformableDetrTransformerDecoder)(
             embed_dim=256,
@@ -66,10 +64,10 @@ model = L(DeformableDETR)(
             ffn_dropout=0.1,
             num_layers=6,
             return_intermediate=True,
-            num_feature_levels=num_feature_levels,
+            num_feature_levels="${..num_feature_levels}",
         ),
-        as_two_stage=False,
-        num_feature_levels=num_feature_levels,
+        as_two_stage="${..as_two_stage}",
+        num_feature_levels=4,
         two_stage_num_proposals=300,
     ),
     embed_dim=256,

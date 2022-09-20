@@ -9,6 +9,7 @@ Shilong Liu, Feng Li, Hao Zhang, Xiao Yang, Xianbiao Qi, Hang Su, Jun Zhu, Lei Z
 </div><br/>
 
 ## Pretrained Models
+Here we provide the pretrained `DAB-DETR` weights based on detrex.
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->

@@ -251,10 +251,15 @@ class DeformableDETR(nn.Module):
                 processed_results.append({"instances": r})
             return processed_results
 
-    def preprocess_image(self, batched_inputs):
-        images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
-        images = ImageList.from_tensors(images)
-        return images
+    @torch.jit.unused
+    def _set_aux_loss(self, outputs_class, outputs_coord):
+        # this is a workaround to make torchscript happy, as torchscript
+        # doesn't support dictionary with non-homogeneous values, such
+        # as a dict having both a Tensor and a list.
+        return [
+            {"pred_logits": a, "pred_boxes": b}
+            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
+        ]
 
     def inference(self, box_cls, box_pred, image_sizes):
         """
@@ -274,7 +279,11 @@ class DeformableDETR(nn.Module):
 
         # Select top-k confidence boxes for inference
         prob = box_cls.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), self.select_box_nums_for_evaluation, dim=1)
+        topk_values, topk_indexes = torch.topk(
+            prob.view(box_cls.shape[0], -1), 
+            self.select_box_nums_for_evaluation, 
+            dim=1
+        )
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]
@@ -305,12 +314,7 @@ class DeformableDETR(nn.Module):
             new_targets.append({"labels": gt_classes, "boxes": gt_boxes})
         return new_targets
 
-    @torch.jit.unused
-    def _set_aux_loss(self, outputs_class, outputs_coord):
-        # this is a workaround to make torchscript happy, as torchscript
-        # doesn't support dictionary with non-homogeneous values, such
-        # as a dict having both a Tensor and a list.
-        return [
-            {"pred_logits": a, "pred_boxes": b}
-            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
-        ]
+    def preprocess_image(self, batched_inputs):
+        images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
+        images = ImageList.from_tensors(images)
+        return images
