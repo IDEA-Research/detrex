@@ -19,16 +19,13 @@
 # https://github.com/facebookresearch/detr/blob/main/d2/converter.py
 # ------------------------------------------------------------------------------------------------
 
-"""
-Helper script to convert models trained with the main version of DETR to be used in detrex.
-"""
 import argparse
 import numpy as np
 import torch
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("detrex model converter")
+    parser = argparse.ArgumentParser("detrex deformable-detr model converter")
 
     parser.add_argument(
         "--source_model", default="", type=str, help="Path or url to the DETR model to convert"
@@ -47,7 +44,7 @@ def main():
     coco_idx = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
                 27, 28, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51,
                 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 67, 70, 72, 73, 74, 75, 76, 77,
-                78, 79, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91]
+                78, 79, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90]
     # fmt: on
 
     coco_idx = np.array(coco_idx)
@@ -75,10 +72,29 @@ def main():
             k = k.replace("downsample.1", "shortcut.norm")
             k = "backbone." + k
 
+        # add input_proj converter
+        if "input_proj" in k:
+            if "input_proj.0.0" in k:
+                k = k.replace("input_proj.0.0", "neck.convs.0.conv")
+            if "input_proj.0.1" in k:
+                k = k.replace("input_proj.0.1", "neck.convs.0.norm")
+            if "input_proj.1.0" in k:
+                k = k.replace("input_proj.1.0", "neck.convs.1.conv")
+            if "input_proj.1.1" in k:
+                k = k.replace("input_proj.1.1", "neck.convs.1.norm")
+            if "input_proj.2.0" in k:
+                k = k.replace("input_proj.2.0", "neck.convs.2.conv")
+            if "input_proj.2.1" in k:
+                k = k.replace("input_proj.2.1", "neck.convs.2.norm")
+            if "input_proj.3.0" in k:
+                k = k.replace("input_proj.3.0", "neck.extra_convs.0.conv")
+            if "input_proj.3.1" in k:
+                k = k.replace("input_proj.3.1", "neck.extra_convs.0.norm")
+
         # add new convert content
         if "encoder.layers" in k:
             if "self_attn" in k:
-                k = k.replace("self_attn", "attentions.0.attn")
+                k = k.replace("self_attn", "attentions.0")
             elif "linear1" in k:
                 k = k.replace("linear1", "ffns.0.layers.0.0")
             elif "linear2" in k:
@@ -89,28 +105,32 @@ def main():
                 k = k.replace("norm2", "norms.1")
 
         if "decoder" in k:
-            if "decoder.norm" in k:
-                k = k.replace("decoder.norm", "decoder.post_norm_layer")
-            elif "linear1" in k:
+            if "linear1" in k:
                 k = k.replace("linear1", "ffns.0.layers.0.0")
             elif "linear2" in k:
                 k = k.replace("linear2", "ffns.0.layers.1")
             elif "norm1" in k:
-                k = k.replace("norm1", "norms.0")
+                k = k.replace("norm1", "norms.1")
             elif "norm2" in k:
-                k = k.replace("norm2", "norms.1")
+                k = k.replace("norm2", "norms.0")
             elif "norm3" in k:
                 k = k.replace("norm3", "norms.2")
             elif "self_attn" in k:
                 k = k.replace("self_attn", "attentions.0.attn")
-            elif "multihead_attn" in k:
-                k = k.replace("multihead_attn", "attentions.1.attn")
+            elif "cross_attn" in k:
+                k = k.replace("cross_attn", "attentions.1")
 
-        # old fashion of detr convert function
+        if "level_embed" in k:
+            k = k.replace("level_embed", "level_embeds")
+
+        if "query_embed" in k:
+            k = k.replace("query_embed", "query_embedding")
+
+        # k = "detr." + k
         print(old_k, "->", k)
         if "class_embed" in old_k:
             v = model_to_convert[old_k].detach()
-            if v.shape[0] == 92:
+            if v.shape[0] == 91:
                 shape_old = v.shape
                 model_converted[k] = v[coco_idx]
                 print(

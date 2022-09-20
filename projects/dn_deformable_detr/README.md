@@ -8,27 +8,28 @@ Implement `DN-Deformable-DETR` which is a strong baseline of [DN-DETR: Accelerat
   <img src="./assets/dn_detr_arch.png"/>
 </div><br/>
 
-## Pretrained Models
+## Converted Weights
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
 <th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
 <!-- ROW: dn_deformable_detr_r50_50ep -->
- <tr><td align="left"><a href="configs/dn_deformable_detr_r50_50ep.py">DAB-Deformable-DETR-R50</a></td>
+ <tr><td align="left"><a href="configs/dn_deformable_detr_r50_50ep.py">DN-Deformable-DETR-R50</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
-<td align="center"></td>
-<td align="center"> <a href="">Google Drive</a>&nbsp;|&nbsp;<a href="">Tsinghua Cloud</a></td>
+<td align="center">50</td>
+<td align="center">49.51</td>
+<td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
 
-**Note:** DC5 means using dilated convolution in `res5`.
-
+**Note:** Here we converted the pretrained weight from [DN-DETR](https://github.com/IDEA-Research/DN-DETR) official repo. And our detrex training results will be released in the future version.
 
 ## Training
 All configs can be trained with:

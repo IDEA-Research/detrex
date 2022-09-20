@@ -19,9 +19,6 @@
 # https://github.com/facebookresearch/detr/blob/main/d2/converter.py
 # ------------------------------------------------------------------------------------------------
 
-"""
-Helper script to convert models trained with the main version of DETR to be used in detrex.
-"""
 import argparse
 import numpy as np
 import torch
@@ -42,12 +39,11 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # D2 expects contiguous classes, so we need to remap the 92 classes from DETR
     # fmt: off
     coco_idx = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
                 27, 28, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51,
                 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 67, 70, 72, 73, 74, 75, 76, 77,
-                78, 79, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91]
+                78, 79, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90]
     # fmt: on
 
     coco_idx = np.array(coco_idx)
@@ -76,21 +72,35 @@ def main():
             k = "backbone." + k
 
         # add new convert content
-        if "encoder.layers" in k:
-            if "self_attn" in k:
-                k = k.replace("self_attn", "attentions.0.attn")
-            elif "linear1" in k:
-                k = k.replace("linear1", "ffns.0.layers.0.0")
-            elif "linear2" in k:
-                k = k.replace("linear2", "ffns.0.layers.1")
-            elif "norm1" in k:
-                k = k.replace("norm1", "norms.0")
-            elif "norm2" in k:
-                k = k.replace("norm2", "norms.1")
-
         if "decoder" in k:
             if "decoder.norm" in k:
                 k = k.replace("decoder.norm", "decoder.post_norm_layer")
+            if "ca_kcontent_proj" in k:
+                k = k.replace("ca_kcontent_proj", "attentions.1.key_content_proj")
+            elif "ca_kpos_proj" in k:
+                k = k.replace("ca_kpos_proj", "attentions.1.key_pos_proj")
+            elif "ca_qcontent_proj" in k:
+                k = k.replace("ca_qcontent_proj", "attentions.1.query_content_proj")
+            elif "ca_qpos_proj" in k:
+                k = k.replace("ca_qpos_proj", "attentions.1.query_pos_proj")
+            elif "ca_qpos_sine_proj" in k:
+                k = k.replace("ca_qpos_sine_proj", "attentions.1.query_pos_sine_proj")
+            elif "ca_v_proj" in k:
+                k = k.replace("ca_v_proj", "attentions.1.value_proj")
+            elif "sa_kcontent_proj" in k:
+                k = k.replace("sa_kcontent_proj", "attentions.0.key_content_proj")
+            elif "sa_kpos_proj" in k:
+                k = k.replace("sa_kpos_proj", "attentions.0.key_pos_proj")
+            elif "sa_qcontent_proj" in k:
+                k = k.replace("sa_qcontent_proj", "attentions.0.query_content_proj")
+            elif "sa_qpos_proj" in k:
+                k = k.replace("sa_qpos_proj", "attentions.0.query_pos_proj")
+            elif "sa_v_proj" in k:
+                k = k.replace("sa_v_proj", "attentions.0.value_proj")
+            elif "self_attn.out_proj" in k:
+                k = k.replace("self_attn.out_proj", "attentions.0.out_proj")
+            elif "cross_attn.out_proj" in k:
+                k = k.replace("cross_attn.out_proj", "attentions.1.out_proj")
             elif "linear1" in k:
                 k = k.replace("linear1", "ffns.0.layers.0.0")
             elif "linear2" in k:
@@ -101,16 +111,27 @@ def main():
                 k = k.replace("norm2", "norms.1")
             elif "norm3" in k:
                 k = k.replace("norm3", "norms.2")
-            elif "self_attn" in k:
-                k = k.replace("self_attn", "attentions.0.attn")
-            elif "multihead_attn" in k:
-                k = k.replace("multihead_attn", "attentions.1.attn")
+            elif "activation" in k:
+                k = k.replace("activation", "ffns.0.layers.0.1")
 
-        # old fashion of detr convert function
+        if "encoder" in k:
+            if "self_attn" in k:
+                k = k.replace("self_attn", "attentions.0.attn")
+            if "linear1" in k:
+                k = k.replace("linear1", "ffns.0.layers.0.0")
+            elif "linear2" in k:
+                k = k.replace("linear2", "ffns.0.layers.1")
+            elif "norm1" in k:
+                k = k.replace("norm1", "norms.0")
+            elif "norm2" in k:
+                k = k.replace("norm2", "norms.1")
+            elif "activation" in k:
+                k = k.replace("activation", "ffns.0.layers.0.1")
+
         print(old_k, "->", k)
         if "class_embed" in old_k:
             v = model_to_convert[old_k].detach()
-            if v.shape[0] == 92:
+            if v.shape[0] == 91:
                 shape_old = v.shape
                 model_converted[k] = v[coco_idx]
                 print(

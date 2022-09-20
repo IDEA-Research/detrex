@@ -214,7 +214,7 @@ class DeformableDetrTransformer(nn.Module):
         decoder (nn.Module): decoder module.
         as_two_stage (bool): whether to use two-stage transformer. Default False.
         num_feature_levels (int): number of feature levels. Default 4.
-        two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 100. Only used when as_two_stage is True.
+        two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 300. Only used when as_two_stage is True.
     """
     def __init__(
         self,
@@ -237,9 +237,9 @@ class DeformableDetrTransformer(nn.Module):
 
         if self.as_two_stage:
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
-            self.enc_outpout_norm = nn.LayerNorm(self.embed_dim)
+            self.enc_output_norm = nn.LayerNorm(self.embed_dim)
             self.pos_trans = nn.Linear(self.embed_dim * 2, self.embed_dim * 2)
-            self.pos_trans_norm = nn.LayerNorm(self.embed_dim)
+            self.pos_trans_norm = nn.LayerNorm(self.embed_dim * 2)
         else:
             self.reference_points = nn.Linear(self.embed_dim, 2)
 
@@ -341,7 +341,7 @@ class DeformableDetrTransformer(nn.Module):
         """Get the position embedding of proposal."""
         scale = 2 * math.pi
         dim_t = torch.arange(num_pos_feats, dtype=torch.float32, device=proposals.device)
-        dim_t = temperature ** (2 * (dim_t // 2) / num_pos_feats)
+        dim_t = temperature ** (2 * torch.div(dim_t, 2, rounding_mode="floor") / num_pos_feats)
         # N, L, 4
         proposals = proposals.sigmoid() * scale
         # N, L, 4, 128
@@ -428,7 +428,7 @@ class DeformableDetrTransformer(nn.Module):
             pos_trans_out = self.pos_trans_norm(
                 self.pos_trans(self.get_proposal_pos_embed(topk_coords_unact))
             )
-            query_embed, query = torch.split(pos_trans_out, c, dim=2)
+            query_pos, query = torch.split(pos_trans_out, c, dim=2)
         else:
             query_pos, query = torch.split(query_embed, c, dim=1)
             query_pos = query_pos.unsqueeze(0).expand(bs, -1, -1)

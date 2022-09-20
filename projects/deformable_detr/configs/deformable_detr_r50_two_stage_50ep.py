@@ -1,14 +1,15 @@
-from .dab_deformable_detr_r50_50ep import (
+from .deformable_detr_r50_50ep import (
     train,
     dataloader,
     optimizer,
     lr_multiplier,
-    model,
+    model
 )
 
 # modify model config
+model.with_box_refine = True
 model.as_two_stage = True
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/dab_deformable_detr_r50_two_stage_50ep"
+train.output_dir = "./output/deformable_detr_r50_two_stage_50ep"

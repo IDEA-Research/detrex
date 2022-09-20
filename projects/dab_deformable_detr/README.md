@@ -9,6 +9,7 @@ Implement `DAB-Deformable-DETR` which is a strong baseline of [DAB-DETR: Dynamic
 </div><br/>
 
 ## Pretrained Models
+Here we provide the pretrained `DAB-Deformable-DETR` weights based on detrex.
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
@@ -24,14 +25,16 @@ Implement `DAB-Deformable-DETR` which is a strong baseline of [DAB-DETR: Dynamic
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">48.7</td>
+<td align="center">48.87</td>
 <td align="center"> <a href="">model</a></td>
 </tr>
- <tr><td align="left"><a href="configs/dab_deformable_detr_r50_50ep_two_stage.py">DAB-Deformable-DETR-R50-two-stage</a></td>
+<!-- ROW: dab_deformable_detr_r50_two_stage_50ep -->
+ <tr><td align="left"><a href="configs/dab_deformable_detr_r50_50ep_two_stage.py">DAB-Deformable-DETR-R50-Two-Stage</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
-<td align="center">49.3</td>
-<td align="center"> <a href="">Google Drive</a>&nbsp;|&nbsp;<a href="">Tsinghua Cloud</a></td>
+<td align="center">50</td>
+<td align="center">49.54</td>
+<td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
 
