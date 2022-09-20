@@ -98,7 +98,7 @@ model = L(DINO)(
         two_stage_binary_cls=False,
     ),
     dn_number=100,
-    label_noise_ratio=0.2,
+    label_noise_ratio=0.5,
     box_noise_scale=1.0,
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],

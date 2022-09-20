@@ -38,7 +38,7 @@ class DINO (nn.Module):
     Args:
         backbone (nn.Module): backbone module
         position_embedding (nn.Module): position embedding module
-        neck (nn.Module): neck module
+        neck (nn.Module): neck module to handle the intermediate outputs features
         transformer (nn.Module): transformer module
         embed_dim (int): dimension of embedding
         num_classes (int): Number of total categories.
@@ -50,7 +50,7 @@ class DINO (nn.Module):
             Default: [58.395, 57.120, 57.375].
         aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
         select_box_nums_for_evaluation (int): the number of topk candidates 
-            slected at postprocess for evaluation. Default: 100.
+            slected at postprocess for evaluation. Default: 300.
         device (str): Training device. Default: "cuda".
     """
 
@@ -273,6 +273,15 @@ class DINO (nn.Module):
                 processed_results.append({"instances": r})
             return processed_results
 
+    @torch.jit.unused
+    def _set_aux_loss(self, outputs_class, outputs_coord):
+        # this is a workaround to make torchscript happy, as torchscript
+        # doesn't support dictionary with non-homogeneous values, such
+        # as a dict having both a Tensor and a list.
+        return [
+            {"pred_logits": a, "pred_boxes": b}
+            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
+        ]
 
     def prepare_for_cdn(self, targets, dn_number, label_noise_ratio, box_noise_scale, num_queries, num_classes, hidden_dim, label_enc):
         """
@@ -424,7 +433,11 @@ class DINO (nn.Module):
         # box_cls.shape: 1, 300, 80
         # box_pred.shape: 1, 300, 4
         prob = box_cls.sigmoid()
-        topk_values, topk_indexes = torch.topk(prob.view(box_cls.shape[0], -1), self.select_box_nums_for_evaluation, dim=1)
+        topk_values, topk_indexes = torch.topk(
+            prob.view(box_cls.shape[0], -1), 
+            self.select_box_nums_for_evaluation, 
+            dim=1
+        )
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]
@@ -456,13 +469,3 @@ class DINO (nn.Module):
             gt_boxes = box_xyxy_to_cxcywh(gt_boxes)
             new_targets.append({"labels": gt_classes, "boxes": gt_boxes})
         return new_targets
-
-    @torch.jit.unused
-    def _set_aux_loss(self, outputs_class, outputs_coord):
-        # this is a workaround to make torchscript happy, as torchscript
-        # doesn't support dictionary with non-homogeneous values, such
-        # as a dict having both a Tensor and a list.
-        return [
-            {"pred_logits": a, "pred_boxes": b}
-            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
-        ]

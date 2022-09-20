@@ -15,6 +15,7 @@ Implement `DAB-Deformable-DETR` which is a strong baseline of [DAB-DETR: Dynamic
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
 <th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
@@ -22,8 +23,9 @@ Implement `DAB-Deformable-DETR` which is a strong baseline of [DAB-DETR: Dynamic
  <tr><td align="left"><a href="configs/dab_deformable_detr_r50_50ep.py">DAB-Deformable-DETR-R50</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
+<td align="center">50</td>
 <td align="center">48.7</td>
-<td align="center"> <a href="">Google Drive</a>&nbsp;|&nbsp;<a href="">Tsinghua Cloud</a></td>
+<td align="center"> <a href="">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/dab_deformable_detr_r50_50ep_two_stage.py">DAB-Deformable-DETR-R50-two-stage</a></td>
 <td align="center">R-50</td>
