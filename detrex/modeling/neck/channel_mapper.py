@@ -20,12 +20,10 @@
 # ------------------------------------------------------------------------------------------------
 
 import copy
-from typing import Dict, List
 import torch.nn as nn
+from typing import Dict, List
 
-from detrex.layers import ConvNormAct
-
-from detectron2.modeling import ShapeSpec
+from detrex.layers import ConvNormAct, ShapeSpec
 
 
 class ChannelMapper(nn.Module):

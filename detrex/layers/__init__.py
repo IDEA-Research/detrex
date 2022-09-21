@@ -49,3 +49,4 @@ from .denoising import (
     apply_label_noise,
     GenerateDNQueries,
 )
+from .shape_spec import ShapeSpec
