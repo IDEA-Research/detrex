@@ -20,8 +20,15 @@
 # https://github.com/facebookresearch/detr/blob/main/util/box_ops.py
 # ------------------------------------------------------------------------------------------------
 
-
 import torch.distributed as dist
+
+
+def get_rank() -> int:
+    if not dist.is_available():
+        return 0
+    if not dist.is_initialized():
+        return 0
+    return dist.get_rank()
 
 
 def is_dist_avail_and_initialized() -> bool:

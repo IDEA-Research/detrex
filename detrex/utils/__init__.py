@@ -21,4 +21,5 @@ from .misc import (
 from .dist import (
     is_dist_avail_and_initialized,
     get_world_size,
+    get_rank,
 )

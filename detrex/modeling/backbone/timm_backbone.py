@@ -22,17 +22,13 @@
 # https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/backbone.py
 # ------------------------------------------------------------------------------------------------
 
+import logging
 import warnings
 from typing import Tuple
 import torch.nn as nn
 
-from detectron2.layers.batch_norm import (
-    NaiveSyncBatchNorm,
-    FrozenBatchNorm2d,
-)
-from detectron2.modeling.backbone import Backbone
-from detectron2.utils.logger import setup_logger
-from detectron2.utils import comm, env
+from detrex.modeling.backbone import Backbone
+from detrex.utils.dist import get_rank
 
 try:
     import timm
@@ -47,7 +43,7 @@ def log_timm_feature_info(feature_info):
         feature_info (list[dict] | timm.models.features.FeatureInfo | None):
             feature_info of timm backbone.
     """
-    logger = setup_logger(name="timm backbone")
+    logger = logging.getLogger(name="timm backbone")
     if feature_info is None:
         logger.warning("This backbone does not have feature_info")
     elif isinstance(feature_info, list):
@@ -97,7 +93,7 @@ class TimmBackbone(Backbone):
         norm_layer: nn.Module = None,
     ):
         super().__init__()
-        logger = setup_logger(name="timm backbone")
+        logger = logging.getLogger(name="timm backbone")
         if timm is None:
             raise RuntimeError('Failed to import timm. Please run "pip install timm". ')
         if not isinstance(pretrained, bool):
@@ -137,7 +133,7 @@ class TimmBackbone(Backbone):
         self.out_indices = out_indices
 
         feature_info = getattr(self.timm_model, "feature_info", None)
-        if comm.get_rank() == 0:
+        if get_rank() == 0:
             log_timm_feature_info(feature_info)
 
         if feature_info is not None:
@@ -171,31 +167,3 @@ class TimmBackbone(Backbone):
 
         return outs
 
-
-def get_norm(norm):
-    """
-    Get the specified normalization layer, modified from:
-    https://github.com/facebookresearch/detectron2/blob/main/detectron2/layers/batch_norm.py
-
-    Args:
-        norm (str or callable): either one of BN, SyncBN, FrozenBN, GN;
-            or a callable that takes a channel number and returns
-            the normalization layer as a nn.Module before instantiation
-    
-    Returns:
-        nn.Module or None: the normalization layer
-    """
-    if norm is None:
-        return None
-    if isinstance(norm, str):
-        if len(norm) == 0:
-            return None
-        norm = {
-            "BN": nn.BatchNorm2d,
-            # Fixed in https://github.com/pytorch/pytorch/pull/36382
-            "SyncBN": NaiveSyncBatchNorm if env.TORCH_VERSION <= (1, 5) else nn.SyncBatchNorm,
-            "FrozenBN": FrozenBatchNorm2d,
-            "GN": lambda channels: nn.GroupNorm(32, channels),
-            "LN": nn.LayerNorm,
-        }[norm]
-    return norm
