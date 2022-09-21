@@ -111,6 +111,7 @@ def get_extensions():
     else:
         define_macros += [("WITH_HIP", None)]
         extra_compile_args["nvcc"] = []
+        return None
 
     sources = [os.path.join(extensions_dir, s) for s in sources]
     include_dirs = [extensions_dir]
