@@ -69,7 +69,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">Download</th>
 <!-- TABLE BODY -->
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dn_detr/configs/dn_detr_r50_50ep.py"> DAB-DETR-R50 </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dn_detr/configs/dn_detr_r50_50ep.py"> DN-DETR-R50 </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
