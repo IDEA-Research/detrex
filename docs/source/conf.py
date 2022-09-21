@@ -12,6 +12,12 @@
 #
 import os
 import sys
+from unittest import mock
+
+for m in [
+    "detrex._C",
+]:
+    sys.modules[m] = mock.Mock(name=m)
 
 import detrex  # noqa
 
