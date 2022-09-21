@@ -24,4 +24,7 @@ pytest
 scipy==1.7.3
 https://download.pytorch.org/whl/cpu/torch-1.8.1%2Bcpu-cp37-cp37m-linux_x86_64.whl
 https://download.pytorch.org/whl/cpu/torchvision-0.9.1%2Bcpu-cp37-cp37m-linux_x86_64.whl
+https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.8/detectron2-0.6+cpu-cp37-cp37m-linux_x86_64.whl
 git+https://github.com/IDEA-Research/detrex.git
+
+
