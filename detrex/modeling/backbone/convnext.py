@@ -27,7 +27,7 @@ from timm.models.layers import DropPath, trunc_normal_
 
 from detrex.layers import LayerNorm
 
-from detectron2.modeling.backbone import Backbone
+from .backbone import Backbone
 
 
 class Block(nn.Module):

@@ -26,7 +26,7 @@ import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 
-from detectron2.modeling.backbone import Backbone
+from .backbone import Backbone
 
 
 class Mlp(nn.Module):

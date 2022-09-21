@@ -34,7 +34,7 @@ from detectron2.layers import (
     ShapeSpec,
     get_norm,
 )
-from detectron2.modeling.backbone import Backbone
+from .backbone import Backbone
 
 __all__ = [
     "ResNetBlockBase",
