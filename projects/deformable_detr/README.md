@@ -26,7 +26,7 @@ Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, Jifeng Dai
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">44.59</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_deformable_detr_r50.pth">model</a></td>
 </tr>
 <!-- ROW: deformable_detr_r50_with_box_refinement -->
  <tr><td align="left"><a href="configs/deformable_detr_r50_with_box_refinement_50ep.py">Deformable-DETR-R50-Box-Refinement</a></td>
@@ -34,7 +34,7 @@ Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, Jifeng Dai
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">46.28</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_deformable_detr_r50_with_box_refine_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
 

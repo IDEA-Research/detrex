@@ -26,7 +26,7 @@ Here we provide the pretrained `DN-DETR` weights based on detrex.
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">44.73</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dn_detr_r50_50ep.pth">model</a></td>
 </tr>
 </tr>
 </tbody></table>
