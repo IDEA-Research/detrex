@@ -25,7 +25,7 @@ Implement `DN-Deformable-DETR` which is a strong baseline of [DN-DETR: Accelerat
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">49.51</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_dn_deformable_detr_r50_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
 

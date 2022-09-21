@@ -22,7 +22,7 @@
 [👀Model Zoo]() |
 [🚀Awesome DETR](https://github.com/IDEA-Research/awesome-detection-transformer) |
 [🆕News](#change-log) |
-[🤔Reporting Issues](https://github.com/rentainhe/detrex/issues/new/choose)
+[🤔Reporting Issues](https://github.com/IDEA-Research/detrex/issues/new/choose)
 
 
 ## Introduction

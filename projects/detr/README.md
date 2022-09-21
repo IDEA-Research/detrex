@@ -29,7 +29,7 @@ Here we provides the weights which are converted by [converter.py](./converter.p
 <td align="center">IN1k</td>
 <td align="center">500</td>
 <td align="center">42.01</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_detr_r50_500ep.pth">model</a></td>
 </tr>
 <!-- ROW: detr_r50 -->
  <tr><td align="left"><a>DETR-R101</a></td>
@@ -37,7 +37,7 @@ Here we provides the weights which are converted by [converter.py](./converter.p
 <td align="center">IN1k</td>
 <td align="center">500</td>
 <td align="center">43.52</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_detr_r101_500ep.pth">model</a></td>
 </tr>
 </tbody></table>
 

@@ -25,7 +25,7 @@ Depu Meng, Xiaokang Chen, Zejia Fan, Gang Zeng, Houqiang Li, Yuhui Yuan, Lei Sun
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">41.02</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_conditional_detr_r50_50ep.pth">model</a></td>
 </tr>
 <!-- ROW: conditional_detr_r101_50ep -->
  <tr><td align="left"><a href="configs/conditional_detr_r101_50ep.py">Conditional-DETR-R101</a></td>
@@ -33,7 +33,7 @@ Depu Meng, Xiaokang Chen, Zejia Fan, Gang Zeng, Houqiang Li, Yuhui Yuan, Lei Sun
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">42.97</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_conditional_detr_r101_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
 

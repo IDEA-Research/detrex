@@ -26,7 +26,7 @@ Here we provide the pretrained `DAB-Deformable-DETR` weights based on detrex.
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">48.87</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dab_deformable_r50_50ep.pth">model</a></td>
 </tr>
 <!-- ROW: dab_deformable_detr_r50_two_stage_50ep -->
  <tr><td align="left"><a href="configs/dab_deformable_detr_r50_50ep_two_stage.py">DAB-Deformable-DETR-R50-Two-Stage</a></td>
@@ -34,7 +34,7 @@ Here we provide the pretrained `DAB-Deformable-DETR` weights based on detrex.
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">49.54</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dab_deformable_r50_two_stage_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
 

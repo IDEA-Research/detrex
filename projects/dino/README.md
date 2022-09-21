@@ -25,7 +25,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">49.05</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_r50_4scale_12ep.pth">model</a></td>
 </tr>
 </tbody></table>
 
