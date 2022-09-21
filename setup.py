@@ -109,7 +109,8 @@ def get_extensions():
             "-D__CUDA_NO_HALF2_OPERATORS__",
         ]
     else:
-        raise NotImplementedError("Cuda is not availabel")
+        define_macros += [("WITH_HIP", None)]
+        extra_compile_args["nvcc"] = []
 
     sources = [os.path.join(extensions_dir, s) for s in sources]
     include_dirs = [extensions_dir]
