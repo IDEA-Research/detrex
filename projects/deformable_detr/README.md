@@ -36,17 +36,9 @@ Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, Jifeng Dai
 <td align="center">46.28</td>
 <td align="center"> <a href="">model</a></td>
 </tr>
-<!-- ROW: deformable_detr_r50_two_stage -->
- <tr><td align="left"><a href="configs/deformable_detr_r50_two_stage_50ep.py">Deformable-DETR-R50-Two-Stage</a></td>
-<td align="center">R-50</td>
-<td align="center">IN1k</td>
-<td align="center">50</td>
-<td align="center"></td>
-<td align="center"> <a href="">model</a></td>
-</tr>
 </tbody></table>
 
-**Note:** Here we borrowed the pretrained weight from [Deformable-DETR](https://github.com/fundamentalvision/Deformable-DETR) official repo. And our detrex training results will be released in the future version.
+**Note:** Here we borrowed the pretrained weight from [Deformable-DETR](https://github.com/fundamentalvision/Deformable-DETR) official repo. And our detrex training results will be released in the future version. And `two-stage` settings are still under test.
 
 ## Training
 All configs can be trained with:

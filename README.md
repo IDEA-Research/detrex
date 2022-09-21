@@ -52,7 +52,7 @@ Apart from detrex, we also released a repo [Awesome Detection Transformer](https
 The repo name detrex has several interpretations:
 - <font color=blue> <b> detr-ex </b> </font>: We take our hats off to DETR and regard this repo as an extension of Transformer-based detection algorithms.
 
-- <font color=#db7093> <b> det-rex </b> </font>: rex literally means ‘king’ in Latin. We hope this repo can help advance the state of the art on object detection by providing the best Transformer-based detection algorithms from the research community.
+- <font color=#db7093> <b> det-rex </b> </font>: rex literally means 'king' in Latin. We hope this repo can help advance the state of the art on object detection by providing the best Transformer-based detection algorithms from the research community.
 
 - <font color=#008000> <b> de-t.rex </b> </font>: de means 'the' in Gemany. T.rex means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
 
@@ -111,3 +111,12 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Citation
 If you find this project useful in your research, please consider cite:
+```BibTeX
+@misc{ren2022detrex,
+  author =       {Tianhe Ren and Shilong Liu and Hao Zhang and
+                  Feng Li and Xingyu Liao and Lei Zhang},
+  title =        {detrex},
+  howpublished = {\url{https://github.com/IDEA-Research/detrex}},
+  year =         {2022}
+}
+```
