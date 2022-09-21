@@ -2,5 +2,5 @@ sphinx
 jinja2<3.1
 recommonmark==0.6.0
 sphinx-rtd-theme==1.0.0
-git+https://github.com/IDEA-Research/detrex.git
+
 torch
