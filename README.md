@@ -1,25 +1,22 @@
 <h2 align="left">detrex</h2>
 <p align="left">
-    <a href="">
+    <a href="https://detrex.readthedocs.io/en/latest/index.html">
         <img alt="docs" src="https://img.shields.io/badge/docs-latest-blue">
     </a>
-    <a href="">
-        <img alt="GitHub" src="https://img.shields.io/github/license/Oneflow-Inc/libai.svg?color=blue">
+    <a href="https://github.com/IDEA-Research/detrex/blob/main/LICENSE">
+        <img alt="GitHub" src="https://img.shields.io/github/license/IDEA-Research/detrex.svg?color=blue">
     </a>
-    <a href="">
+    <a href="https://github.com/IDEA-Research/detrex/pulls">
         <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-pink.svg">
     </a>
-    <a href="">
-        <img alt="open issues" src="https://img.shields.io/github/issues-raw/Westlake-AI/openmixup?color=%23FF9600">
-    </a>
-    <a href="">
-        <img alt="issue resolution" src="https://img.shields.io/badge/issue%20resolution-1%20d-%23009763">
+    <a href="https://github.com/IDEA-Research/detrex/issues">
+        <img alt="open issues" src="https://img.shields.io/github/issues/IDEA-Research/detrex">
     </a>
 </p>
 
-[📘Documentation]() |
-[🛠️Installation]() |
-[👀Model Zoo]() |
+[📘Documentation](https://detrex.readthedocs.io/en/latest/index.html) |
+[🛠️Installation](https://detrex.readthedocs.io/en/latest/tutorials/Installation.html) |
+[👀Model Zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html) |
 [🚀Awesome DETR](https://github.com/IDEA-Research/awesome-detection-transformer) |
 [🆕News](#change-log) |
 [🤔Reporting Issues](https://github.com/IDEA-Research/detrex/issues/new/choose)
@@ -59,18 +56,20 @@ The repo name detrex has several interpretations:
 
 ## Installation
 
-Please refer to [Installation Instructions]() for the details of installation.
+Please refer to [Installation Instructions](https://detrex.readthedocs.io/en/latest/tutorials/Installation.html) for the details of installation.
 
 ## Getting Started
 
-Please refer to [Getting Started with detrex]() for the basic usage of detrex.
+Please refer to [Getting Started with detrex](https://detrex.readthedocs.io/en/latest/tutorials/Getting_Started.html) for the basic usage of detrex.
 
 ## Documentation
 
-Please see [documentation]() for full API documentation and tutorials.
+Please see [documentation](https://detrex.readthedocs.io/en/latest/index.html) for full API documentation and tutorials.
+
+**Note:** Tutorials are available. And the full API documentation will be released later.
 
 ## Model Zoo
-Results and models are available in [model zoo]().
+Results and models are available in [model zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html).
 
 <details open>
 <summary> Supported methods </summary>

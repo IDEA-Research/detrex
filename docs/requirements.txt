@@ -16,5 +16,3 @@ pytest
 scipy==1.7.3
 torch
 torchvision
-
-git+https://github.com/IDEA-Research/detrex.git
