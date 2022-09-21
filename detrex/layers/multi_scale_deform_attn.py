@@ -33,7 +33,8 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.init import constant_, xavier_uniform_
 
-from detrex import _C
+from detectron2.utils.develop import create_dummy_class, create_dummy_func
+
 
 
 # helpers
@@ -346,3 +347,11 @@ class MultiScaleDeformableAttention(nn.Module):
             output = output.permute(1, 0, 2)
 
         return self.dropout(output) + identity
+
+try:
+    from detrex import _C
+except ImportError:
+    # TODO: register ops natively so there is no need to import _C.
+    _msg = "detrex is not compiled successfully, please build following the instructions!"
+    _args = ("detrex._C", _msg)
+    MultiScaleDeformableAttention = create_dummy_class("MultiScaleDeformableAttention", *_args)
