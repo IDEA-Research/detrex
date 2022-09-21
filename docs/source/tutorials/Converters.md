@@ -147,10 +147,10 @@ model.pixel_std = [58.395, 57.120, 57.375]
 ## Convert DETRs Pretrained Models
 We also provides converters for a partial of projects in detrex. These conversions are modified from the [detr-d2 conversion script](https://github.com/facebookresearch/detr/blob/main/d2/converter.py) to convert models trained by the original repo into the format of detrex models.
 
-- converter for DETR: [convert_detr_to_detrex]()
-- converter for Deformable-DETR: [convert_deformable_detr_to_detrex]()
-- converter for ConditionalDETR: [convert_conditional_detr_to_detrex]()
-- converter for DN-Deformable-DETR: [convert_dn_deformable_detr_to_detrex]()
+- converter for DETR: [convert_detr_to_detrex](https://github.com/IDEA-Research/detrex/blob/main/projects/detr/converter.py)
+- converter for Deformable-DETR: [convert_deformable_detr_to_detrex](https://github.com/IDEA-Research/detrex/blob/main/projects/deformable_detr/converter.py)
+- converter for ConditionalDETR: [convert_conditional_detr_to_detrex](https://github.com/IDEA-Research/detrex/blob/main/projects/conditional_detr/converter.py)
+- converter for DN-Deformable-DETR: [convert_dn_deformable_detr_to_detrex](https://github.com/IDEA-Research/detrex/blob/main/projects/dn_deformable_detr/converter.py)
 
 All these converters can be runned as:
 ```python
