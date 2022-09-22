@@ -103,6 +103,7 @@ model = L(DNDeformableDETR)(
     label_noise_prob=0.2,
     box_noise_scale=0.4,
     with_indicator=True,
+    select_box_nums_for_evaluation=300,
     device="cuda",
 )
 

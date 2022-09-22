@@ -70,6 +70,7 @@ class DNDeformableDETR(nn.Module):
         label_noise_prob: float = 0.2,
         box_noise_scale: float = 0.4,
         with_indicator: bool = True,
+        select_box_nums_for_evaluation: int = 300,
         device="cuda",
     ):
         super().__init__()
@@ -163,6 +164,7 @@ class DNDeformableDETR(nn.Module):
             for bbox_embed_layer in self.bbox_embed:
                 nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
 
+        self.select_box_nums_for_evaluation = select_box_nums_for_evaluation
 
     def forward(self, batched_inputs):
         """Forward function of `DN-Deformable-DETR` which excepts a list of dict as inputs.
@@ -346,7 +348,6 @@ class DNDeformableDETR(nn.Module):
             for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
         ]
 
-
     def preprocess_image(self, batched_inputs):
         images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
         images = ImageList.from_tensors(images)
@@ -381,15 +382,11 @@ class DNDeformableDETR(nn.Module):
 
         boxes = torch.gather(box_pred, 1, topk_boxes.unsqueeze(-1).repeat(1, 1, 4))
 
-        # For each box we assign the best class or the second best if the best on is `no_object`.
-        # scores, labels = F.softmax(box_cls, dim=-1)[:, :, :-1].max(-1)
-
         for i, (scores_per_image, labels_per_image, box_pred_per_image, image_size) in enumerate(
             zip(scores, labels, boxes, image_sizes)
         ):
             result = Instances(image_size)
             result.pred_boxes = Boxes(box_cxcywh_to_xyxy(box_pred_per_image))
-
             result.pred_boxes.scale(scale_x=image_size[1], scale_y=image_size[0])
             result.scores = scores_per_image
             result.pred_classes = labels_per_image
