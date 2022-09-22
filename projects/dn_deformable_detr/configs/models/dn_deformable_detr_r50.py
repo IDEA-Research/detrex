@@ -16,7 +16,6 @@ from projects.dn_deformable_detr.modeling import (
     DNCriterion,
 )
 
-num_feature_levels = 4
 
 model = L(DNDeformableDETR)(
     backbone=L(ResNet)(
@@ -56,7 +55,7 @@ model = L(DNDeformableDETR)(
             ffn_dropout=0.0,
             num_layers=6,
             post_norm=False,
-            num_feature_levels=num_feature_levels,
+            num_feature_levels="${..num_feature_levels}",
         ),
         decoder=L(DNDeformableDetrTransformerDecoder)(
             embed_dim=256,
@@ -66,19 +65,18 @@ model = L(DNDeformableDETR)(
             ffn_dropout=0.0,
             num_layers=6,
             return_intermediate=True,
-            use_dab=True,
-            num_feature_levels=num_feature_levels,
+            num_feature_levels="${..num_feature_levels}",
         ),
         as_two_stage=False,
-        num_feature_levels=num_feature_levels,
-        two_stage_num_proposals=300,
+        num_feature_levels=4,
+        two_stage_num_proposals="${..num_queries}",
     ),
     embed_dim=256,
     num_classes=80,
     num_queries=300,
     aux_loss=True,
     criterion=L(DNCriterion)(
-        num_classes=80,
+        num_classes="${..num_classes}",
         matcher=L(HungarianMatcher)(
             cost_class=2.0,
             cost_bbox=5.0,
@@ -91,26 +89,26 @@ model = L(DNDeformableDETR)(
             "loss_class": 1,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
+            "loss_class_dn": 1,
+            "loss_bbox_dn": 5.0,
+            "loss_giou_dn": 2.0,
         },
         loss_class_type="focal_loss",
         alpha=0.25,
         gamma=2.0,
     ),
-    dn_num=5,
-    label_noise_scale=0.2,
-    box_noise_scale=0.4,
     pixel_mean=[123.675, 116.280, 103.530],
     pixel_std=[58.395, 57.120, 57.375],
-    select_box_nums_for_evaluation=300,
+    denoising_groups=5,
+    label_noise_prob=0.2,
+    box_noise_scale=0.4,
+    with_indicator=True,
     device="cuda",
 )
 
 # set aux loss weight dict
 if model.aux_loss:
     weight_dict = model.criterion.weight_dict
-    weight_dict["loss_class_dn"] = 1.0
-    weight_dict["loss_bbox_dn"] = 5.0
-    weight_dict["loss_giou_dn"] = 2.0
     aux_weight_dict = {}
     for i in range(model.transformer.decoder.num_layers - 1):
         aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
