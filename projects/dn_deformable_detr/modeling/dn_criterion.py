@@ -22,7 +22,7 @@ from detrex.utils import get_world_size, is_dist_avail_and_initialized
 class DNCriterion(SetCriterion):
     """This class computes the loss for DN-DETR."""
 
-    def forward(self, outputs, targets, dn_metas=None):
+    def forward(self, outputs, targets):
         losses = super(DNCriterion, self).forward(outputs, targets)
 
         num_boxes = sum(len(t["labels"]) for t in targets)
@@ -37,78 +37,73 @@ class DNCriterion(SetCriterion):
         if "aux_outputs" in outputs:
             aux_num = len(outputs["aux_outputs"])
 
-        dn_losses = self.calculate_dn_loss(dn_metas, targets, aux_num, num_boxes)
+        dn_losses = self.calculate_dn_loss(outputs, targets, aux_num, num_boxes)
         losses.update(dn_losses)
 
         return losses
 
-    def calculate_dn_loss(self, dn_metas, targets, aux_num, num_boxes):
+    def calculate_dn_loss(self, outputs, targets, aux_num, num_boxes):
         """
         Calculate dn loss in criterion
         """
         losses = {}
-        if dn_metas and "output_known_lbs_bboxes" in dn_metas:
-            output_known_lbs_bboxes, dn_num, single_padding = (
-                dn_metas["output_known_lbs_bboxes"],
-                dn_metas["dn_num"],
-                dn_metas["single_padding"],
+        if outputs and "denoising_output" in outputs:
+            denoising_output, denoising_groups, single_padding = (
+                outputs["denoising_output"],
+                outputs["denoising_groups"],
+                outputs["max_gt_num_per_image"],
             )
+            device = denoising_output["pred_logits"].device
             dn_idx = []
             for i in range(len(targets)):
                 if len(targets[i]["labels"]) > 0:
-                    t = torch.arange(0, len(targets[i]["labels"])).long().cuda()
-                    t = t.unsqueeze(0).repeat(dn_num, 1)
+                    t = torch.arange(0, len(targets[i]["labels"])).long().to(device)
+                    t = t.unsqueeze(0).repeat(denoising_groups, 1)
                     tgt_idx = t.flatten()
                     output_idx = (
-                        torch.tensor(range(dn_num)) * single_padding
-                    ).long().cuda().unsqueeze(1) + t
+                        torch.tensor(range(denoising_groups)).to(device) * single_padding
+                    ).long().unsqueeze(1) + t
                     output_idx = output_idx.flatten()
                 else:
-                    output_idx = tgt_idx = torch.tensor([]).long().cuda()
+                    output_idx = tgt_idx = torch.tensor([]).long().to(device)
 
                 dn_idx.append((output_idx, tgt_idx))
             l_dict = {}
             for loss in self.losses:
-                kwargs = {}
-                if "labels" in loss:
-                    kwargs = {"log": False}
                 l_dict.update(
                     self.get_loss(
-                        loss, output_known_lbs_bboxes, targets, dn_idx, num_boxes * dn_num, **kwargs
+                        loss, denoising_output, targets, dn_idx, num_boxes * denoising_groups
                     )
                 )
 
             l_dict = {k + f"_dn": v for k, v in l_dict.items()}
             losses.update(l_dict)
         else:
-            losses["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
-            losses["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
-            losses["loss_class_dn"] = torch.as_tensor(0.0).to("cuda")
+            device = outputs["pred_logits"].device
+            losses["loss_bbox_dn"] = torch.as_tensor(0.0).to(device)
+            losses["loss_giou_dn"] = torch.as_tensor(0.0).to(device)
+            losses["loss_class_dn"] = torch.as_tensor(0.0).to(device)
 
         for i in range(aux_num):
             # dn aux loss
             l_dict = {}
-            if dn_metas and "output_known_lbs_bboxes" in dn_metas:
-                output_known_lbs_bboxes_aux = output_known_lbs_bboxes["aux_outputs"][i]
+            if outputs and "denoising_output" in outputs:
+                denoising_output_aux = denoising_output["aux_outputs"][i]
                 for loss in self.losses:
-                    kwargs = {}
-                    if "labels" in loss:
-                        kwargs = {"log": False}
                     l_dict.update(
                         self.get_loss(
                             loss,
-                            output_known_lbs_bboxes_aux,
+                            denoising_output_aux,
                             targets,
                             dn_idx,
-                            num_boxes * dn_num,
-                            **kwargs,
+                            num_boxes * denoising_groups,
                         )
                     )
                 l_dict = {k + f"_dn_{i}": v for k, v in l_dict.items()}
             else:
-                l_dict["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")
-                l_dict["loss_giou_dn"] = torch.as_tensor(0.0).to("cuda")
-                l_dict["loss_class_dn"] = torch.as_tensor(0.0).to("cuda")
+                l_dict["loss_bbox_dn"] = torch.as_tensor(0.0).to(device)
+                l_dict["loss_giou_dn"] = torch.as_tensor(0.0).to(device)
+                l_dict["loss_class_dn"] = torch.as_tensor(0.0).to(device)
                 l_dict = {k + f"_{i}": v for k, v in l_dict.items()}
             losses.update(l_dict)
         return losses
