@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .backbone import Backbone
 from .timm_backbone import TimmBackbone
 from .torchvision_backbone import TorchvisionBackbone
 from .resnet import (

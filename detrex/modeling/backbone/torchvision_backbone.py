@@ -16,7 +16,7 @@
 from typing import Any, Dict
 import torchvision
 
-from detrex.modeling.backbone import Backbone
+from detectron2.modeling.backbone import Backbone
 
 try:
     from torchvision.models.feature_extraction import (
