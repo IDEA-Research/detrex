@@ -20,7 +20,6 @@
 # https://github.com/Oneflow-Inc/libai/blob/main/setup.py
 # ------------------------------------------------------------------------------------------------
 
-
 import glob
 import os
 import shutil
