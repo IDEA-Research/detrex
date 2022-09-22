@@ -66,8 +66,6 @@ Please refer to [Getting Started with detrex](https://detrex.readthedocs.io/en/l
 
 Please see [documentation](https://detrex.readthedocs.io/en/latest/index.html) for full API documentation and tutorials.
 
-**Note:** Tutorials are available. And the full API documentation will be released later.
-
 ## Model Zoo
 Results and models are available in [model zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html).
 
