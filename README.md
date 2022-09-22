@@ -51,7 +51,7 @@ The repo name detrex has several interpretations:
 
 - <font color=#db7093> <b> det-rex </b> </font>: rex literally means 'king' in Latin. We hope this repo can help advance the state of the art on object detection by providing the best Transformer-based detection algorithms from the research community.
 
-- <font color=#008000> <b> de-t.rex </b> </font>: de means 'the' in Gemany. T.rex means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
+- <font color=#008000> <b> de-t.rex </b> </font>: de means 'the' in German. T.rex, also called Tyrannosaurus Rex, means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
 
 
 ## Installation

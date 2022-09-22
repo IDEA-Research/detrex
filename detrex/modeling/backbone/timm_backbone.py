@@ -22,13 +22,13 @@
 # https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/backbone.py
 # ------------------------------------------------------------------------------------------------
 
-import logging
 import warnings
 from typing import Tuple
 import torch.nn as nn
 
-from detrex.modeling.backbone import Backbone
-from detrex.utils.dist import get_rank
+from detectron2.modeling.backbone import Backbone
+from detectron2.utils.logger import setup_logger
+from detectron2.utils import comm
 
 try:
     import timm
@@ -38,12 +38,11 @@ except ImportError:
 
 def log_timm_feature_info(feature_info):
     """Print feature_info of timm backbone to help development and debug.
-
     Args:
         feature_info (list[dict] | timm.models.features.FeatureInfo | None):
             feature_info of timm backbone.
     """
-    logger = logging.getLogger(name="timm backbone")
+    logger = setup_logger(name="timm backbone")
     if feature_info is None:
         logger.warning("This backbone does not have feature_info")
     elif isinstance(feature_info, list):
@@ -60,11 +59,9 @@ def log_timm_feature_info(feature_info):
 
 class TimmBackbone(Backbone):
     """A wrapper for using backbone from timm library.
-
     Please see the document for `feature extraction with timm
     <https://rwightman.github.io/pytorch-image-models/feature_extraction/>`_
     for more details.
-
     Args:
         model_name (str): Name of timm model to instantiate.
         features_only (bool): Whether to extract feature pyramid (multi-scale
@@ -93,7 +90,7 @@ class TimmBackbone(Backbone):
         norm_layer: nn.Module = None,
     ):
         super().__init__()
-        logger = logging.getLogger(name="timm backbone")
+        logger = setup_logger(name="timm backbone")
         if timm is None:
             raise RuntimeError('Failed to import timm. Please run "pip install timm". ')
         if not isinstance(pretrained, bool):
@@ -133,7 +130,7 @@ class TimmBackbone(Backbone):
         self.out_indices = out_indices
 
         feature_info = getattr(self.timm_model, "feature_info", None)
-        if get_rank() == 0:
+        if comm.get_rank() == 0:
             log_timm_feature_info(feature_info)
 
         if feature_info is not None:
@@ -152,10 +149,8 @@ class TimmBackbone(Backbone):
 
     def forward(self, x):
         """Forward function of `TimmBackbone`.
-
         Args:
             x (torch.Tensor): the input tensor for feature extraction.
-
         Returns:
             dict[str->Tensor]: mapping from feature name (e.g., "p1") to tensor
         """
@@ -166,4 +161,3 @@ class TimmBackbone(Backbone):
             outs["p{}".format(self.out_indices[i])] = out
 
         return outs
-
