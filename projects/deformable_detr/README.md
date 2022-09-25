@@ -9,6 +9,31 @@ Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang, Jifeng Dai
   <img src="./assets/deformable_detr.png"/>
 </div><br/>
 
+## Pretrained Weights
+Here we provide the pretrained `Deformable-DETR` weights based on detrex.
+<table><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+<!-- ROW: deformable_detr_r50_with_box_refinement_50ep -->
+ <tr><td align="left"><a href="configs/deformable_detr_r50_with_box_refinement_50ep.py">Deformable-DETR + Box Refinement</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">46.17</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+</tbody></table>
+
+**Notable facts and caveats**: The training settings are different from the original repo, we use `lr=1e-5` for backbone and `1e-4` for the other modules. The original implementation sets `lr` to `2e-5` for `backbone`, `sampling_offsets` and `reference_points`, and `2e-4` for other modules.
+
+
 ## Converted Weights
 <table><tbody>
 <!-- START TABLE -->
