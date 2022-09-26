@@ -74,7 +74,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 
 - [x] [DETR (ECCV'2020)](./projects/detr/)
 - [x] [Deformable-DETR (ICLR'2021 Oral)](./projects/dab_deformable_detr/)
-- [x] [Conditional DETR (ICCV'2021)](./projects/conditional_detr/)
+- [x] [Conditional-DETR (ICCV'2021)](./projects/conditional_detr/)
 - [x] [DAB-DETR (ICLR'2022)](./projects/dab_detr/)
 - [x] [DAB-Deformable-DETR (ICLR'2022)](./projects/dab_deformable_detr/)
 - [x] [DN-DETR (CVPR'2022 Oral)](./projects/dn_detr/)
