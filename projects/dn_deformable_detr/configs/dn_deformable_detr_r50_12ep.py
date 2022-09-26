@@ -6,11 +6,9 @@ optimizer = get_config("common/optim.py").AdamW
 lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_12ep
 train = get_config("common/train.py").train
 
-model.with_indicator = False
-
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
-train.output_dir = "./output/dn_deformable_detr_r50_12ep_no_indicator"
+train.output_dir = "./output/dn_deformable_detr_r50_12ep"
 train.max_iter = 90000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1
