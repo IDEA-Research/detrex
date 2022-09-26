@@ -15,7 +15,7 @@ train.max_iter = 375000
 optimizer.weight_decay = 1e-4
 optimizer.params.lr_factor_func = (
     lambda module_name: 0.1
-    if "backbone" or "reference_points" or "sampling_offsets" in module_name
+    if "backbone" in module_name
     else 1
 )
 

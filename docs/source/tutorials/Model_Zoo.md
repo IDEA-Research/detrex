@@ -9,6 +9,26 @@
 ## COCO Object Detection Baselines
 Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pretrained weights will be released in the future version.
 
+### Deformable-DETR
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrained</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">Download</th>
+<!-- TABLE BODY -->
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/deformable_detr/configs/deformable_detr_r50_with_box_refinement_50ep.py"> Deformable-DETR + Box Refinement </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">46.32</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/deformable_detr_with_box_refinement_50ep.pth"> model </a></td>
+</tr>
+</tbody></table>
+
 ### DAB-DETR
 <table class="docutils"><tbody>
 <!-- START TABLE -->
