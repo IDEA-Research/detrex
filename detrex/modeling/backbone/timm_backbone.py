@@ -27,8 +27,8 @@ from typing import Tuple
 import torch.nn as nn
 
 from detectron2.modeling.backbone import Backbone
-from detectron2.utils.logger import setup_logger
 from detectron2.utils import comm
+from detectron2.utils.logger import setup_logger
 
 try:
     import timm
@@ -135,17 +135,21 @@ class TimmBackbone(Backbone):
 
         if feature_info is not None:
             output_feature_channels = {
-                "p{}".format(out_indices[i]): feature_info.channels()[i] for i in range(len(out_indices))
+                "p{}".format(out_indices[i]): feature_info.channels()[i]
+                for i in range(len(out_indices))
             }
             out_feature_strides = {
-                "p{}".format(out_indices[i]): feature_info.reduction()[i] for i in range(len(out_indices))
+                "p{}".format(out_indices[i]): feature_info.reduction()[i]
+                for i in range(len(out_indices))
             }
 
             self._out_features = {"p{}".format(out_indices[i]) for i in range(len(out_indices))}
             self._out_feature_channels = {
                 feat: output_feature_channels[feat] for feat in self._out_features
             }
-            self._out_feature_strides = {feat: out_feature_strides[feat] for feat in self._out_features}
+            self._out_feature_strides = {
+                feat: out_feature_strides[feat] for feat in self._out_features
+            }
 
     def forward(self, x):
         """Forward function of `TimmBackbone`.

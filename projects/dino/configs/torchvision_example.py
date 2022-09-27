@@ -14,7 +14,7 @@ from detrex.modeling.backbone import TorchvisionBackbone
 model.backbone = L(TorchvisionBackbone)(
     model_name="resnet50",
     pretrained=True,
-    return_nodes = {
+    return_nodes={
         "layer2": "res3",
         "layer3": "res4",
         "layer4": "res5",

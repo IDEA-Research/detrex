@@ -74,7 +74,12 @@ class DNCriterion(SetCriterion):
                     kwargs = {"log": False}
                 l_dict.update(
                     self.get_loss(
-                        loss, denoising_output, targets, dn_idx, num_boxes * denoising_groups, **kwargs
+                        loss,
+                        denoising_output,
+                        targets,
+                        dn_idx,
+                        num_boxes * denoising_groups,
+                        **kwargs,
                     )
                 )
 

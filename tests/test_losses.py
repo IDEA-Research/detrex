@@ -13,18 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy as np
 import unittest
 import torch
 import torch.nn.functional as F
-import numpy as np
 
-from detrex.modeling.losses import (
-    FocalLoss,
-    CrossEntropyLoss,
-    GIoULoss,
-    L1Loss,
-)
 from detrex.layers.box_ops import generalized_box_iou
+from detrex.modeling.losses import CrossEntropyLoss, FocalLoss, GIoULoss, L1Loss
 
 from utils import sigmoid_focal_loss
 
@@ -35,19 +30,21 @@ class TestLosses(unittest.TestCase):
         preds = torch.randn(2, 300, num_classes)
         targets = torch.randint(size=[2, 300], high=num_classes).long()
         num_boxes = 16
-        loss_weight=2.0
+        loss_weight = 2.0
 
         # detrex focal loss
         focal_loss_detrex = FocalLoss(
-            alpha=0.25, 
-            gamma=2.0, 
-            reduction="mean", 
+            alpha=0.25,
+            gamma=2.0,
+            reduction="mean",
             loss_weight=loss_weight,
             activated=False,
         )
         detrex_input_preds = preds.view(-1, num_classes)  # (N, num_classes)
         detrex_input_targets = targets.flatten()  # (N, )
-        detrex_output = focal_loss_detrex(detrex_input_preds, detrex_input_targets, avg_factor=num_boxes)
+        detrex_output = focal_loss_detrex(
+            detrex_input_preds, detrex_input_targets, avg_factor=num_boxes
+        )
 
         # original focal loss
         targets_classes_onehot = torch.zeros(
@@ -58,24 +55,26 @@ class TestLosses(unittest.TestCase):
         )
         targets_classes_onehot.scatter_(2, targets.unsqueeze(-1), 1)
         targets_classes_onehot = targets_classes_onehot[:, :, :-1]
-        original_output = sigmoid_focal_loss(preds, targets_classes_onehot, num_boxes=num_boxes) * preds.shape[1]
+        original_output = (
+            sigmoid_focal_loss(preds, targets_classes_onehot, num_boxes=num_boxes) * preds.shape[1]
+        )
         original_output *= loss_weight
 
         self.assertTrue(
             np.allclose(
-                detrex_output.cpu().numpy(), 
+                detrex_output.cpu().numpy(),
                 original_output.cpu().numpy(),
                 1e-7,
                 1e-7,
             )
         )
-    
+
     def test_cross_entropy(self):
         num_classes = 81
         empty_weight = torch.ones(num_classes)
         empty_weight[-1] = 0.1
         loss_weight = 2.0
-        
+
         preds = torch.randn(3, num_classes)
         targets = torch.empty(3, dtype=torch.long).random_(num_classes)
 
@@ -86,10 +85,10 @@ class TestLosses(unittest.TestCase):
 
         detrex_output = ce_detrex(preds, targets, class_weight=empty_weight)
         original_output = F.cross_entropy(preds, targets, empty_weight) * loss_weight
-        
+
         self.assertTrue(
             np.allclose(
-                detrex_output.cpu().numpy(), 
+                detrex_output.cpu().numpy(),
                 original_output.cpu().numpy(),
                 1e-7,
                 1e-7,
@@ -116,7 +115,7 @@ class TestLosses(unittest.TestCase):
 
         self.assertTrue(
             np.allclose(
-                detrex_output.cpu().numpy(), 
+                detrex_output.cpu().numpy(),
                 original_output.cpu().numpy(),
                 1e-7,
                 1e-7,
@@ -131,20 +130,14 @@ class TestLosses(unittest.TestCase):
 
         giou_loss_detrex = GIoULoss(eps=1e-6, reduction="mean", loss_weight=loss_weight)
 
-        detrex_output = giou_loss_detrex(
-            preds,
-            targets,
-            avg_factor=avg_factor
-        )
-        original_output = 1 - torch.diag(
-            generalized_box_iou(preds, targets)
-        )
+        detrex_output = giou_loss_detrex(preds, targets, avg_factor=avg_factor)
+        original_output = 1 - torch.diag(generalized_box_iou(preds, targets))
         original_output = original_output.sum() / avg_factor
         original_output *= loss_weight
 
         self.assertTrue(
             np.allclose(
-                detrex_output.cpu().numpy(), 
+                detrex_output.cpu().numpy(),
                 original_output.cpu().numpy(),
                 1e-7,
                 1e-7,

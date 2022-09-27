@@ -31,7 +31,7 @@ from detrex.utils import get_world_size, is_dist_avail_and_initialized
 def sigmoid_focal_loss(inputs, targets, num_boxes, alpha: float = 0.25, gamma: float = 2):
     """
     Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
-    
+
     Args:
         inputs (torch.Tensor): A float tensor of arbitrary shape.
             The predictions for each example.
@@ -43,7 +43,7 @@ def sigmoid_focal_loss(inputs, targets, num_boxes, alpha: float = 0.25, gamma: f
             positive vs negative examples. Default: 0.25.
         gamma (float): Exponent of the modulating factor (1 - p_t) to
             balance easy vs hard examples. Default: 2.
-    
+
     Returns:
         torch.Tensor: The computed sigmoid focal loss.
     """
@@ -104,7 +104,6 @@ class SetCriterion(nn.Module):
             empty_weight[-1] = eos_coef
             self.register_buffer("empty_weight", empty_weight)
 
-
     def loss_labels(self, outputs, targets, indices, num_boxes):
         """Classification loss (Binary focal loss)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
@@ -140,7 +139,11 @@ class SetCriterion(nn.Module):
             target_classes_onehot = target_classes_onehot[:, :, :-1]
             loss_class = (
                 sigmoid_focal_loss(
-                    src_logits, target_classes_onehot, num_boxes=num_boxes, alpha=self.alpha, gamma=self.gamma
+                    src_logits,
+                    target_classes_onehot,
+                    num_boxes=num_boxes,
+                    alpha=self.alpha,
+                    gamma=self.gamma,
                 )
                 * src_logits.shape[1]
             )

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import torch
 import torch.nn as nn
 
@@ -147,7 +146,7 @@ class DINOTransformerDecoder(TransformerLayerSequence):
 
         self.bbox_embed = None
         self.class_embed = None
-        self.look_forward_twice=look_forward_twice
+        self.look_forward_twice = look_forward_twice
         self.norm = nn.LayerNorm(embed_dim)
 
     def forward(
@@ -224,14 +223,14 @@ class DINOTransformerDecoder(TransformerLayerSequence):
 
 
 class DINOTransformer(nn.Module):
-    """ Transformer module for DINO
+    """Transformer module for DINO
 
     Args:
         encoder (nn.Module): encoder module.
         decoder (nn.Module): decoder module.
         as_two_stage (bool): whether to use two-stage transformer. Default False.
         num_feature_levels (int): number of feature levels. Default 4.
-        two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 900. 
+        two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 900.
     """
 
     def __init__(
@@ -251,7 +250,7 @@ class DINOTransformer(nn.Module):
         self.embed_dim = self.encoder.embed_dim
 
         self.level_embeds = nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dim))
-        self.learnt_init_query=learnt_init_query
+        self.learnt_init_query = learnt_init_query
         if self.learnt_init_query:
             self.tgt_embed = nn.Embedding(self.two_stage_num_proposals, self.embed_dim)
         self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
@@ -405,22 +404,22 @@ class DINOTransformer(nn.Module):
 
         output_memory, output_proposals = self.gen_encoder_output_proposals(
             memory, mask_flatten, spatial_shapes
-        ) 
+        )
         # output_memory: bs, num_tokens, c
         # output_proposals: bs, num_tokens, 4. unsigmoided.
 
         enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
         enc_outputs_coord_unact = (
             self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
-        ) # unsigmoided.
+        )  # unsigmoided.
 
         topk = self.two_stage_num_proposals
         topk_proposals = torch.topk(enc_outputs_class.max(-1)[0], topk, dim=1)[1]
-        
+
         # extract region proposal boxes
         topk_coords_unact = torch.gather(
             enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
-        ) # unsigmoided.
+        )  # unsigmoided.
         reference_points = topk_coords_unact.detach().sigmoid()
         if query_embed[1] is not None:
             reference_points = torch.cat([query_embed[1].sigmoid(), reference_points], 1)

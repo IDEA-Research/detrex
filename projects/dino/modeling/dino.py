@@ -28,8 +28,8 @@ from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 
 
-class DINO (nn.Module):
-    """Implement DAB-Deformable-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
+class DINO(nn.Module):
+    """Implement DAB-Deformable-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR
     <https://arxiv.org/abs/2203.03605>`_.
 
     Code is modified from the `official github repo
@@ -44,12 +44,12 @@ class DINO (nn.Module):
         num_classes (int): Number of total categories.
         num_queries (int): Number of proposal dynamic anchor boxes in Transformer
         criterion (nn.Module): Criterion for calculating the total losses.
-        pixel_mean (List[float]): Pixel mean value for image normalization. 
+        pixel_mean (List[float]): Pixel mean value for image normalization.
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
         aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
-        select_box_nums_for_evaluation (int): the number of topk candidates 
+        select_box_nums_for_evaluation (int): the number of topk candidates
             slected at postprocess for evaluation. Default: 300.
         device (str): Training device. Default: "cuda".
     """
@@ -98,10 +98,10 @@ class DINO (nn.Module):
         self.criterion = criterion
 
         # denoising
-        self.label_enc=nn.Embedding(num_classes,embed_dim)
-        self.dn_number=dn_number
-        self.label_noise_ratio=label_noise_ratio
-        self.box_noise_scale=box_noise_scale
+        self.label_enc = nn.Embedding(num_classes, embed_dim)
+        self.dn_number = dn_number
+        self.label_noise_ratio = label_noise_ratio
+        self.box_noise_scale = box_noise_scale
 
         # normalizer for input raw images
         self.device = device
@@ -148,14 +148,14 @@ class DINO (nn.Module):
                 - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
                     Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
                     for the basic usage of Instances.
-        
+
         Returns:
             dict: Returns a dict with the following elements:
                 - dict["pred_logits"]: the classification logits for all queries (anchor boxes in DAB-DETR).
                             with shape ``[batch_size, num_queries, num_classes]``
                 - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
-                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 
-                    each individual image (disregarding possible padding). See PostProcess for information 
+                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of
+                    each individual image (disregarding possible padding). See PostProcess for information
                     on how to retrieve the unnormalized bounding box.
                 - dict["aux_outputs"]: Optional, only returned when auxilary losses are activated. It is a list of
                             dictionnaries containing the two above keys for each decoder layer.
@@ -191,10 +191,16 @@ class DINO (nn.Module):
         if self.training:
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
-            input_query_label, input_query_bbox, attn_mask, dn_meta=\
-                self.prepare_for_cdn(targets, dn_number=self.dn_number, label_noise_ratio=self.label_noise_ratio,
-                                 box_noise_scale=self.box_noise_scale, num_queries=self.num_queries,
-                                 num_classes=self.num_classes, hidden_dim=self.embed_dim, label_enc=self.label_enc)
+            input_query_label, input_query_bbox, attn_mask, dn_meta = self.prepare_for_cdn(
+                targets,
+                dn_number=self.dn_number,
+                label_noise_ratio=self.label_noise_ratio,
+                box_noise_scale=self.box_noise_scale,
+                num_queries=self.num_queries,
+                num_classes=self.num_classes,
+                hidden_dim=self.embed_dim,
+                label_enc=self.label_enc,
+            )
         else:
             input_query_label, input_query_bbox, attn_mask, dn_meta = None, None, None, None
         query_embeds = (input_query_label, input_query_bbox)
@@ -205,9 +211,13 @@ class DINO (nn.Module):
             init_reference,
             inter_references,
             enc_state,
-            enc_reference, # [0..1]
+            enc_reference,  # [0..1]
         ) = self.transformer(
-            multi_level_feats, multi_level_masks, multi_level_position_embeddings, query_embeds,attn_masks=[attn_mask,None]
+            multi_level_feats,
+            multi_level_masks,
+            multi_level_position_embeddings,
+            query_embeds,
+            attn_masks=[attn_mask, None],
         )
         # hack implementation for distributed training
         inter_states[0] += self.label_enc.weight[0, 0] * 0.0
@@ -232,14 +242,15 @@ class DINO (nn.Module):
             outputs_classes.append(outputs_class)
             outputs_coords.append(outputs_coord)
         outputs_class = torch.stack(outputs_classes)
-            # tensor shape: [num_decoder_layers, bs, num_query, num_classes]
+        # tensor shape: [num_decoder_layers, bs, num_query, num_classes]
         outputs_coord = torch.stack(outputs_coords)
-            # tensor shape: [num_decoder_layers, bs, num_query, 4]
+        # tensor shape: [num_decoder_layers, bs, num_query, 4]
 
         # denoising postprocessing
         if dn_meta is not None:
-            outputs_class, outputs_coord = \
-                self.dn_post_process(outputs_class, outputs_coord,dn_meta)
+            outputs_class, outputs_coord = self.dn_post_process(
+                outputs_class, outputs_coord, dn_meta
+            )
 
         # prepare for loss computation
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
@@ -249,8 +260,7 @@ class DINO (nn.Module):
         # prepare two stage output
         interm_coord = enc_reference
         interm_class = self.transformer.decoder.class_embed[-1](enc_state)
-        output['enc_outputs'] = {'pred_logits': interm_class, 'pred_boxes': interm_coord}
-
+        output["enc_outputs"] = {"pred_logits": interm_class, "pred_boxes": interm_coord}
 
         if self.training:
             loss_dict = self.criterion(output, targets, dn_meta)
@@ -283,36 +293,48 @@ class DINO (nn.Module):
             for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
         ]
 
-    def prepare_for_cdn(self, targets, dn_number, label_noise_ratio, box_noise_scale, num_queries, num_classes, hidden_dim, label_enc):
+    def prepare_for_cdn(
+        self,
+        targets,
+        dn_number,
+        label_noise_ratio,
+        box_noise_scale,
+        num_queries,
+        num_classes,
+        hidden_dim,
+        label_enc,
+    ):
         """
-            A major difference of DINO from DN-DETR is that the author process pattern embedding pattern embedding in its detector
-            forward function and use learnable tgt embedding, so we change this function a little bit.
-            :param dn_args: targets, dn_number, label_noise_ratio, box_noise_scale
-            :param training: if it is training or inference
-            :param num_queries: number of queires
-            :param num_classes: number of classes
-            :param hidden_dim: transformer hidden dim
-            :param label_enc: encode labels in dn
-            :return:
-            """
-        if dn_number<=0:
+        A major difference of DINO from DN-DETR is that the author process pattern embedding pattern embedding in its detector
+        forward function and use learnable tgt embedding, so we change this function a little bit.
+        :param dn_args: targets, dn_number, label_noise_ratio, box_noise_scale
+        :param training: if it is training or inference
+        :param num_queries: number of queires
+        :param num_classes: number of classes
+        :param hidden_dim: transformer hidden dim
+        :param label_enc: encode labels in dn
+        :return:
+        """
+        if dn_number <= 0:
             return None, None, None, None
             # positive and negative dn queries
         dn_number = dn_number * 2
-        known = [(torch.ones_like(t['labels'])).cuda() for t in targets]
+        known = [(torch.ones_like(t["labels"])).cuda() for t in targets]
         batch_size = len(known)
         known_num = [sum(k) for k in known]
         if int(max(known_num)) == 0:
-            return None,None,None,None
+            return None, None, None, None
 
         dn_number = dn_number // (int(max(known_num) * 2))
 
         if dn_number == 0:
             dn_number = 1
         unmask_bbox = unmask_label = torch.cat(known)
-        labels = torch.cat([t['labels'] for t in targets])
-        boxes = torch.cat([t['boxes'] for t in targets])
-        batch_idx = torch.cat([torch.full_like(t['labels'].long(), i) for i, t in enumerate(targets)])
+        labels = torch.cat([t["labels"] for t in targets])
+        boxes = torch.cat([t["boxes"] for t in targets])
+        batch_idx = torch.cat(
+            [torch.full_like(t["labels"].long(), i) for i, t in enumerate(targets)]
+        )
 
         known_indice = torch.nonzero(unmask_label + unmask_bbox)
         known_indice = known_indice.view(-1)
@@ -326,13 +348,19 @@ class DINO (nn.Module):
 
         if label_noise_ratio > 0:
             p = torch.rand_like(known_labels_expaned.float())
-            chosen_indice = torch.nonzero(p < (label_noise_ratio * 0.5)).view(-1)  # half of bbox prob
-            new_label = torch.randint_like(chosen_indice, 0, num_classes)  # randomly put a new one here
+            chosen_indice = torch.nonzero(p < (label_noise_ratio * 0.5)).view(
+                -1
+            )  # half of bbox prob
+            new_label = torch.randint_like(
+                chosen_indice, 0, num_classes
+            )  # randomly put a new one here
             known_labels_expaned.scatter_(0, chosen_indice, new_label)
         single_padding = int(max(known_num))
 
         pad_size = int(single_padding * 2 * dn_number)
-        positive_idx = torch.tensor(range(len(boxes))).long().cuda().unsqueeze(0).repeat(dn_number, 1)
+        positive_idx = (
+            torch.tensor(range(len(boxes))).long().cuda().unsqueeze(0).repeat(dn_number, 1)
+        )
         positive_idx += (torch.tensor(range(dn_number)) * len(boxes) * 2).long().cuda().unsqueeze(1)
         positive_idx = positive_idx.flatten()
         negative_idx = positive_idx + len(boxes)
@@ -345,17 +373,18 @@ class DINO (nn.Module):
             diff[:, :2] = known_bboxs[:, 2:] / 2
             diff[:, 2:] = known_bboxs[:, 2:] / 2
 
-            rand_sign = torch.randint_like(known_bboxs, low=0, high=2, dtype=torch.float32) * 2.0 - 1.0
+            rand_sign = (
+                torch.randint_like(known_bboxs, low=0, high=2, dtype=torch.float32) * 2.0 - 1.0
+            )
             rand_part = torch.rand_like(known_bboxs)
             rand_part[negative_idx] += 1.0
             rand_part *= rand_sign
-            known_bbox_ = known_bbox_ + torch.mul(rand_part,
-                                                  diff).cuda() * box_noise_scale
+            known_bbox_ = known_bbox_ + torch.mul(rand_part, diff).cuda() * box_noise_scale
             known_bbox_ = known_bbox_.clamp(min=0.0, max=1.0)
             known_bbox_expand[:, :2] = (known_bbox_[:, :2] + known_bbox_[:, 2:]) / 2
             known_bbox_expand[:, 2:] = known_bbox_[:, 2:] - known_bbox_[:, :2]
 
-        m = known_labels_expaned.long().to('cuda')
+        m = known_labels_expaned.long().to("cuda")
         input_label_embed = label_enc(m)
         input_bbox_embed = inverse_sigmoid(known_bbox_expand)
 
@@ -365,48 +394,61 @@ class DINO (nn.Module):
         input_query_label = padding_label.repeat(batch_size, 1, 1)
         input_query_bbox = padding_bbox.repeat(batch_size, 1, 1)
 
-        map_known_indice = torch.tensor([]).to('cuda')
+        map_known_indice = torch.tensor([]).to("cuda")
         if len(known_num):
-            map_known_indice = torch.cat([torch.tensor(range(num)) for num in known_num])  # [1,2, 1,2,3]
-            map_known_indice = torch.cat([map_known_indice + single_padding * i for i in range(2 * dn_number)]).long()
+            map_known_indice = torch.cat(
+                [torch.tensor(range(num)) for num in known_num]
+            )  # [1,2, 1,2,3]
+            map_known_indice = torch.cat(
+                [map_known_indice + single_padding * i for i in range(2 * dn_number)]
+            ).long()
         if len(known_bid):
             input_query_label[(known_bid.long(), map_known_indice)] = input_label_embed
             input_query_bbox[(known_bid.long(), map_known_indice)] = input_bbox_embed
 
         tgt_size = pad_size + num_queries
-        attn_mask = torch.ones(tgt_size, tgt_size).to('cuda') < 0
+        attn_mask = torch.ones(tgt_size, tgt_size).to("cuda") < 0
         # match query cannot see the reconstruct
         attn_mask[pad_size:, :pad_size] = True
         # reconstruct cannot see each other
         for i in range(dn_number):
             if i == 0:
-                attn_mask[single_padding * 2 * i:single_padding * 2 * (i + 1), single_padding * 2 * (i + 1):pad_size] = True
+                attn_mask[
+                    single_padding * 2 * i : single_padding * 2 * (i + 1),
+                    single_padding * 2 * (i + 1) : pad_size,
+                ] = True
             if i == dn_number - 1:
-                attn_mask[single_padding * 2 * i:single_padding * 2 * (i + 1), :single_padding * i * 2] = True
+                attn_mask[
+                    single_padding * 2 * i : single_padding * 2 * (i + 1), : single_padding * i * 2
+                ] = True
             else:
-                attn_mask[single_padding * 2 * i:single_padding * 2 * (i + 1), single_padding * 2 * (i + 1):pad_size] = True
-                attn_mask[single_padding * 2 * i:single_padding * 2 * (i + 1), :single_padding * 2 * i] = True
+                attn_mask[
+                    single_padding * 2 * i : single_padding * 2 * (i + 1),
+                    single_padding * 2 * (i + 1) : pad_size,
+                ] = True
+                attn_mask[
+                    single_padding * 2 * i : single_padding * 2 * (i + 1), : single_padding * 2 * i
+                ] = True
 
         dn_meta = {
-            'single_padding': single_padding*2,
-            'dn_num': dn_number,
+            "single_padding": single_padding * 2,
+            "dn_num": dn_number,
         }
-
 
         return input_query_label, input_query_bbox, attn_mask, dn_meta
 
     def dn_post_process(self, outputs_class, outputs_coord, dn_metas):
-        if dn_metas and dn_metas['single_padding'] > 0:
-            padding_size=dn_metas['single_padding']*dn_metas['dn_num']
+        if dn_metas and dn_metas["single_padding"] > 0:
+            padding_size = dn_metas["single_padding"] * dn_metas["dn_num"]
             output_known_class = outputs_class[:, :, :padding_size, :]
             output_known_coord = outputs_coord[:, :, :padding_size, :]
             outputs_class = outputs_class[:, :, padding_size:, :]
             outputs_coord = outputs_coord[:, :, padding_size:, :]
 
-            out = {'pred_logits': output_known_class[-1], 'pred_boxes': output_known_coord[-1]}
+            out = {"pred_logits": output_known_class[-1], "pred_boxes": output_known_coord[-1]}
             if self.aux_loss:
-                out['aux_outputs'] = self._set_aux_loss(output_known_class, output_known_coord)
-            dn_metas['output_known_lbs_bboxes'] = out
+                out["aux_outputs"] = self._set_aux_loss(output_known_class, output_known_coord)
+            dn_metas["output_known_lbs_bboxes"] = out
         return outputs_class, outputs_coord
 
     def preprocess_image(self, batched_inputs):
@@ -434,9 +476,7 @@ class DINO (nn.Module):
         # box_pred.shape: 1, 300, 4
         prob = box_cls.sigmoid()
         topk_values, topk_indexes = torch.topk(
-            prob.view(box_cls.shape[0], -1), 
-            self.select_box_nums_for_evaluation, 
-            dim=1
+            prob.view(box_cls.shape[0], -1), self.select_box_nums_for_evaluation, dim=1
         )
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")

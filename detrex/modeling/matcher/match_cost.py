@@ -27,11 +27,7 @@ from detrex.layers import generalized_box_iou
 
 class FocalLossCost(nn.Module):
     def __init__(
-        self,  
-        alpha: float = 0.25, 
-        gamma: float = 2.0, 
-        weight: float = 1.0, 
-        eps: float = 1e-8
+        self, alpha: float = 0.25, gamma: float = 2.0, weight: float = 1.0, eps: float = 1e-8
     ):
         super().__init__()
         self.alpha = alpha
@@ -46,7 +42,7 @@ class FocalLossCost(nn.Module):
             gt_labels (nn.Tensor): Ground truth labels.
 
         Return:
-            nn.Tensor: Focal loss cost matrix with weight in shape 
+            nn.Tensor: Focal loss cost matrix with weight in shape
                 ``(num_queries, num_gt)``
         """
         alpha = self.alpha
@@ -74,7 +70,7 @@ class CrossEntropyCost(nn.Module):
             gt_labels (nn.Tensor): Ground truth labels.
 
         Return:
-            nn.Tensor: CrossEntropy loss cost matrix with weight in shape 
+            nn.Tensor: CrossEntropy loss cost matrix with weight in shape
                 ``(num_queries, num_gt)``
         """
         # Compute the classification cost. Contrary to the loss, we don't use the NLL,
@@ -92,7 +88,7 @@ class GIoUCost(nn.Module):
     ):
         super().__init__()
         self.weight = weight
-    
+
     def forward(self, pred_bboxes, gt_bboxes):
         """
         Args:
@@ -100,11 +96,11 @@ class GIoUCost(nn.Module):
                 (x1, y1, x2, y2) with shape (num_queries, 4).
             gt_bboxes (nn.Tensor): Ground truth boxes with unnormalized coordinates
                 (x1, y1, x2, y2) with shape (num_gt, 4).
-        
+
         Returns:
             torch.Tensor: GIoU cost with weight
         """
-        cost_giou = - generalized_box_iou(pred_bboxes, gt_bboxes)
+        cost_giou = -generalized_box_iou(pred_bboxes, gt_bboxes)
         return cost_giou * self.weight
 
 
@@ -115,7 +111,7 @@ class L1Cost(nn.Module):
     ):
         super().__init__()
         self.weight = weight
-    
+
     def forward(self, pred_bboxes, gt_bboxes):
         """
         Args:

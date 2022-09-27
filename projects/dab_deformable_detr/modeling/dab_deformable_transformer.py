@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
 import torch
 import torch.nn as nn
 
@@ -222,7 +221,7 @@ class DabDeformableDetrTransformerDecoder(TransformerLayerSequence):
 
 
 class DabDeformableDetrTransformer(nn.Module):
-    """ Transformer module for DAB-Deformable-DETR
+    """Transformer module for DAB-Deformable-DETR
 
     Args:
         encoder (nn.Module): encoder module.
@@ -231,6 +230,7 @@ class DabDeformableDetrTransformer(nn.Module):
         num_feature_levels (int): number of feature levels. Default 4.
         two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 100. Only used when as_two_stage is True.
     """
+
     def __init__(
         self,
         encoder=None,
@@ -404,7 +404,7 @@ class DabDeformableDetrTransformer(nn.Module):
             assert query_embed is None, "query_embed should be None in two-stage"
             output_memory, output_proposals = self.gen_encoder_output_proposals(
                 memory, mask_flatten, spatial_shapes
-            ) 
+            )
             # output_memory: bs, num_tokens, c
             # output_proposals: bs, num_tokens, 4. unsigmoided.
             # output_proposals: bs, num_tokens, 4
@@ -412,15 +412,15 @@ class DabDeformableDetrTransformer(nn.Module):
             enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
             enc_outputs_coord_unact = (
                 self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
-            ) # unsigmoided.
+            )  # unsigmoided.
 
             topk = self.two_stage_num_proposals
             topk_proposals = torch.topk(enc_outputs_class.max(-1)[0], topk, dim=1)[1]
-            
+
             # extract region proposal boxes
             topk_coords_unact = torch.gather(
                 enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
-            ) # unsigmoided.
+            )  # unsigmoided.
             reference_points = topk_coords_unact.detach().sigmoid()
             init_reference_out = reference_points
 

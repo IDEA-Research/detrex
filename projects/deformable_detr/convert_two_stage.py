@@ -134,10 +134,10 @@ def main():
             v = v[:80]
             model_converted[k] = v
             print(
-                    "Head conversion: changing shape from {} to {}".format(
-                        shape_old, model_converted[k].shape
-                    )
+                "Head conversion: changing shape from {} to {}".format(
+                    shape_old, model_converted[k].shape
                 )
+            )
             continue
 
         elif "class_embed" in old_k:

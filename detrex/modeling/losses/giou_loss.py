@@ -30,7 +30,7 @@ from .utils import weight_reduce_loss
 def giou_loss(
     preds: torch.Tensor,
     targets: torch.Tensor,
-    weight = None,
+    weight=None,
     eps: float = 1e-6,
     reduction: str = "mean",
     avg_factor: int = None,
@@ -81,7 +81,7 @@ def giou_loss(
 
     if weight is not None:
         assert weight.ndim == loss.ndim
-    
+
     loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
     return loss
 
@@ -106,11 +106,6 @@ class GIoULoss(nn.Module):
         avg_factor=None,
     ):
         loss_giou = self.loss_weight * giou_loss(
-            preds,
-            targets,
-            weight,
-            eps=self.eps,
-            reduction=self.reduction,
-            avg_factor=avg_factor
+            preds, targets, weight, eps=self.eps, reduction=self.reduction, avg_factor=avg_factor
         )
         return loss_giou

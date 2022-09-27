@@ -28,7 +28,7 @@ from .utils import weight_reduce_loss
 
 
 def dice_loss(
-    preds, 
+    preds,
     targets,
     weight=None,
     eps: float = 1e-4,
@@ -48,7 +48,7 @@ def dice_loss(
         weight (torch.Tensor, optional): The weight of loss for each
             prediction, has a shape (n,). Defaults to None.
         eps (float): Avoid dividing by zero. Default: 1e-4.
-        avg_factor (int, optional): Average factor that is used to average 
+        avg_factor (int, optional): Average factor that is used to average
             the loss. Default: None.
 
     Return:
@@ -59,7 +59,7 @@ def dice_loss(
     numerator = 2 * torch.sum(preds * targets, 1) + eps
     denominator = torch.sum(preds, 1) + torch.sum(targets, 1) + eps
     loss = 1 - (numerator + 1) / (denominator + 1)
-    
+
     if weight is not None:
         assert weight.ndim == loss.ndim
         assert len(weight) == len(preds)
@@ -70,27 +70,27 @@ def dice_loss(
 class DiceLoss(nn.Module):
     def __init__(
         self,
-        use_sigmoid = True,
-        reduction = "mean",
-        loss_weight = 1.0,
-        eps = 1e-3,
+        use_sigmoid=True,
+        reduction="mean",
+        loss_weight=1.0,
+        eps=1e-3,
     ):
         super(DiceLoss, self).__init__()
         self.use_sigmoid = use_sigmoid
         self.reduction = reduction
         self.loss_weight = loss_weight
         self.eps = eps
-    
+
     def forward(
         self,
         preds,
         targets,
         weight=None,
-        avg_factor = None,
+        avg_factor=None,
     ):
         if self.use_sigmoid:
             preds = preds.sigmoid()
-        
+
         loss = self.loss_weight * dice_loss(
             preds,
             targets,

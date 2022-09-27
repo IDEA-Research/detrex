@@ -16,34 +16,24 @@
 import torch
 
 from detrex.modeling.criterion import SetCriterion
-from detrex.utils import (
-    get_world_size,
-    is_dist_avail_and_initialized,
-)
+from detrex.utils import get_world_size, is_dist_avail_and_initialized
 
 
 class TwoStageCriterion(SetCriterion):
     def __init__(
-        self, 
-        num_classes, 
-        matcher, 
-        weight_dict, 
-        losses=["class", "boxes"], 
-        eos_coef=None, 
-        loss_class_type="focal_loss", 
-        alpha: float = 0.25, 
-        gamma: float = 2, 
-        two_stage_binary_cls=False
+        self,
+        num_classes,
+        matcher,
+        weight_dict,
+        losses=["class", "boxes"],
+        eos_coef=None,
+        loss_class_type="focal_loss",
+        alpha: float = 0.25,
+        gamma: float = 2,
+        two_stage_binary_cls=False,
     ):
         super().__init__(
-            num_classes, 
-            matcher, 
-            weight_dict, 
-            losses, 
-            eos_coef, 
-            loss_class_type, 
-            alpha, 
-            gamma
+            num_classes, matcher, weight_dict, losses, eos_coef, loss_class_type, alpha, gamma
         )
         self.two_stage_binary_cls = two_stage_binary_cls
 

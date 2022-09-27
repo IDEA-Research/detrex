@@ -39,9 +39,9 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class ConditionalDETR(nn.Module):
-    """Implement Conditional-DETR in `Conditional DETR for Fast Training Convergence 
+    """Implement Conditional-DETR in `Conditional DETR for Fast Training Convergence
     <https://arxiv.org/abs/2108.06152>`_
-    
+
     Args:
         backbone (nn.Module): Backbone module for feature extraction.
         in_features (List[str]): Selected backbone output features for transformer module.
@@ -53,7 +53,7 @@ class ConditionalDETR(nn.Module):
         num_queries (int): Number of proposal dynamic anchor boxes in Transformer
         criterion (nn.Module): Criterion for calculating the total losses.
         aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
-        pixel_mean (List[float]): Pixel mean value for image normalization. 
+        pixel_mean (List[float]): Pixel mean value for image normalization.
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
@@ -61,6 +61,7 @@ class ConditionalDETR(nn.Module):
             Default: 300.
         device (str): Training device. Default: "cuda".
     """
+
     def __init__(
         self,
         backbone: nn.Module,
@@ -84,22 +85,17 @@ class ConditionalDETR(nn.Module):
         self.in_features = in_features
         self.position_embedding = position_embedding
 
-        # project the backbone output feature 
+        # project the backbone output feature
         # into the required dim for transformer block
         self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
-        
+
         # define leanable object query embed and transformer module
         self.transformer = transformer
         self.query_embed = nn.Embedding(num_queries, embed_dim)
 
         # define classification head and box head
         self.class_embed = nn.Linear(embed_dim, num_classes)
-        self.bbox_embed = MLP(
-            input_dim=embed_dim, 
-            hidden_dim=embed_dim, 
-            output_dim=4, 
-            num_layers=3
-        )
+        self.bbox_embed = MLP(input_dim=embed_dim, hidden_dim=embed_dim, output_dim=4, num_layers=3)
         self.num_classes = num_classes
 
         # where to calculate auxiliary loss in criterion
@@ -136,14 +132,14 @@ class ConditionalDETR(nn.Module):
                 - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
                     Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
                     for the basic usage of Instances.
-        
+
         Returns:
             dict: Returns a dict with the following elements:
                 - dict["pred_logits"]: the classification logits for all queries.
                             with shape ``[batch_size, num_queries, num_classes]``
                 - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
-                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 
-                    each individual image (disregarding possible padding). See PostProcess for information 
+                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of
+                    each individual image (disregarding possible padding). See PostProcess for information
                     on how to retrieve the unnormalized bounding box.
                 - dict["aux_outputs"]: Optional, only returned when auxilary losses are activated. It is a list of
                             dictionnaries containing the two above keys for each decoder layer.
@@ -168,7 +164,9 @@ class ConditionalDETR(nn.Module):
 
         # hidden_states: transformer output hidden feature
         # reference: reference points in format (x, y)  with normalized coordinates in range of [0, 1].
-        hidden_states, reference = self.transformer(features, img_masks, self.query_embed.weight, pos_embed)
+        hidden_states, reference = self.transformer(
+            features, img_masks, self.query_embed.weight, pos_embed
+        )
 
         reference_before_sigmoid = inverse_sigmoid(reference)
         outputs_coords = []
@@ -219,7 +217,7 @@ class ConditionalDETR(nn.Module):
 
     def inference(self, box_cls, box_pred, image_sizes):
         """Inference function for DAB-DETR
-        
+
         Args:
             box_cls (torch.Tensor): tensor of shape ``(batch_size, num_queries, K)``.
                 The tensor predicts the classification probability for each query.
@@ -236,8 +234,8 @@ class ConditionalDETR(nn.Module):
 
         prob = box_cls.sigmoid()
         topk_values, topk_indexes = torch.topk(
-            prob.view(box_cls.shape[0], -1), 
-            self.select_box_nums_for_evaluation, 
+            prob.view(box_cls.shape[0], -1),
+            self.select_box_nums_for_evaluation,
             dim=1,
         )
         scores = topk_values

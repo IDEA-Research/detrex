@@ -18,14 +18,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from detrex.layers.box_ops import box_cxcywh_to_xyxy
-from detrex.modeling.matcher import FocalLossCost, L1Cost, GIoUCost, ModifedMatcher
-from detrex.modeling.losses import FocalLoss, L1Loss, GIoULoss
+from detrex.modeling.losses import FocalLoss, GIoULoss, L1Loss
+from detrex.modeling.matcher import FocalLossCost, GIoUCost, L1Cost, ModifedMatcher
 from detrex.utils import get_world_size, is_dist_avail_and_initialized
 
 
 class BaseCriterion(nn.Module):
     """Base criterion for calculating losses for DETR-like models.
-    
+
     The process happens in two steps:
         1) we compute hungarian assignment between ground truth boxes and the outputs of the model
         2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
@@ -34,7 +34,7 @@ class BaseCriterion(nn.Module):
     def __init__(
         self,
         num_classes: int,
-        matcher = ModifedMatcher(
+        matcher=ModifedMatcher(
             cost_class=FocalLossCost(
                 alpha=0.25,
                 gamma=2.0,
@@ -74,7 +74,7 @@ class BaseCriterion(nn.Module):
         """
         Args:
             preds (torch.Tensor): The predicted logits with shape ``(bs, num_queries, num_classes)``.
-            targets (dict): 
+            targets (dict):
             indices (list):
             num_boxes (int):
         """
@@ -98,7 +98,7 @@ class BaseCriterion(nn.Module):
         idx = self._get_src_permutation_idx(indices)
         pred_boxes = pred_boxes[idx]
         target_boxes = torch.cat([t["boxes"][i] for t, (_, i) in zip(targets, indices)], dim=0)
-        
+
         # Compute regression loss
         losses = self.loss_bbox(pred_boxes, target_boxes, avg_factor=num_boxes)
         return losses
@@ -118,7 +118,7 @@ class BaseCriterion(nn.Module):
 
     def forward(self, outputs, targets):
         output_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
-        
+
         # Collect preds and targets excluding aux_outputs for matcher
         pred_logits = output_without_aux["pred_logits"]
         pred_boxes = output_without_aux["pred_boxes"]
@@ -142,21 +142,28 @@ class BaseCriterion(nn.Module):
             torch.distributed.all_reduce(num_boxes)
         num_boxes = torch.clamp(num_boxes / get_world_size(), min=1).item()
 
-
         # Compute all losses for DETR-like models
         losses = {}
         losses["loss_class"] = self.calculate_class_loss(pred_logits, targets, indices, num_boxes)
         losses["loss_bbox"] = self.calculate_bbox_loss(pred_boxes, targets, indices, num_boxes)
         losses["loss_giou"] = self.calculate_giou_loss(pred_boxes, targets, indices, num_boxes)
-        
+
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if "aux_outputs" in outputs:
             for i, aux_output in enumerate(outputs["aux_outputs"]):
                 aux_pred_logits = aux_output["pred_logits"]
                 aux_pred_boxes = aux_output["pred_boxes"]
-                indices = self.matcher(aux_pred_logits, aux_pred_boxes, target_labels_list, target_boxes_list)
-                losses["loss_class" + f"_{i}"] = self.calculate_class_loss(aux_pred_logits, targets, indices, num_boxes)
-                losses["loss_bbox" + f"_{i}"] = self.calculate_bbox_loss(aux_pred_boxes, targets, indices, num_boxes)
-                losses["loss_giou" + f"_{i}"] = self.calculate_giou_loss(aux_pred_boxes, targets, indices, num_boxes)
-                
+                indices = self.matcher(
+                    aux_pred_logits, aux_pred_boxes, target_labels_list, target_boxes_list
+                )
+                losses["loss_class" + f"_{i}"] = self.calculate_class_loss(
+                    aux_pred_logits, targets, indices, num_boxes
+                )
+                losses["loss_bbox" + f"_{i}"] = self.calculate_bbox_loss(
+                    aux_pred_boxes, targets, indices, num_boxes
+                )
+                losses["loss_giou" + f"_{i}"] = self.calculate_giou_loss(
+                    aux_pred_boxes, targets, indices, num_boxes
+                )
+
         return losses

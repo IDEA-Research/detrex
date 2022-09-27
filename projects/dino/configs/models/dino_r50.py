@@ -14,7 +14,7 @@ from projects.dino.modeling import (
     DINOTransformerEncoder,
     DINOTransformerDecoder,
     DINOTransformer,
-    DINOCriterion
+    DINOCriterion,
 )
 
 model = L(DINO)(
@@ -88,9 +88,9 @@ model = L(DINO)(
             "loss_class": 1,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
-            "loss_class_dn":1,
-            'loss_bbox_dn':5.0,
-            'loss_giou_dn':2.0
+            "loss_class_dn": 1,
+            "loss_bbox_dn": 5.0,
+            "loss_giou_dn": 2.0,
         },
         loss_class_type="focal_loss",
         alpha=0.25,

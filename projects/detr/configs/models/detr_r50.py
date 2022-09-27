@@ -26,7 +26,7 @@ model = L(DETR)(
     in_features=["res5"],
     in_channels=2048,
     position_embedding=L(PositionEmbeddingSine)(
-        num_pos_feats=128, 
+        num_pos_feats=128,
         temperature=10000,
         normalize=True,
     ),

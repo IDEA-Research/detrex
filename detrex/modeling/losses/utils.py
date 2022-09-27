@@ -24,12 +24,12 @@ import torch.nn.functional as F
 
 def reduce_loss(loss, reduction):
     """Reduce loss as specified
-    
+
     Args:
         loss (nn.Tensor): Elementwise loss tensor.
         reduction (str): Specified reduction function chosen from "none",
             "mean" and "sum".
-    
+
     Return:
         nn.Tensor: Reduced loss tensor.
     """
@@ -45,20 +45,20 @@ def reduce_loss(loss, reduction):
 
 def weight_reduce_loss(loss, weight=None, reduction="mean", avg_factor=None):
     """Apply element-wise weight and reduce loss.
-    
+
     Args:
         loss (Tensor): Element-wise loss.
         weight (Tensor): Element-wise weights.
         reduction (str): Same as built-in losses of PyTorch.
         avg_factor (float): Average factor when computing the mean of losses.
-    
+
     Returns:
         Tensor: Processed loss values.
     """
     # if weight is specified, apply element-wise weight
     if weight is not None:
         loss = loss * weight
-    
+
     # if avg_factor is not specified, just reduce the loss
     if avg_factor is None:
         loss = reduce_loss(loss, reduction)
@@ -69,6 +69,6 @@ def weight_reduce_loss(loss, weight=None, reduction="mean", avg_factor=None):
             eps = torch.finfo(loss.dtype).eps
             loss = loss.sum() / (avg_factor + eps)
         # if reduction is 'none', then do nothing, otherwise raise an error
-        elif reduction != 'none':
+        elif reduction != "none":
             raise ValueError('avg_factor can not be used with reduction="sum"')
     return loss

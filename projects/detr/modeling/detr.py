@@ -32,9 +32,9 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DETR(nn.Module):
-    """Implement DETR in `End-to-End Object Detection with Transformers 
+    """Implement DETR in `End-to-End Object Detection with Transformers
     <https://arxiv.org/abs/2005.12872>`_
-    
+
     Args:
         backbone (nn.Module): Backbone module for feature extraction.
         in_features (List[str]): Selected backbone output features for transformer module.
@@ -46,12 +46,13 @@ class DETR(nn.Module):
         num_queries (int): Number of proposal dynamic anchor boxes in Transformer
         criterion (nn.Module): Criterion for calculating the total losses.
         aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
-        pixel_mean (List[float]): Pixel mean value for image normalization. 
+        pixel_mean (List[float]): Pixel mean value for image normalization.
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
         device (str): Training device. Default: "cuda".
     """
+
     def __init__(
         self,
         backbone: nn.Module,
@@ -73,23 +74,18 @@ class DETR(nn.Module):
         self.backbone = backbone
         self.in_features = in_features
         self.position_embedding = position_embedding
-        
-        # project the backbone output feature 
+
+        # project the backbone output feature
         # into the required dim for transformer block
         self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
 
         # define learnable object queries and transformer module
         self.transformer = transformer
         self.query_embed = nn.Embedding(num_queries, embed_dim)
-        
+
         # define classification head and box head
         self.class_embed = nn.Linear(embed_dim, num_classes + 1)
-        self.bbox_embed = MLP(
-            input_dim=embed_dim, 
-            hidden_dim=embed_dim, 
-            output_dim=4, 
-            num_layers=3
-        )
+        self.bbox_embed = MLP(input_dim=embed_dim, hidden_dim=embed_dim, output_dim=4, num_layers=3)
         self.num_classes = num_classes
 
         # where to calculate auxiliary loss in criterion
@@ -113,14 +109,14 @@ class DETR(nn.Module):
                 - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
                     Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
                     for the basic usage of Instances.
-        
+
         Returns:
             dict: Returns a dict with the following elements:
                 - dict["pred_logits"]: the classification logits for all queries.
                             with shape ``[batch_size, num_queries, num_classes]``
                 - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
-                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 
-                    each individual image (disregarding possible padding). See PostProcess for information 
+                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of
+                    each individual image (disregarding possible padding). See PostProcess for information
                     on how to retrieve the unnormalized bounding box.
                 - dict["aux_outputs"]: Optional, only returned when auxilary losses are activated. It is a list of
                             dictionnaries containing the two above keys for each decoder layer.
@@ -186,7 +182,7 @@ class DETR(nn.Module):
 
     def inference(self, box_cls, box_pred, image_sizes):
         """Inference function for DETR
-        
+
         Args:
             box_cls (torch.Tensor): tensor of shape ``(batch_size, num_queries, K)``.
                 The tensor predicts the classification probability for each query.
