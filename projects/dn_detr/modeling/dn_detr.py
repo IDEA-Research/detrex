@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from detrex.layers import MLP, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh, GenerateDNQueries
+from detrex.layers import MLP, GenerateDNQueries, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from detrex.utils.misc import inverse_sigmoid
 
 from detectron2.modeling import detector_postprocess
@@ -27,9 +27,9 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DNDETR(nn.Module):
-    """Implement DN-DETR in `DN-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
+    """Implement DN-DETR in `DN-DETR: Dynamic Anchor Boxes are Better Queries for DETR
     <https://arxiv.org/abs/2201.12329>`_
-    
+
     Args:
         backbone (nn.Module): Backbone module for feature extraction.
         in_features (List[str]): Selected backbone output features for transformer module.
@@ -41,21 +41,23 @@ class DNDETR(nn.Module):
         num_queries (int): Number of proposal dynamic anchor boxes in Transformer
         criterion (nn.Module): Criterion for calculating the total losses.
         aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
-        pixel_mean (List[float]): Pixel mean value for image normalization. 
+        pixel_mean (List[float]): Pixel mean value for image normalization.
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
-        freeze_anchor_box_centers (bool): If True, freeze the center param ``(x, y)`` for the initialized dynamic anchor boxes
-            in format ``(x, y, w, h)`` and only train ``(w, h)``. Default: True.
+        freeze_anchor_box_centers (bool): If True, freeze the center param ``(x, y)`` for
+            the initialized dynamic anchor boxes in format ``(x, y, w, h)``
+            and only train ``(w, h)``. Default: True.
         select_box_nums_for_evaluation (int): Select the top-k confidence predicted boxes for inference.
             Default: 300.
         denoising_groups (int): Number of groups for noised ground truths. Default: 5.
         label_noise_prob (float): The probability of the label being noised. Default: 0.2.
         box_noise_scale (float): Scaling factor for box noising. Default: 0.4.
-        with_indicator (bool): If True, add indicator in denoising queries part and matching queries part. 
+        with_indicator (bool): If True, add indicator in denoising queries part and matching queries part.
             Default: True.
         device (str): Training device. Default: "cuda".
     """
+
     def __init__(
         self,
         backbone: nn.Module,
@@ -84,14 +86,14 @@ class DNDETR(nn.Module):
         self.in_features = in_features
         self.position_embedding = position_embedding
 
-        # project the backbone output feature 
+        # project the backbone output feature
         # into the required dim for transformer block
         self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
 
         # generate denoising label/box queries
         self.denoising_generator = GenerateDNQueries(
             num_queries=num_queries,
-            num_classes=num_classes+1,
+            num_classes=num_classes + 1,
             label_embed_dim=embed_dim,
             denoising_groups=denoising_groups,
             label_noise_prob=label_noise_prob,
@@ -112,12 +114,7 @@ class DNDETR(nn.Module):
 
         # define classification head and box head
         self.class_embed = nn.Linear(embed_dim, num_classes)
-        self.bbox_embed = MLP(
-            input_dim=embed_dim, 
-            hidden_dim=embed_dim, 
-            output_dim=4, 
-            num_layers=3
-        )
+        self.bbox_embed = MLP(input_dim=embed_dim, hidden_dim=embed_dim, output_dim=4, num_layers=3)
         self.num_classes = num_classes
 
         # predict offsets to update anchor boxes after each decoder layer
@@ -164,17 +161,19 @@ class DNDETR(nn.Module):
                 - dict["image"] (torch.Tensor): The unnormalized image tensor.
                 - dict["height"] (int): The original image height.
                 - dict["width"] (int): The original image width.
-                - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
-                    Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
+                - dict["instance"] (detectron2.structures.Instances):
+                    Image meta informations and ground truth boxes and labels during training.
+                    Please refer to
+                    https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
                     for the basic usage of Instances.
-        
+
         Returns:
             dict: Returns a dict with the following elements:
                 - dict["pred_logits"]: the classification logits for all queries (anchor boxes in DAB-DETR).
                             with shape ``[batch_size, num_queries, num_classes]``
                 - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
-                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 
-                    each individual image (disregarding possible padding). See PostProcess for information 
+                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of
+                    each individual image (disregarding possible padding). See PostProcess for information
                     on how to retrieve the unnormalized bounding box.
                 - dict["aux_outputs"]: Optional, only returned when auxilary losses are activated. It is a list of
                             dictionnaries containing the two above keys for each decoder layer.
@@ -207,14 +206,15 @@ class DNDETR(nn.Module):
             # set to None during inference
             targets = None
 
-
         # for vallina dn-detr, label queries in the matching part is encoded as "no object" (the last class)
         # in the label encoder.
-        matching_label_query = self.denoising_generator.label_encoder(torch.tensor(self.num_classes).to(self.device)).repeat(
-            self.num_queries, 1
-        )
+        matching_label_query = self.denoising_generator.label_encoder(
+            torch.tensor(self.num_classes).to(self.device)
+        ).repeat(self.num_queries, 1)
         indicator_for_matching_part = torch.zeros([self.num_queries, 1]).to(self.device)
-        matching_label_query = torch.cat([matching_label_query, indicator_for_matching_part], 1).repeat(batch_size, 1, 1)
+        matching_label_query = torch.cat(
+            [matching_label_query, indicator_for_matching_part], 1
+        ).repeat(batch_size, 1, 1)
         matching_box_query = self.anchor_box_embed.weight.repeat(batch_size, 1, 1)
 
         if targets is None:
@@ -225,13 +225,19 @@ class DNDETR(nn.Module):
             max_gt_num_per_image = 0
         else:
             # generate denoising queries and attention masks
-            noised_label_queries, noised_box_queries, attn_mask, denoising_groups, max_gt_num_per_image = \
-                self.denoising_generator(gt_labels_list, gt_boxes_list)        
+            (
+                noised_label_queries,
+                noised_box_queries,
+                attn_mask,
+                denoising_groups,
+                max_gt_num_per_image,
+            ) = self.denoising_generator(gt_labels_list, gt_boxes_list)
 
             # concate dn queries and matching queries as input
-            input_label_query = torch.cat([noised_label_queries, matching_label_query], 1).transpose(0, 1)
+            input_label_query = torch.cat(
+                [noised_label_queries, matching_label_query], 1
+            ).transpose(0, 1)
             input_box_query = torch.cat([noised_box_queries, matching_box_query], 1).transpose(0, 1)
-
 
         hidden_states, reference_boxes = self.transformer(
             features,
@@ -249,8 +255,10 @@ class DNDETR(nn.Module):
         outputs_class = self.class_embed(hidden_states)
 
         # denoising post process
-        output = {'denoising_groups': torch.tensor(denoising_groups).to(self.device),
-                  'max_gt_num_per_image': torch.tensor(max_gt_num_per_image).to(self.device)}
+        output = {
+            "denoising_groups": torch.tensor(denoising_groups).to(self.device),
+            "max_gt_num_per_image": torch.tensor(max_gt_num_per_image).to(self.device),
+        }
         outputs_class, outputs_coord = self.dn_post_process(outputs_class, outputs_coord, output)
 
         output.update({"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]})
@@ -304,7 +312,7 @@ class DNDETR(nn.Module):
 
     def inference(self, box_cls, box_pred, image_sizes):
         """Inference function for DN-DETR
-        
+
         Args:
             box_cls (torch.Tensor): tensor of shape ``(batch_size, num_queries, K)``.
                 The tensor predicts the classification probability for each query.
@@ -312,7 +320,7 @@ class DNDETR(nn.Module):
                 The tensor predicts 4-vector ``(x, y, w, h)`` box
                 regression values for every queryx
             image_sizes (List[torch.Size]): the input image sizes
-        
+
         Returns:
             results (List[Instances]): a list of #images elements.
         """
@@ -322,8 +330,8 @@ class DNDETR(nn.Module):
         # Select top-k confidence boxes for inference
         prob = box_cls.sigmoid()
         topk_values, topk_indexes = torch.topk(
-            prob.view(box_cls.shape[0], -1), 
-            self.select_box_nums_for_evaluation, 
+            prob.view(box_cls.shape[0], -1),
+            self.select_box_nums_for_evaluation,
             dim=1,
         )
         scores = topk_values
@@ -357,4 +365,3 @@ class DNDETR(nn.Module):
         images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
         images = ImageList.from_tensors(images)
         return images
-

@@ -74,11 +74,16 @@ class DNCriterion(SetCriterion):
                     kwargs = {"log": False}
                 l_dict.update(
                     self.get_loss(
-                        loss, denoising_output, targets, dn_idx, num_boxes * denoising_groups, **kwargs
+                        loss,
+                        denoising_output,
+                        targets,
+                        dn_idx,
+                        num_boxes * denoising_groups,
+                        **kwargs,
                     )
                 )
 
-            l_dict = {k + f"_dn": v for k, v in l_dict.items()}
+            l_dict = {k + "_dn": v for k, v in l_dict.items()}
             losses.update(l_dict)
         else:
             losses["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")

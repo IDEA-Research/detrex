@@ -28,10 +28,10 @@ from .utils import weight_reduce_loss
 
 
 def sigmoid_focal_loss(
-    preds, 
-    targets, 
-    weight = None,
-    alpha: float = 0.25, 
+    preds,
+    targets,
+    weight=None,
+    alpha: float = 0.25,
     gamma: float = 2,
     reduction: str = "mean",
     avg_factor: int = None,
@@ -53,7 +53,7 @@ def sigmoid_focal_loss(
                  'none': No reduction will be applied to the output.
                  'mean': The output will be averaged.
                  'sum': The output will be summed.
-        avg_factor (int): Average factor that is used to average 
+        avg_factor (int): Average factor that is used to average
             the loss. Default: None.
 
     Returns:
@@ -89,7 +89,7 @@ def focal_loss_with_prob(
     """PyTorch version of `Focal Loss <https://arxiv.org/abs/1708.02002>`_.
     Different from `sigmoid_focal_loss`, this function accepts probability
     as input.
-    
+
     Args:
         preds (torch.Tensor): The prediction probability with shape (N, C),
             C is the number of classes.
@@ -117,17 +117,17 @@ def focal_loss_with_prob(
     if alpha >= 0:
         alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
         loss = alpha_t * loss
-    
+
     if weight is not None:
         assert weight.ndim == loss.ndim
-    
+
     loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
     return loss
 
 
 class FocalLoss(nn.Module):
     """`Focal Loss <https://arxiv.org/abs/1708.02002>`_
-    
+
     Args:
         gamma (float, optional): The gamma for calculating the modulating
             factor. Defaults to 2.0.
@@ -138,6 +138,7 @@ class FocalLoss(nn.Module):
             "sum".
         loss_weight (float, optional): Weight of loss. Defaults to 1.0.
     """
+
     def __init__(
         self,
         alpha=0.25,
@@ -149,10 +150,10 @@ class FocalLoss(nn.Module):
         super(FocalLoss, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
-        self.reduction=reduction
+        self.reduction = reduction
         self.loss_weight = loss_weight
-        self.activated=activated
-    
+        self.activated = activated
+
     def forward(
         self,
         preds,
@@ -161,7 +162,7 @@ class FocalLoss(nn.Module):
         avg_factor=None,
     ):
         """Forward function for FocalLoss
-        
+
         Args:
             preds (torch.Tensor): The prediction probability with shape ``(N, C)``.
                 C is the number of classes.
@@ -170,7 +171,7 @@ class FocalLoss(nn.Module):
                 prediction. Defaults to None.
             avg_factor (int, optional): Average factor that is used to average
                 the loss. Defaults to None.
-        
+
         Returns:
             torch.Tensor: The calculated loss
         """

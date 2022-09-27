@@ -26,7 +26,8 @@ import torch.nn as nn
 from scipy.optimize import linear_sum_assignment
 
 from detrex.layers.box_ops import box_cxcywh_to_xyxy
-from detrex.modeling.matcher import FocalLossCost, L1Cost, GIoUCost
+from detrex.modeling.matcher import FocalLossCost, GIoUCost, L1Cost
+
 
 class HungarianMatcher(nn.Module):
     """HungarianMatcher which computes an assignment between targets and predictions.
@@ -40,6 +41,7 @@ class HungarianMatcher(nn.Module):
         cost_bbox (nn.Module): Cost function for regression L1 cost.
         cost_giou (nn.Module): Cost function for regression iou cost.
     """
+
     def __init__(
         self,
         cost_class: nn.Module = FocalLossCost(
@@ -66,7 +68,7 @@ class HungarianMatcher(nn.Module):
     ):
         """
         Args:
-            pred_logits (nn.Tensor): Predicted classification logits 
+            pred_logits (nn.Tensor): Predicted classification logits
                 with shape ``(bs, num_queries, num_class)``.
             pred_bboxes (nn.Tensor): Predicted boxes with normalized coordinates
                 (cx, cy, w, h), which are all in range [0, 1] with shape
@@ -78,7 +80,7 @@ class HungarianMatcher(nn.Module):
                 ``(num_queries, 4)``.
         """
         bs, num_queries, _ = pred_logits.size()
-        
+
         # flatten to compute the cost matrices in a batch
         pred_logits = pred_logits.flatten(0, 1)  # [batch_size * num_queries, num_classes]
         pred_bboxes = pred_bboxes.flatten(0, 1)  # [batch_size * num_queries, 4]
@@ -93,7 +95,7 @@ class HungarianMatcher(nn.Module):
         # Compute the L1 cost between boxes
         bbox_cost = self.cost_bbox(pred_bboxes, gt_bboxes)
 
-        # Convert the box format to (x1, y1, x2, y2) to 
+        # Convert the box format to (x1, y1, x2, y2) to
         # compute giou cost betwen boxes
         pred_bboxes = box_cxcywh_to_xyxy(pred_bboxes)
         gt_bboxes = box_cxcywh_to_xyxy(gt_bboxes)

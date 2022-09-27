@@ -20,8 +20,8 @@
 # ------------------------------------------------------------------------------------------------
 
 import copy
-import torch.nn as nn
 from typing import Dict, List
+import torch.nn as nn
 
 from detrex.layers import ConvNormAct, ShapeSpec
 

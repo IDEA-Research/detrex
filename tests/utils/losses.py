@@ -19,7 +19,7 @@ import torch.nn.functional as F
 def sigmoid_focal_loss(inputs, targets, num_boxes, alpha: float = 0.25, gamma: float = 2):
     """
     Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
-    
+
     Args:
         inputs (torch.Tensor): A float tensor of arbitrary shape.
             The predictions for each example.
@@ -31,7 +31,7 @@ def sigmoid_focal_loss(inputs, targets, num_boxes, alpha: float = 0.25, gamma: f
             positive vs negative examples. Default: 0.25.
         gamma (float): Exponent of the modulating factor (1 - p_t) to
             balance easy vs hard examples. Default: 2.
-    
+
     Returns:
         torch.Tensor: The computed sigmoid focal loss.
     """

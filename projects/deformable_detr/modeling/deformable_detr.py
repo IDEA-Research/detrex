@@ -32,7 +32,7 @@ class DeformableDETR(nn.Module):
     Code is modified from the `official github repo
     <https://github.com/fundamentalvision/Deformable-DETR>`_.
 
-    More details can be found in the `paper 
+    More details can be found in the `paper
     <https://arxiv.org/abs/2010.04159>`_ .
 
     Args:
@@ -44,17 +44,18 @@ class DeformableDETR(nn.Module):
         num_classes (int): Number of total categories.
         num_queries (int): Number of proposal dynamic anchor boxes in Transformer
         criterion (nn.Module): Criterion for calculating the total losses.
-        pixel_mean (List[float]): Pixel mean value for image normalization. 
+        pixel_mean (List[float]): Pixel mean value for image normalization.
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
         aux_loss (bool): whether to use auxiliary loss. Default: True.
         with_box_refine (bool): whether to use box refinement. Default: False.
         as_two_stage (bool): whether to use two-stage. Default: False.
-        select_box_nums_for_evaluation (int): the number of topk candidates 
+        select_box_nums_for_evaluation (int): the number of topk candidates
             slected at postprocess for evaluation. Default: 100.
 
     """
+
     def __init__(
         self,
         backbone,
@@ -115,7 +116,7 @@ class DeformableDETR(nn.Module):
 
         # If two-stage, the last class_embed and bbox_embed is for region proposal generation
         # Decoder layers share the same heads without box refinement, while use the different
-        # heads when box refinement is used. 
+        # heads when box refinement is used.
         num_pred = (
             (transformer.decoder.num_layers + 1) if as_two_stage else transformer.decoder.num_layers
         )
@@ -211,10 +212,10 @@ class DeformableDETR(nn.Module):
             outputs_coord = tmp.sigmoid()
             outputs_classes.append(outputs_class)
             outputs_coords.append(outputs_coord)
-        outputs_class = torch.stack(outputs_classes)    
-            # tensor shape: [num_decoder_layers, bs, num_query, num_classes]
-        outputs_coord = torch.stack(outputs_coords)     
-            # tensor shape: [num_decoder_layers, bs, num_query, 4]
+        outputs_class = torch.stack(outputs_classes)
+        # tensor shape: [num_decoder_layers, bs, num_query, num_classes]
+        outputs_coord = torch.stack(outputs_coords)
+        # tensor shape: [num_decoder_layers, bs, num_query, 4]
 
         # prepare for loss computation
         output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
@@ -280,16 +281,13 @@ class DeformableDETR(nn.Module):
         # Select top-k confidence boxes for inference
         prob = box_cls.sigmoid()
         topk_values, topk_indexes = torch.topk(
-            prob.view(box_cls.shape[0], -1), 
-            self.select_box_nums_for_evaluation, 
-            dim=1
+            prob.view(box_cls.shape[0], -1), self.select_box_nums_for_evaluation, dim=1
         )
         scores = topk_values
         topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]
 
         boxes = torch.gather(box_pred, 1, topk_boxes.unsqueeze(-1).repeat(1, 1, 4))
-
 
         for i, (scores_per_image, labels_per_image, box_pred_per_image, image_size) in enumerate(
             zip(scores, labels, boxes, image_sizes)

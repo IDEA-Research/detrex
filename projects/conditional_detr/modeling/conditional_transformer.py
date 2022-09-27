@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
 import torch
 import torch.nn as nn
 
@@ -27,7 +26,6 @@ from detrex.layers import (
     TransformerLayerSequence,
     get_sine_pos_embed,
 )
-from detrex.utils import inverse_sigmoid
 
 
 class ConditionalDetrTransformerEncoder(TransformerLayerSequence):
@@ -146,9 +144,7 @@ class ConditionalDetrTransformerDecoder(TransformerLayerSequence):
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim
         self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
-        self.ref_point_head = MLP(
-            self.embed_dim, self.embed_dim, 2, 2
-        )
+        self.ref_point_head = MLP(self.embed_dim, self.embed_dim, 2, 2)
 
         self.bbox_embed = None
 
@@ -173,11 +169,13 @@ class ConditionalDetrTransformerDecoder(TransformerLayerSequence):
         **kwargs,
     ):
         intermediate = []
-        reference_points_before_sigmoid = self.ref_point_head(query_pos)    # [num_queries, batch_size, 2]
+        reference_points_before_sigmoid = self.ref_point_head(
+            query_pos
+        )  # [num_queries, batch_size, 2]
         reference_points: torch.Tensor = reference_points_before_sigmoid.sigmoid().transpose(0, 1)
 
         for idx, layer in enumerate(self.layers):
-            obj_center = reference_points[..., :2].transpose(0, 1)      # [num_queries, batch_size, 2]
+            obj_center = reference_points[..., :2].transpose(0, 1)  # [num_queries, batch_size, 2]
 
             # do not apply transform in position in the first decoder layer
             if idx == 0:
@@ -186,7 +184,7 @@ class ConditionalDetrTransformerDecoder(TransformerLayerSequence):
                 position_transform = self.query_scale(query)
 
             # get sine embedding for the query vector
-            query_sine_embed = get_sine_pos_embed(obj_center)     
+            query_sine_embed = get_sine_pos_embed(obj_center)
             # apply position transform
             query_sine_embed = query_sine_embed[..., : self.embed_dim] * position_transform
 
@@ -218,9 +216,9 @@ class ConditionalDetrTransformerDecoder(TransformerLayerSequence):
 
         if self.return_intermediate:
             return [
-                    torch.stack(intermediate).transpose(1, 2),
-                    reference_points,
-                ]
+                torch.stack(intermediate).transpose(1, 2),
+                reference_points,
+            ]
 
         return query.unsqueeze(0)
 

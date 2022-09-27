@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
 import torch
 import torch.nn as nn
 
@@ -149,9 +148,7 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
         self.return_intermediate = return_intermediate
         self.embed_dim = self.layers[0].embed_dim
         self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
-        self.ref_point_head = MLP(
-            2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
-        )
+        self.ref_point_head = MLP(2 * self.embed_dim, self.embed_dim, self.embed_dim, 2)
 
         self.bbox_embed = None
 

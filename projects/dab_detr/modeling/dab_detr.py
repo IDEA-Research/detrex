@@ -1,7 +1,7 @@
 # coding=utf-8
 # Copyright 2022 The IDEA Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");  
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
@@ -28,9 +28,9 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class DABDETR(nn.Module):
-    """Implement DAB-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR 
+    """Implement DAB-DETR in `DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR
     <https://arxiv.org/abs/2201.12329>`_
-    
+
     Args:
         backbone (nn.Module): Backbone module for feature extraction.
         in_features (List[str]): Selected backbone output features for transformer module.
@@ -42,16 +42,18 @@ class DABDETR(nn.Module):
         num_queries (int): Number of proposal dynamic anchor boxes in Transformer
         criterion (nn.Module): Criterion for calculating the total losses.
         aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
-        pixel_mean (List[float]): Pixel mean value for image normalization. 
+        pixel_mean (List[float]): Pixel mean value for image normalization.
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
-        freeze_anchor_box_centers (bool): If True, freeze the center param ``(x, y)`` for the initialized dynamic anchor boxes
-            in format ``(x, y, w, h)`` and only train ``(w, h)``. Default: True.
+        freeze_anchor_box_centers (bool): If True, freeze the center param ``(x, y)`` for
+            the initialized dynamic anchor boxes in format ``(x, y, w, h)``
+            and only train ``(w, h)``. Default: True.
         select_box_nums_for_evaluation (int): Select the top-k confidence predicted boxes for inference.
             Default: 300.
         device (str): Training device. Default: "cuda".
     """
+
     def __init__(
         self,
         backbone: nn.Module,
@@ -76,10 +78,10 @@ class DABDETR(nn.Module):
         self.in_features = in_features
         self.position_embedding = position_embedding
 
-        # project the backbone output feature 
+        # project the backbone output feature
         # into the required dim for transformer block
         self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
-        
+
         # define leanable anchor boxes and transformer module
         self.transformer = transformer
         self.anchor_box_embed = nn.Embedding(num_queries, 4)
@@ -89,12 +91,7 @@ class DABDETR(nn.Module):
 
         # define classification head and box head
         self.class_embed = nn.Linear(embed_dim, num_classes)
-        self.bbox_embed = MLP(
-            input_dim=embed_dim, 
-            hidden_dim=embed_dim, 
-            output_dim=4, 
-            num_layers=3
-        )
+        self.bbox_embed = MLP(input_dim=embed_dim, hidden_dim=embed_dim, output_dim=4, num_layers=3)
         self.num_classes = num_classes
 
         # predict offsets to update anchor boxes after each decoder layer
@@ -140,17 +137,19 @@ class DABDETR(nn.Module):
                 - dict["image"] (torch.Tensor): The unnormalized image tensor.
                 - dict["height"] (int): The original image height.
                 - dict["width"] (int): The original image width.
-                - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
-                    Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
+                - dict["instance"] (detectron2.structures.Instances):
+                    Image meta informations and ground truth boxes and labels during training.
+                    Please refer to
+                    https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
                     for the basic usage of Instances.
-        
+
         Returns:
             dict: Returns a dict with the following elements:
                 - dict["pred_logits"]: the classification logits for all queries (anchor boxes in DAB-DETR).
                             with shape ``[batch_size, num_queries, num_classes]``
                 - dict["pred_boxes"]: The normalized boxes coordinates for all queries in format
-                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of 
-                    each individual image (disregarding possible padding). See PostProcess for information 
+                    ``(x, y, w, h)``. These values are normalized in [0, 1] relative to the size of
+                    each individual image (disregarding possible padding). See PostProcess for information
                     on how to retrieve the unnormalized bounding box.
                 - dict["aux_outputs"]: Optional, only returned when auxilary losses are activated. It is a list of
                             dictionnaries containing the two above keys for each decoder layer.
@@ -172,13 +171,16 @@ class DABDETR(nn.Module):
         features = self.input_proj(features)
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
         pos_embed = self.position_embedding(img_masks)
-        
+
         # dynamic anchor boxes
         dynamic_anchor_boxes = self.anchor_box_embed.weight
 
         # hidden_states: transformer output hidden feature
-        # reference_boxes: the refined dynamic anchor boxes in format (x, y, w, h)  with normalized coordinates in range of [0, 1].
-        hidden_states, reference_boxes = self.transformer(features, img_masks, dynamic_anchor_boxes, pos_embed)
+        # reference_boxes: the refined dynamic anchor boxes in format (x, y, w, h)
+        # with normalized coordinates in range of [0, 1].
+        hidden_states, reference_boxes = self.transformer(
+            features, img_masks, dynamic_anchor_boxes, pos_embed
+        )
 
         # Calculate output coordinates and classes.
         reference_boxes = inverse_sigmoid(reference_boxes)
@@ -225,7 +227,7 @@ class DABDETR(nn.Module):
 
     def inference(self, box_cls, box_pred, image_sizes):
         """Inference function for DAB-DETR
-        
+
         Args:
             box_cls (torch.Tensor): tensor of shape ``(batch_size, num_queries, K)``.
                 The tensor predicts the classification probability for each query.
@@ -243,8 +245,8 @@ class DABDETR(nn.Module):
         # Select top-k confidence boxes for inference
         prob = box_cls.sigmoid()
         topk_values, topk_indexes = torch.topk(
-            prob.view(box_cls.shape[0], -1), 
-            self.select_box_nums_for_evaluation, 
+            prob.view(box_cls.shape[0], -1),
+            self.select_box_nums_for_evaluation,
             dim=1,
         )
         scores = topk_values

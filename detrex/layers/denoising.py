@@ -20,8 +20,8 @@ from detrex.utils import inverse_sigmoid
 
 
 def apply_label_noise(
-    labels: torch.Tensor, 
-    label_noise_prob: float = 0.2, 
+    labels: torch.Tensor,
+    label_noise_prob: float = 0.2,
     num_classes: int = 80,
 ):
     """
@@ -57,16 +57,14 @@ def apply_box_noise(
         diff = torch.zeros_like(boxes)
         diff[:, :2] = boxes[:, 2:] / 2
         diff[:, 2:] = boxes[:, 2:]
-        boxes += (
-            torch.mul((torch.rand_like(boxes) * 2 - 1.0), diff) * box_noise_scale
-        )
+        boxes += torch.mul((torch.rand_like(boxes) * 2 - 1.0), diff) * box_noise_scale
         boxes = boxes.clamp(min=0.0, max=1.0)
     return boxes
 
 
 class GenerateDNQueries(nn.Module):
     """Generate denoising queries for DN-DETR
-    
+
     Args:
         num_queries (int): Number of total queries in DN-DETR. Default: 300
         num_classes (int): Number of total categories. Default: 80.
@@ -77,6 +75,7 @@ class GenerateDNQueries(nn.Module):
         with_indicator (bool): If True, add indicator in noised label/box queries.
 
     """
+
     def __init__(
         self,
         num_queries: int = 300,
@@ -95,7 +94,7 @@ class GenerateDNQueries(nn.Module):
         self.label_noise_prob = label_noise_prob
         self.box_noise_scale = box_noise_scale
         self.with_indicator = with_indicator
-        
+
         # leave one dim for indicator mentioned in DN-DETR
         if with_indicator:
             self.label_encoder = nn.Embedding(num_classes, label_embed_dim - 1)
@@ -116,7 +115,8 @@ class GenerateDNQueries(nn.Module):
                 ] = True
             if i == self.denoising_groups - 1:
                 attn_mask[
-                    max_gt_num_per_image * i : max_gt_num_per_image * (i + 1), : max_gt_num_per_image * i
+                    max_gt_num_per_image * i : max_gt_num_per_image * (i + 1),
+                    : max_gt_num_per_image * i,
                 ] = True
             else:
                 attn_mask[
@@ -124,7 +124,8 @@ class GenerateDNQueries(nn.Module):
                     max_gt_num_per_image * (i + 1) : noised_query_nums,
                 ] = True
                 attn_mask[
-                    max_gt_num_per_image * i : max_gt_num_per_image * (i + 1), : max_gt_num_per_image * i
+                    max_gt_num_per_image * i : max_gt_num_per_image * (i + 1),
+                    : max_gt_num_per_image * i,
                 ] = True
         return attn_mask
 
@@ -135,7 +136,7 @@ class GenerateDNQueries(nn.Module):
     ):
         """
         Args:
-            gt_boxes_list (list[torch.Tensor]): Ground truth bounding boxes per image 
+            gt_boxes_list (list[torch.Tensor]): Ground truth bounding boxes per image
                 with normalized coordinates in format ``(x, y, w, h)`` in shape ``(num_gts, 4)``
             gt_labels_list (list[torch.Tensor]): Classification labels per image in shape ``(num_gt, )``.
         """
@@ -162,7 +163,6 @@ class GenerateDNQueries(nn.Module):
         # means there are 2 instances in the first image and 3 instances in the second image
         gt_nums_per_image = [x.numel() for x in gt_labels_list]
 
-
         # Add noise on labels and boxes
         noised_labels = apply_label_noise(gt_labels, self.label_noise_prob, self.num_classes)
         noised_boxes = apply_box_noise(gt_boxes, self.box_noise_scale)
@@ -175,29 +175,34 @@ class GenerateDNQueries(nn.Module):
         # add indicator to label encoding if with_indicator == True
         if self.with_indicator:
             label_embedding = torch.cat([label_embedding, torch.ones([query_num, 1]).to(device)], 1)
-        
+
         # calculate the max number of ground truth in one image inside the batch.
-        # e.g. gt_nums_per_image = [2, 3] which means the first image has 2 instances and the second image has 3 instances
+        # e.g. gt_nums_per_image = [2, 3] which means
+        # the first image has 2 instances and the second image has 3 instances
         # then the max_gt_num_per_image should be 3.
         max_gt_num_per_image = max(gt_nums_per_image)
-        
+
         # the total denoising queries is depended on denoising groups and max number of instances.
         noised_query_nums = max_gt_num_per_image * self.denoising_groups
 
         # initialize the generated noised queries to zero.
         # And the zero initialized queries will be assigned with noised embeddings later.
-        noised_label_queries = torch.zeros(noised_query_nums, self.label_embed_dim).to(device).repeat(batch_size, 1, 1)
+        noised_label_queries = (
+            torch.zeros(noised_query_nums, self.label_embed_dim).to(device).repeat(batch_size, 1, 1)
+        )
         noised_box_queries = torch.zeros(noised_query_nums, 4).to(device).repeat(batch_size, 1, 1)
-
 
         # batch index per image: [0, 1, 2, 3] for batch_size == 4
         batch_idx = torch.arange(0, batch_size)
-        
+
         # e.g. gt_nums_per_image = [2, 3]
         # batch_idx = [0, 1]
-        # then the "batch_idx_per_instance" equals to [0, 0, 1, 1, 1] which indicates which image the instance belongs to.
+        # then the "batch_idx_per_instance" equals to [0, 0, 1, 1, 1]
+        # which indicates which image the instance belongs to.
         # cuz the instances has been flattened before.
-        batch_idx_per_instance = torch.repeat_interleave(batch_idx, torch.tensor(gt_nums_per_image).long())
+        batch_idx_per_instance = torch.repeat_interleave(
+            batch_idx, torch.tensor(gt_nums_per_image).long()
+        )
 
         # indicate which image the noised labels belong to. For example:
         # noised label: tensor([0, 1, 2, 2, 3, 4, 0, 1, 2, 2, 3, 4])
@@ -205,15 +210,21 @@ class GenerateDNQueries(nn.Module):
         # which means the first label "tensor([0])"" belongs to "image_0".
         batch_idx_per_group = batch_idx_per_instance.repeat(self.denoising_groups, 1).flatten()
 
-
-        # Cuz there might be different numbers of ground truth in each image of the same batch. 
+        # Cuz there might be different numbers of ground truth in each image of the same batch.
         # So there might be some padding part in noising queries.
-        # Here we calculate the indexes for the valid queries and fill them with the noised embeddings.
+        # Here we calculate the indexes for the valid queries and
+        # fill them with the noised embeddings.
         # And leave the padding part to zeros.
         if len(gt_nums_per_image):
-            valid_index_per_group = torch.cat([torch.tensor(list(range(num))) for num in gt_nums_per_image])
             valid_index_per_group = torch.cat(
-                [valid_index_per_group + max_gt_num_per_image * i for i in range(self.denoising_groups)]).long()
+                [torch.tensor(list(range(num))) for num in gt_nums_per_image]
+            )
+            valid_index_per_group = torch.cat(
+                [
+                    valid_index_per_group + max_gt_num_per_image * i
+                    for i in range(self.denoising_groups)
+                ]
+            ).long()
         if len(batch_idx_per_group):
             noised_label_queries[(batch_idx_per_group, valid_index_per_group)] = label_embedding
             noised_box_queries[(batch_idx_per_group, valid_index_per_group)] = noised_boxes
@@ -221,4 +232,10 @@ class GenerateDNQueries(nn.Module):
         # generate attention masks for transformer layers
         attn_mask = self.generate_query_masks(max_gt_num_per_image, device)
 
-        return noised_label_queries, noised_box_queries, attn_mask, self.denoising_groups, max_gt_num_per_image
+        return (
+            noised_label_queries,
+            noised_box_queries,
+            attn_mask,
+            self.denoising_groups,
+            max_gt_num_per_image,
+        )

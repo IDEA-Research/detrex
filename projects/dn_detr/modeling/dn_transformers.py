@@ -43,7 +43,7 @@ class DNDetrTransformerEncoder(TransformerLayerSequence):
         batch_first: bool = False,
     ):
         super(DNDetrTransformerEncoder, self).__init__(
-            transformer_layers = BaseTransformerLayer(
+            transformer_layers=BaseTransformerLayer(
                 attn=MultiheadAttention(
                     embed_dim=embed_dim,
                     num_heads=num_heads,
@@ -58,7 +58,7 @@ class DNDetrTransformerEncoder(TransformerLayerSequence):
                 ),
                 norm=nn.LayerNorm(normalized_shape=embed_dim),
                 operation_order=("self_attn", "norm", "ffn", "norm"),
-            ), 
+            ),
             num_layers=num_layers,
         )
         self.embed_dim = self.layers[0].embed_dim
@@ -114,7 +114,7 @@ class DNDetrTransformerDecoder(TransformerLayerSequence):
         modulate_hw_attn: bool = True,
         post_norm: bool = True,
         return_intermediate: bool = True,
-        batch_first: bool = False
+        batch_first: bool = False,
     ):
         super(DNDetrTransformerDecoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
@@ -149,9 +149,7 @@ class DNDetrTransformerDecoder(TransformerLayerSequence):
         self.embed_dim = self.layers[0].embed_dim
 
         self.query_scale = MLP(self.embed_dim, self.embed_dim, self.embed_dim, 2)
-        self.ref_point_head = MLP(
-            2 * self.embed_dim, self.embed_dim, self.embed_dim, 2
-        )
+        self.ref_point_head = MLP(2 * self.embed_dim, self.embed_dim, self.embed_dim, 2)
 
         self.bbox_embed = None
         if modulate_hw_attn:

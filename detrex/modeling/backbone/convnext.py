@@ -22,11 +22,11 @@
 from functools import partial
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from timm.models.layers import DropPath, trunc_normal_
-from detectron2.modeling.backbone import Backbone
 
 from detrex.layers import LayerNorm
+
+from detectron2.modeling.backbone import Backbone
 
 
 class Block(nn.Module):

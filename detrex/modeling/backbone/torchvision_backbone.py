@@ -22,6 +22,7 @@ try:
     from torchvision.models.feature_extraction import (
         create_feature_extractor,
     )
+
     has_feature_extractor = True
 except ImportError:
     has_feature_extractor = False
@@ -29,7 +30,7 @@ except ImportError:
 
 class TorchvisionBackbone(Backbone):
     """A wrapper for torchvision pretrained backbones
-    
+
     Please check `Feature extraction for model inspection
     <https://pytorch.org/vision/stable/feature_extraction.html>`_
     for more details.
@@ -41,49 +42,50 @@ class TorchvisionBackbone(Backbone):
         return_nodes (Dict[str, str]): The keys are the node names and the values are the
             user-specified keys for the graph module's returned dictionary.
     """
-    def __init__(self,
-                 model_name: str = "resnet50",
-                 pretrained: bool = False,
-                 return_nodes: Dict[str, str] = {
-                    "layer1": "res2",
-                    "layer2": "res3",
-                    "layer3": "res4",
-                    "layer4": "res5",
-                 },
-                 train_return_nodes: Dict[str, str] = None,
-                 eval_return_nodes: Dict[str, str] = None,
-                 tracer_kwargs: Dict[str, Any] = None,
-                 suppress_diff_warnings: bool = False,
-                 **kwargs,
-                ):
+
+    def __init__(
+        self,
+        model_name: str = "resnet50",
+        pretrained: bool = False,
+        return_nodes: Dict[str, str] = {
+            "layer1": "res2",
+            "layer2": "res3",
+            "layer3": "res4",
+            "layer4": "res5",
+        },
+        train_return_nodes: Dict[str, str] = None,
+        eval_return_nodes: Dict[str, str] = None,
+        tracer_kwargs: Dict[str, Any] = None,
+        suppress_diff_warnings: bool = False,
+        **kwargs,
+    ):
         super(TorchvisionBackbone, self).__init__()
-        
+
         # build torchvision models
-        self.model = getattr(torchvision.models, model_name)(
-            pretrained=pretrained,
-            **kwargs
-        )
-        
+        self.model = getattr(torchvision.models, model_name)(pretrained=pretrained, **kwargs)
+
         if has_feature_extractor is False:
-            raise RuntimeError('Failed to import create_feature_extractor from torchvision. \
-            Please install torchvision 1.10+.')
-        
+            raise RuntimeError(
+                "Failed to import create_feature_extractor from torchvision. \
+            Please install torchvision 1.10+."
+            )
+
         # turn models into feature extractor
         self.feature_extractor = create_feature_extractor(
-            model = self.model,
+            model=self.model,
             return_nodes=return_nodes,
             train_return_nodes=train_return_nodes,
             eval_return_nodes=eval_return_nodes,
             tracer_kwargs=tracer_kwargs,
-            suppress_diff_warning=suppress_diff_warnings
+            suppress_diff_warning=suppress_diff_warnings,
         )
 
     def forward(self, x):
         """Forward function of TorchvisionBackbone
-        
+
         Args:
             x (torch.Tensor): the input tensor for feature extraction.
-        
+
         Returns:
             dict[str->Tensor]: mapping from feature name (e.g., "res2") to tensor
         """

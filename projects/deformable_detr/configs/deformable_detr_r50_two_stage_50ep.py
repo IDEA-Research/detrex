@@ -1,10 +1,4 @@
-from .deformable_detr_r50_50ep import (
-    train,
-    dataloader,
-    optimizer,
-    lr_multiplier,
-    model
-)
+from .deformable_detr_r50_50ep import train, dataloader, optimizer, lr_multiplier, model
 
 # modify model config
 model.with_box_refine = True

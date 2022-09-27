@@ -391,7 +391,6 @@ class DNDeformableDetrTransformer(nn.Module):
             spatial_shapes, valid_ratios, device=feat.device
         )
 
-
         memory = self.encoder(
             query=feat_flatten,
             key=None,
@@ -411,7 +410,7 @@ class DNDeformableDetrTransformer(nn.Module):
             assert input_box_query is None, "query_embed should be None in two-stage"
             output_memory, output_proposals = self.gen_encoder_output_proposals(
                 memory, mask_flatten, spatial_shapes
-            ) 
+            )
             # output_memory: bs, num_tokens, c
             # output_proposals: bs, num_tokens, 4. unsigmoided.
             # output_proposals: bs, num_tokens, 4
@@ -419,15 +418,15 @@ class DNDeformableDetrTransformer(nn.Module):
             enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
             enc_outputs_coord_unact = (
                 self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
-            ) # unsigmoided.
+            )  # unsigmoided.
 
             topk = self.two_stage_num_proposals
             topk_proposals = torch.topk(enc_outputs_class.max(-1)[0], topk, dim=1)[1]
-            
+
             # extract region proposal boxes
             topk_coords_unact = torch.gather(
                 enc_outputs_coord_unact, 1, topk_proposals.unsqueeze(-1).repeat(1, 1, 4)
-            ) # unsigmoided.
+            )  # unsigmoided.
             reference_points = topk_coords_unact.detach().sigmoid()
             init_reference_out = reference_points
 

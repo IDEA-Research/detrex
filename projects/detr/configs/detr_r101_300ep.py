@@ -1,10 +1,4 @@
-from .detr_r50_300ep import (
-    train,
-    dataloader,
-    optimizer,
-    lr_multiplier,
-    model
-)
+from .detr_r50_300ep import train, dataloader, optimizer, lr_multiplier, model
 
 # modify model config
 model.backbone.stages.depth = 101

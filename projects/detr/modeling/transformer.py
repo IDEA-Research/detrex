@@ -16,12 +16,7 @@
 import torch
 import torch.nn as nn
 
-from detrex.layers import (
-    FFN,
-    MultiheadAttention,
-    BaseTransformerLayer, 
-    TransformerLayerSequence
-)
+from detrex.layers import FFN, BaseTransformerLayer, MultiheadAttention, TransformerLayerSequence
 
 
 class DetrTransformerEncoder(TransformerLayerSequence):
@@ -34,7 +29,7 @@ class DetrTransformerEncoder(TransformerLayerSequence):
         ffn_dropout: float = 0.1,
         num_layers: int = 6,
         post_norm: bool = True,
-        batch_first: bool = False
+        batch_first: bool = False,
     ):
         super(DetrTransformerEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
@@ -53,8 +48,8 @@ class DetrTransformerEncoder(TransformerLayerSequence):
                     normalized_shape=embed_dim,
                 ),
                 operation_order=("self_attn", "norm", "ffn", "norm"),
-            ), 
-            num_layers=num_layers
+            ),
+            num_layers=num_layers,
         )
         self.embed_dim = self.layers[0].embed_dim
         self.pre_norm = self.layers[0].pre_norm
@@ -125,7 +120,7 @@ class DetrTransformerDecoder(TransformerLayerSequence):
                     normalized_shape=embed_dim,
                 ),
                 operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
-            ), 
+            ),
             num_layers=num_layers,
         )
         self.return_intermediate = return_intermediate

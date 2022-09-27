@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
 import copy
+from typing import List
 import torch
 
 from detrex.modeling import SetCriterion
@@ -89,7 +89,7 @@ class DeformableCriterion(SetCriterion):
             indices = self.matcher(enc_outputs, bin_targets)
             for loss in self.losses:
                 l_dict = self.get_loss(loss, enc_outputs, bin_targets, indices, num_boxes, **kwargs)
-                l_dict = {k + f"_enc": v for k, v in l_dict.items()}
+                l_dict = {k + "_enc": v for k, v in l_dict.items()}
                 losses.update(l_dict)
 
         return losses

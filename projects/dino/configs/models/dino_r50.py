@@ -14,7 +14,7 @@ from projects.dino.modeling import (
     DINOTransformerEncoder,
     DINOTransformerDecoder,
     DINOTransformer,
-    DINOCriterion
+    DINOCriterion,
 )
 
 model = L(DINO)(
@@ -88,9 +88,9 @@ model = L(DINO)(
             "loss_class": 1,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
-            "loss_class_dn":1,
-            'loss_bbox_dn':5.0,
-            'loss_giou_dn':2.0
+            "loss_class_dn": 1,
+            "loss_bbox_dn": 5.0,
+            "loss_giou_dn": 2.0,
         },
         loss_class_type="focal_loss",
         alpha=0.25,
@@ -110,7 +110,7 @@ base_weight_dict = copy.deepcopy(model.criterion.weight_dict)
 if model.aux_loss:
     weight_dict = model.criterion.weight_dict
     aux_weight_dict = {}
-    aux_weight_dict.update({k + f"_enc": v for k, v in base_weight_dict.items()})
+    aux_weight_dict.update({k + "_enc": v for k, v in base_weight_dict.items()})
     for i in range(model.transformer.decoder.num_layers - 1):
         aux_weight_dict.update({k + f"_{i}": v for k, v in base_weight_dict.items()})
     weight_dict.update(aux_weight_dict)
