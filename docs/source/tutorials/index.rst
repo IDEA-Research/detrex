@@ -10,6 +10,7 @@ Tutorials
    Config_System.md
    Converters.md
    Using_Pretrained_Backbone.md
+   Tools.md
    Model_Zoo.md
    FAQs.md
    
