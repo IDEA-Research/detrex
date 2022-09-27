@@ -17,3 +17,13 @@ Usage:
 ```bash
 python tools/benchmark.py --config-file /path/to/config.py --task train/eval/data
 ```
+
+- `visualize_json_results.py`
+
+Visualize the json instance detection/segmentation results dumped by `COCOEvaluator` modified from [visualize_json_results.py](https://github.com/facebookresearch/detectron2/blob/main/tools/visualize_json_results.py)
+
+Usage:
+```bash
+python tools/visualize_json_results.py --input x.json --output dir/ --dataset coco_2017_val
+```
+If not using a builtin dataset, you'll need your own script or modify this script.
