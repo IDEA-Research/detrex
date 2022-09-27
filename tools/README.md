@@ -24,6 +24,22 @@ Visualize the json instance detection/segmentation results dumped by `COCOEvalua
 
 Usage:
 ```bash
-python tools/visualize_json_results.py --input x.json --output dir/ --dataset coco_2017_val
+python tools/visualize_json_results.py --input x.json \
+                                       --output dir/ \
+                                       --dataset coco_2017_val
 ```
 If not using a builtin dataset, you'll need your own script or modify this script.
+
+- `visualize_data.py`
+
+Visualize ground truth raw annotations or training data (after preprocessing/augmentations).
+
+Usage:
+```bash
+python tools/visualize_data.py --config-file /path/to/config.py \
+                               --source annotation/dataloader \
+                               --output-dir dir/ \
+                               [--show]
+```
+
+**Notes**: the script does not stop by itself when using `--source dataloader` because a training dataloader is usually infinite.
