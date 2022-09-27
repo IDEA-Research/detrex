@@ -52,7 +52,7 @@ backbone=L(ResNet)(
 )
 ```
 - Using the modified `make_stage` function and set `res5_dilation=2` to build `ResNet-DC5` models.
-- More details can be found in `make_stage` function [API documentation]()
+- More details can be found in `make_stage` function [API documentation](https://detrex.readthedocs.io/en/latest/modules/detrex.modeling.html#detrex.modeling.backbone.ResNet.make_stage)
 
 
 ## Timm Backbone
@@ -101,10 +101,10 @@ train.init_checkpoint = ""
 - Set `norm_layer=nn.Module` to specify the norm layers in backbone, e.g., `norm_layer=FrozenBatchNorm2d` to freeze the norm layers.
 - If you want to use timm backbone with your own pretrained weight, please set `pretrained=False` and update `train.init_checkpoint = "path/to/your/own/pretrained_weight/"`
 
-More details can be found in [timm_example.py]()
+More details can be found in [timm_example.py](https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/timm_example.py)
 
 ## Torchvision Backbone
-detrex also provides a wrapper for [Torchvision]() to use its pretrained backbone networks. Support you want to use [ResNet-50] model as the backbone of `DINO`, you can modify your config as following:
+detrex also provides a wrapper for [Torchvision](https://github.com/IDEA-Research/detrex/blob/main/detrex/modeling/backbone/torchvision_backbone.py) to use its pretrained backbone networks. Support you want to use [ResNet-50] model as the backbone of `DINO`, you can modify your config as following:
 
 ```python
 from detectron2.config import LazyCall as L
