@@ -22,7 +22,6 @@ from detectron2.data import (
 )
 from detectron2.data.benchmark import DataLoaderBenchmark
 from detectron2.engine import AMPTrainer, SimpleTrainer, default_argument_parser, hooks, launch
-from detectron2.engine.defaults import create_ddp_model
 from detectron2.modeling import build_model
 from detectron2.utils import comm
 from detectron2.utils.collect_env import collect_env_info
@@ -117,7 +116,9 @@ def benchmark_train(args):
             hooks.IterationTimer(),
             hooks.PeriodicWriter([CommonMetricPrinter(max_iter)]),
             hooks.TorchProfiler(
-                lambda trainer: trainer.iter == max_iter - 1, cfg.train.output_dir, save_tensorboard=True
+                lambda trainer: trainer.iter == max_iter - 1,
+                cfg.train.output_dir,
+                save_tensorboard=True,
             ),
         ]
     )
