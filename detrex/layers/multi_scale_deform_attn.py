@@ -406,4 +406,6 @@ except ImportError:
     # TODO: register ops natively so there is no need to import _C.
     _msg = "detrex is not compiled successfully, please build following the instructions!"
     _args = ("detrex._C", _msg)
-    MultiScaleDeformableAttention = create_dummy_class("MultiScaleDeformableAttention", *_args)
+    MultiScaleDeformableAttention = create_dummy_class(  # noqa
+        "MultiScaleDeformableAttention", *_args
+    )

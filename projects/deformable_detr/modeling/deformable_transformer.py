@@ -214,7 +214,8 @@ class DeformableDetrTransformer(nn.Module):
         decoder (nn.Module): decoder module.
         as_two_stage (bool): whether to use two-stage transformer. Default False.
         num_feature_levels (int): number of feature levels. Default 4.
-        two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 300. Only used when as_two_stage is True.
+        two_stage_num_proposals (int): number of proposals in two-stage transformer. Default 300.
+            Only used when as_two_stage is True.
     """
 
     def __init__(

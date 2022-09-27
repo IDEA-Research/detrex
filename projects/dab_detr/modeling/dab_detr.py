@@ -46,8 +46,9 @@ class DABDETR(nn.Module):
             Default: [123.675, 116.280, 103.530].
         pixel_std (List[float]): Pixel std value for image normalization.
             Default: [58.395, 57.120, 57.375].
-        freeze_anchor_box_centers (bool): If True, freeze the center param ``(x, y)`` for the initialized dynamic anchor boxes
-            in format ``(x, y, w, h)`` and only train ``(w, h)``. Default: True.
+        freeze_anchor_box_centers (bool): If True, freeze the center param ``(x, y)`` for
+            the initialized dynamic anchor boxes in format ``(x, y, w, h)``
+            and only train ``(w, h)``. Default: True.
         select_box_nums_for_evaluation (int): Select the top-k confidence predicted boxes for inference.
             Default: 300.
         device (str): Training device. Default: "cuda".
@@ -136,8 +137,10 @@ class DABDETR(nn.Module):
                 - dict["image"] (torch.Tensor): The unnormalized image tensor.
                 - dict["height"] (int): The original image height.
                 - dict["width"] (int): The original image width.
-                - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
-                    Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
+                - dict["instance"] (detectron2.structures.Instances):
+                    Image meta informations and ground truth boxes and labels during training.
+                    Please refer to
+                    https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
                     for the basic usage of Instances.
 
         Returns:
@@ -173,7 +176,8 @@ class DABDETR(nn.Module):
         dynamic_anchor_boxes = self.anchor_box_embed.weight
 
         # hidden_states: transformer output hidden feature
-        # reference_boxes: the refined dynamic anchor boxes in format (x, y, w, h)  with normalized coordinates in range of [0, 1].
+        # reference_boxes: the refined dynamic anchor boxes in format (x, y, w, h)
+        # with normalized coordinates in range of [0, 1].
         hidden_states, reference_boxes = self.transformer(
             features, img_masks, dynamic_anchor_boxes, pos_embed
         )

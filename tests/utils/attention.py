@@ -43,7 +43,7 @@ if (
     from torch._overrides import has_torch_function, handle_torch_function
 else:
     from torch.overrides import has_torch_function, handle_torch_function
-Tensor = torch.Tensor
+Tensor = torch.Tensor  # noqa
 
 if (
     float(torch.__version__.split(".")[0]) == 0
@@ -128,7 +128,6 @@ class MultiheadAttention(Module):
         super(MultiheadAttention, self).__setstate__(state)
 
     def forward(self, query, key, value, key_padding_mask=None, need_weights=True, attn_mask=None):
-        # type: (Tensor, Tensor, Tensor, Optional[Tensor], bool, Optional[Tensor]) -> Tuple[Tensor, Optional[Tensor]]
         r"""
         Args:
             query, key, value: map a query and a set of key-value pairs to an output.
@@ -139,8 +138,9 @@ class MultiheadAttention(Module):
                 a byte mask and a value is non-zero, the corresponding value on the attention
                 layer will be ignored
             need_weights: output attn_output_weights.
-            attn_mask: 2D or 3D mask that prevents attention to certain positions. A 2D mask will be broadcasted for all
-                the batches while a 3D mask allows to specify a different mask for the entries of each batch.
+            attn_mask: 2D or 3D mask that prevents attention to certain positions.
+                A 2D mask will be broadcasted for all the batches while a 3D mask allows
+                to specify a different mask for the entries of each batch.
         Shape:
             - Inputs:
             - query: :math:`(L, N, E)` where L is the target sequence length, N is the batch size, E is

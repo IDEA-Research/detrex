@@ -88,7 +88,7 @@ class TwoStageCriterion(SetCriterion):
                     # Intermediate masks losses are too costly to compute, we ignore them.
                     continue
                 l_dict = self.get_loss(loss, enc_outputs, targets, indices, num_boxes)
-                l_dict = {k + f"_enc": v for k, v in l_dict.items()}
+                l_dict = {k + "_enc": v for k, v in l_dict.items()}
                 losses.update(l_dict)
 
         return losses

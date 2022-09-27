@@ -85,7 +85,7 @@ class TwoStageCriterion(SetCriterion):
             indices = self.matcher(enc_outputs, targets)
             for loss in self.losses:
                 l_dict = self.get_loss(loss, enc_outputs, targets, indices, num_boxes)
-                l_dict = {k + f"_enc": v for k, v in l_dict.items()}
+                l_dict = {k + "_enc": v for k, v in l_dict.items()}
                 losses.update(l_dict)
 
         return losses

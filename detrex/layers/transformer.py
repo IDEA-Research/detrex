@@ -67,7 +67,8 @@ class BaseTransformerLayer(nn.Module):
         else:
             assert len(attn) == num_attn, (
                 f"The length of attn (nn.Module or List[nn.Module]) {num_attn}"
-                f"is not consistent with the number of attention in operation_order {operation_order}"
+                f"is not consistent with the number of attention in "
+                f"operation_order {operation_order}"
             )
 
         self.num_attn = num_attn

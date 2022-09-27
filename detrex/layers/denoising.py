@@ -177,7 +177,8 @@ class GenerateDNQueries(nn.Module):
             label_embedding = torch.cat([label_embedding, torch.ones([query_num, 1]).to(device)], 1)
 
         # calculate the max number of ground truth in one image inside the batch.
-        # e.g. gt_nums_per_image = [2, 3] which means the first image has 2 instances and the second image has 3 instances
+        # e.g. gt_nums_per_image = [2, 3] which means
+        # the first image has 2 instances and the second image has 3 instances
         # then the max_gt_num_per_image should be 3.
         max_gt_num_per_image = max(gt_nums_per_image)
 
@@ -196,7 +197,8 @@ class GenerateDNQueries(nn.Module):
 
         # e.g. gt_nums_per_image = [2, 3]
         # batch_idx = [0, 1]
-        # then the "batch_idx_per_instance" equals to [0, 0, 1, 1, 1] which indicates which image the instance belongs to.
+        # then the "batch_idx_per_instance" equals to [0, 0, 1, 1, 1]
+        # which indicates which image the instance belongs to.
         # cuz the instances has been flattened before.
         batch_idx_per_instance = torch.repeat_interleave(
             batch_idx, torch.tensor(gt_nums_per_image).long()
@@ -210,7 +212,8 @@ class GenerateDNQueries(nn.Module):
 
         # Cuz there might be different numbers of ground truth in each image of the same batch.
         # So there might be some padding part in noising queries.
-        # Here we calculate the indexes for the valid queries and fill them with the noised embeddings.
+        # Here we calculate the indexes for the valid queries and
+        # fill them with the noised embeddings.
         # And leave the padding part to zeros.
         if len(gt_nums_per_image):
             valid_index_per_group = torch.cat(

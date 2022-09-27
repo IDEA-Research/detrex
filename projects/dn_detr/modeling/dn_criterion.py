@@ -83,7 +83,7 @@ class DNCriterion(SetCriterion):
                     )
                 )
 
-            l_dict = {k + f"_dn": v for k, v in l_dict.items()}
+            l_dict = {k + "_dn": v for k, v in l_dict.items()}
             losses.update(l_dict)
         else:
             losses["loss_bbox_dn"] = torch.as_tensor(0.0).to("cuda")

@@ -189,11 +189,11 @@ def get_sine_pos_embed(
         temperature (int): The temperature used for scaling
             the position embedding. Default: 10000.
         exchange_xy (bool, optional): exchange pos x and pos y. \
-            For example, input tensor is `[x, y]`, the results will 
+            For example, input tensor is `[x, y]`, the results will  # noqa 
             be `[pos(y), pos(x)]`. Defaults: True.
 
     Returns:
-        torch.Tensor: Returned position embedding 
+        torch.Tensor: Returned position embedding  # noqa 
         with shape `(None, n * num_pos_feats)`.
     """
     scale = 2 * math.pi

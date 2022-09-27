@@ -26,7 +26,6 @@ from detrex.layers import (
     TransformerLayerSequence,
     get_sine_pos_embed,
 )
-from detrex.utils import inverse_sigmoid
 
 
 class ConditionalDetrTransformerEncoder(TransformerLayerSequence):

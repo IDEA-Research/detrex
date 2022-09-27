@@ -40,7 +40,8 @@ class DETR(nn.Module):
         in_features (List[str]): Selected backbone output features for transformer module.
         in_channels (int): Dimension of the last feature in `in_features`.
         position_embedding (nn.Module): Position encoding layer for generating position embeddings.
-        transformer (nn.Module): Transformer module used for further processing features and input queries.
+        transformer (nn.Module): Transformer module used for further processing features
+            and input queries.
         embed_dim (int): Hidden dimension for transformer module.
         num_classes (int): Number of total categories.
         num_queries (int): Number of proposal dynamic anchor boxes in Transformer
@@ -102,12 +103,14 @@ class DETR(nn.Module):
         """Forward function of `DAB-DETR` which excepts a list of dict as inputs.
 
         Args:
-            batched_inputs (List[dict]): A list of instance dict, and each instance dict must consists of:
+            batched_inputs (List[dict]): A list of instance dict, and each dict must consists of:
                 - dict["image"] (torch.Tensor): The unnormalized image tensor.
                 - dict["height"] (int): The original image height.
                 - dict["width"] (int): The original image width.
-                - dict["instance"] (detectron2.structures.Instances): Image meta informations and ground truth boxes and labels during training.
-                    Please refer to https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
+                - dict["instance"] (detectron2.structures.Instances):
+                    Image meta informations and ground truth boxes and labels during training.
+                    Please refer to
+                    https://detectron2.readthedocs.io/en/latest/modules/structures.html#detectron2.structures.Instances
                     for the basic usage of Instances.
 
         Returns:

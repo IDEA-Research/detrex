@@ -15,7 +15,6 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from detrex.layers.box_ops import box_cxcywh_to_xyxy
 from detrex.modeling.losses import FocalLoss, GIoULoss, L1Loss

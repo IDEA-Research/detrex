@@ -76,7 +76,7 @@ class DNCriterion(SetCriterion):
                     )
                 )
 
-            l_dict = {k + f"_dn": v for k, v in l_dict.items()}
+            l_dict = {k + "_dn": v for k, v in l_dict.items()}
             losses.update(l_dict)
         else:
             device = outputs["pred_logits"].device
