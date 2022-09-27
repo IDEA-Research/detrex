@@ -32,7 +32,7 @@ If not using a builtin dataset, you'll need your own script or modify this scrip
 
 - `visualize_data.py`
 
-Visualize ground truth raw annotations or training data (after preprocessing/augmentations).
+Visualize ground truth raw annotations or training data (after preprocessing/augmentations) modified from [visualize_data.py](https://github.com/facebookresearch/detectron2/blob/main/tools/visualize_data.py)
 
 Usage:
 ```bash

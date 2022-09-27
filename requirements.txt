@@ -10,3 +10,4 @@ timm
 pytest
 scipy==1.7.3
 psutil
+opencv-python
