@@ -1,7 +1,7 @@
 ## Change Log
 
-### v0.1.0 (30/09/2022)
-The **beta v0.1.0** version of detrex was released in 30/09/2022
+### v0.1.0 (21/09/2022)
+The **beta v0.1.0** version of detrex was released in 21/09/2022
 
 #### New Features
 - Support various backbones including: [FocalNet](https://arxiv.org/abs/2203.11926), [Swin-T](https://arxiv.org/pdf/2103.14030.pdf), [ResNet](https://arxiv.org/abs/1512.03385) and other [detectron2 builtin backbones](https://github.com/facebookresearch/detectron2/tree/main/detectron2/modeling/backbone).
