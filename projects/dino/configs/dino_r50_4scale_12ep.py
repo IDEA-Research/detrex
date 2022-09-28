@@ -23,3 +23,6 @@ optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in modul
 # modify dataloader config
 dataloader.train.dataset.filter_empty = False
 dataloader.train.num_workers = 16
+
+# dump the testing results into output_dir for visualization
+dataloader.evaluator.output_dir = train.output_dir
