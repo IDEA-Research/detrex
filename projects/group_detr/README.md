@@ -8,6 +8,8 @@ Chen, Qiang and Chen, Xiaokang and Wang, Jian and Feng, Haocheng and Han, Junyu 
   <img src="./assets/group_detr_arch.png"/>
 </div><br/>
 
+**Note**: This is the implementation of `Conditional DETR + Group DETR`
+
 ## Training
 All configs can be trained with:
 ```bash
