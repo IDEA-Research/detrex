@@ -65,13 +65,40 @@ dataloader.evaluator.output_dir = /path/to/dir
 
 Then run the following scripts:
 ```bash
+cd detrex
 python tools/visualize_json_results.py --input /path/to/x.json \  # path to the saved testing results
                                        --output dir/ \
                                        --dataset coco_2017_val
 ```
 
-And the visualization results will be saved in `dir/`, here's the example of `DINO-R50-4Scale-12epoch` prediction results:
+**Note**: the visualization results will be saved in `dir/`, here's the example of the visualization for prediction results:
 
 ![](./assets/dino_prediction_demo.jpg)
 
 ### Visualize Datasets
+Visualize ground truth raw annotations or training data (after preprocessing/augmentations).
+
+- Visualize raw annotations
+
+```bash
+cd detrex
+python tools/visualize_data.py --config-file /path/to/config.py \
+                               --source annotation
+                               --output_dir dir/
+                               [--show]
+```
+
+- Visualize training data
+
+```bash
+cd detrex
+python tools/visualize_data.py --config-file /path/to/config.py \
+                               --source dataloader
+                               --output_dir dir/
+                               [--show]
+```
+
+**Note**: The visualization results will be saved in `dir/`, here's the example of the visualization for annotations:
+
+![](./assets/annotation_demo.jpg)
+
