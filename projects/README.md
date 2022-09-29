@@ -7,3 +7,4 @@ Here are projects that are built on detrex which show you use detrex as a librar
 - [DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR](./dab_detr/)
 - [DN-DETR: Accelerate DETR Training by Introducing Query DeNoising](./dn_detr/)
 - [DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection](./dino)
+- [Group DETR: Fast DETR Training with Group-Wise One-to-Many Assignment](./group_detr/)
