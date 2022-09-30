@@ -27,6 +27,14 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center">49.05</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_r50_4scale_12ep.pth">model</a></td>
 </tr>
+<!-- ROW: dino_swin_large_4scale_12ep -->
+ <tr><td align="left"><a href="configs/dino_swin_large_4scale_12ep.py">DINO-Swin-L-4scale</a></td>
+<td align="center">Swin-L</td>
+<td align="center">IN22k to IN1k</td>
+<td align="center">12</td>
+<td align="center">56.86</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_swin_large_4scale_12ep.pth">model</a></td>
+</tr>
 </tbody></table>
 
 ## Training
