@@ -9,6 +9,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 </div><br/>
 
 ## Pretrained Models
+Here we provide the pretrained `DINO` weights based on detrex.
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
@@ -69,7 +70,10 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 </tr>
 </tbody></table>
 
-Note: `Swin-X-384` means the pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
+**Note**: `Swin-X-384` means the pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
+
+**Notable facts and caveats**: The position embedding of DINO in detrex is different from the original repo. We set the tempureture and offsets in `PositionEmbeddingSine` to `10000` and `-0.5` which may make the model converge a little bit faster in the early stage and get a slightly better results (about 0.1mAP) in 12 epochs settings.
+
 
 ## Training
 All configs can be trained with:
