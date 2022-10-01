@@ -27,15 +27,25 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center">49.05</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_r50_4scale_12ep.pth">model</a></td>
 </tr>
-<!-- ROW: dino_swin_large_4scale_12ep -->
- <tr><td align="left"><a href="configs/dino_swin_large_4scale_12ep.py">DINO-Swin-L-4scale</a></td>
-<td align="center">Swin-L</td>
+<!-- ROW: dino_swin_base_4scale_12ep -->
+ <tr><td align="left"><a href="configs/dino_swin_base_384_4scale_12ep.py">DINO-Swin-B-384-4scale</a></td>
+<td align="center">Swin-B-384</td>
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
-<td align="center">56.86</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_swin_large_4scale_12ep.pth">model</a></td>
+<td align="center">55.83</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+<!-- ROW: dino_swin_large_4scale_12ep -->
+ <tr><td align="left"><a href="configs/dino_swin_large_384_4scale_12ep.py">DINO-Swin-L-384-4scale</a></td>
+<td align="center">Swin-L-384</td>
+<td align="center">IN22k to IN1k</td>
+<td align="center">12</td>
+<td align="center">56.93</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_4scale_12ep.pth">model</a></td>
 </tr>
 </tbody></table>
+
+Note: `Swin-X-384` means the pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
 
 ## Training
 All configs can be trained with:

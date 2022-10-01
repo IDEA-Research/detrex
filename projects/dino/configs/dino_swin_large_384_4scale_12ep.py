@@ -1,5 +1,5 @@
 from detrex.config import get_config
-from .models.dino_swin_large import model
+from .models.dino_swin_large_384 import model
 
 # get default config
 dataloader = get_config("common/data/coco_detr.py").dataloader
@@ -8,13 +8,13 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_12ep
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "/home/rentianhe/code/detrex/swin_large_patch4_window12_384_22kto1k.pth"
-train.output_dir = "./output/dino_swin_large_4scale_12ep"
+train.init_checkpoint = "/path/to/swin_large_patch4_window12_384_22kto1k.pth"
+train.output_dir = "./output/dino_swin_large_384_4scale_12ep"
 train.max_iter = 90000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1
 train.clip_grad.params.norm_type = 2
-# train.seed = 42
+train.seed = 42
 
 # modify optimizer config
 optimizer.weight_decay = 1e-4

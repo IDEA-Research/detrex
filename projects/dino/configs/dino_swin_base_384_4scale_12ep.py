@@ -1,5 +1,5 @@
 from detrex.config import get_config
-from .models.dino_swin_base import model
+from .models.dino_swin_base_384 import model
 
 # get default config
 dataloader = get_config("common/data/coco_detr.py").dataloader
@@ -8,8 +8,8 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_12ep
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "/home/rentianhe/code/detrex/swin_base_patch4_window12_384_22kto1k.pth"
-train.output_dir = "./output/dino_swin_base_4scale_12ep"
+train.init_checkpoint = "/path/to/swin_base_patch4_window12_384_22kto1k.pth"
+train.output_dir = "./output/dino_swin_base_384_4scale_12ep"
 train.max_iter = 90000
 train.clip_grad.enabled = True
 train.clip_grad.params.max_norm = 0.1
@@ -24,4 +24,4 @@ optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in modul
 dataloader.train.num_workers = 16
 
 # dump the testing results into output_dir for visualization
-# dataloader.evaluator.output_dir = train.output_dir
+dataloader.evaluator.output_dir = train.output_dir
