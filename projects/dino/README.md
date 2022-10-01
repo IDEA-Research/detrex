@@ -19,7 +19,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
-<!-- ROW: dino_r50_12ep -->
+<!-- ROW: dino_r50_4scale_12ep -->
  <tr><td align="left"><a href="configs/dino_r50_4cale_12ep.py">DINO-R50-4scale</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
@@ -27,9 +27,33 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center">49.05</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_r50_4scale_12ep.pth">model</a></td>
 </tr>
+<!-- ROW: dino_r101_4scale_12ep -->
+ <tr><td align="left"><a href="configs/dino_r101_4cale_12ep.py">DINO-R101-4scale</a></td>
+<td align="center">R-101</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center"></td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+<!-- ROW: dino_swin_tiny_4cale_12ep -->
+ <tr><td align="left"><a href="configs/dino_swin_tiny_4cale_12ep.py">DINO-Swin-T-224-4scale</a></td>
+<td align="center">Swin-Tiny-224</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center"></td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+<!-- ROW: dino_swin_tiny_4cale_12ep -->
+ <tr><td align="left"><a href="configs/dino_swin_tiny_4cale_12ep.py">DINO-Swin-T-224-4scale</a></td>
+<td align="center">Swin-Tiny-224</td>
+<td align="center">IN22k to IN1k</td>
+<td align="center">12</td>
+<td align="center"></td>
+<td align="center"> <a href="">model</a></td>
+</tr>
 <!-- ROW: dino_swin_base_4scale_12ep -->
  <tr><td align="left"><a href="configs/dino_swin_base_384_4scale_12ep.py">DINO-Swin-B-384-4scale</a></td>
-<td align="center">Swin-B-384</td>
+<td align="center">Swin-Base-384</td>
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
 <td align="center">55.83</td>
@@ -37,7 +61,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 </tr>
 <!-- ROW: dino_swin_large_4scale_12ep -->
  <tr><td align="left"><a href="configs/dino_swin_large_384_4scale_12ep.py">DINO-Swin-L-384-4scale</a></td>
-<td align="center">Swin-L-384</td>
+<td align="center">Swin-Large-384</td>
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
 <td align="center">56.93</td>
