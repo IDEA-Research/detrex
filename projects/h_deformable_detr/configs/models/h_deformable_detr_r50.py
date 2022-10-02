@@ -69,7 +69,7 @@ model = L(DeformableDETR)(
         ),
         as_two_stage="${..as_two_stage}",
         num_feature_levels=4,
-        two_stage_num_proposals="${..num_queries_one2one}+${..num_queries_one2many}",
+        two_stage_num_proposals="${..num_queries_one2one}"+"${..num_queries_one2many}",
         mixed_selection=True
     ),
     embed_dim=256,
