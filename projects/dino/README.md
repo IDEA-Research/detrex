@@ -41,8 +41,8 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">Swin-Tiny-224</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
-<td align="center"></td>
-<td align="center"> <a href="">model</a></td>
+<td align="center">51.30</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_tiny_224_4scale_12ep.pth">model</a></td>
 </tr>
 <!-- ROW: dino_swin_tiny_4cale_12ep -->
  <tr><td align="left"><a href="configs/dino_swin_tiny_4cale_12ep.py">DINO-Swin-T-224-4scale</a></td>
@@ -70,7 +70,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 </tr>
 </tbody></table>
 
-**Note**: `Swin-X-384` means the pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
+**Note**: `Swin-X-384` means the backbone pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
 
 **Notable facts and caveats**: The position embedding of DINO in detrex is different from the original repo. We set the tempureture and offsets in `PositionEmbeddingSine` to `10000` and `-0.5` which may make the model converge a little bit faster in the early stage and get a slightly better results (about 0.1mAP) in 12 epochs settings.
 
