@@ -25,6 +25,7 @@ from detrex.layers import (
     TransformerLayerSequence,
     get_sine_pos_embed,
 )
+
 from .attention import GroupConditionalSelfAttention
 
 
