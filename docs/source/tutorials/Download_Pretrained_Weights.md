@@ -6,7 +6,7 @@ Here we collect the **links** of the backbone models which makes it easier for u
 We've already provided the tutorials of **using torchvision pretrained ResNet models** here: [Download TorchVision ResNet Models](https://detrex.readthedocs.io/en/latest/tutorials/Converters.html#download-pretrained-weights).
 
 ## Swin-Transformer
-Here we borrowed the download links from the [official repo](https://github.com/microsoft/Swin-Transformer#main-results-on-imagenet-with-pretrained-models) of Swin-Transformer.
+Here we borrowed the download links from the [official implementation](https://github.com/microsoft/Swin-Transformer#main-results-on-imagenet-with-pretrained-models) of Swin-Transformer.
 
 ### Swin-Tiny
 <table class="docutils"><tbody>
