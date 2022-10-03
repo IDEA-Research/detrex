@@ -57,7 +57,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">Swin-Small-224</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
-<td align="center"></td>
+<td align="center">52.96</td>
 <td align="center"> <a href="">model</a></td>
 </tr>
 <!-- ROW: dino_swin_base_4scale_12ep -->

@@ -33,7 +33,7 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 
 class GroupDETR(nn.Module):
-    """Implement Group-DETR upon Conditional-DETR in 
+    """Implement Group-DETR upon Conditional-DETR in
     `Group DETR: Fast DETR Training with Group-Wise One-to-Many Assignment
     <https://arxiv.org/abs/2207.13085>`_
 

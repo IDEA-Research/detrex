@@ -8,7 +8,9 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_12ep
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "/home/rentianhe/code/detrex/swin_tiny_patch4_window7_224_22kto1k_finetune.pth"
+train.init_checkpoint = (
+    "/home/rentianhe/code/detrex/swin_tiny_patch4_window7_224_22kto1k_finetune.pth"
+)
 train.output_dir = "./output/dino_swin_tiny_224_4scale_12ep_22kto1k_finetune"
 train.max_iter = 90000
 train.clip_grad.enabled = True
