@@ -57,7 +57,155 @@ model.backbone = L(SwinTransformer)(
 )
 
 # setup init checkpoint path
-train.init_checkpoint = "/path/to/swin_tiny_patch4_window7_224.pth"
+# train.init_checkpoint = "/path/to/swin_tiny_patch4_window7_224.pth"
+train.init_checkpoint = "/path/to/swin_tiny_patch4_window7_224_22kto1k_finetune.pth"
+```
+
+</details>
+
+### Swin-Small
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Resolution</th>
+<th valign="bottom">Acc@1</th>
+<th valign="bottom">Acc@5</th>
+<th valign="bottom">22K Model</th>
+<th valign="bottom">1K Model</th>
+<!-- TABLE BODY -->
+ <tr><td align="left"> Swin-Small </td>
+<td align="center">ImageNet-1K</td>
+<td align="center">224x224</td>
+<td align="center">83.2</td>
+<td align="center">96.2</td>
+<td align="center"> - </td>
+<td align="center"> <a href="https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_small_patch4_window7_224.pth">download</a> </td>
+</tr>
+ <tr><td align="left"> Swin-Small </td>
+<td align="center">ImageNet-22K</td>
+<td align="center">224x224</td>
+<td align="center">83.2</td>
+<td align="center">97.0</td>
+<td align="center"> <a href="https://github.com/SwinTransformer/storage/releases/download/v1.0.8/swin_small_patch4_window7_224_22k.pth">download</a> </td>
+<td align="center"> <a href="https://github.com/SwinTransformer/storage/releases/download/v1.0.8/swin_small_patch4_window7_224_22kto1k_finetune.pth"> download </a> </td>
+</tr>
+</tbody></table>
+
+<details open>
+<summary> <b> Using Swin-Small Backbone in Config </b> </summary>
+
+```python
+from detectron2.config import LazyCall as L
+from detectron2.modeling.backbone import SwinTransformer
+
+# modify backbone config
+model.backbone = L(SwinTransformer)(
+    pretrain_img_size=224,
+    embed_dim=96,
+    depths=(2, 2, 18, 2),
+    num_heads=(3, 6, 12, 24),
+    drop_path_rate=0.2,
+    window_size=7,
+    out_indices=(1, 2, 3),
+)
+
+# setup init checkpoint path
+# train.init_checkpoint = "/path/to/swin_small_patch4_window7_224.pth"
+train.init_checkpoint = "/path/to/swin_small_patch4_window7_224_22kto1k_finetune.pth"
+```
+
+</details>
+
+### Swin-Base
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Resolution</th>
+<th valign="bottom">Acc@1</th>
+<th valign="bottom">Acc@5</th>
+<th valign="bottom">22K Model</th>
+<th valign="bottom">1K Model</th>
+<!-- TABLE BODY -->
+ <tr><td align="left"> Swin-Base </td>
+<td align="center">ImageNet-1K</td>
+<td align="center">224x224</td>
+<td align="center">83.5</td>
+<td align="center">96.5</td>
+<td align="center"> - </td>
+<td align="center"> <a href="https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window7_224.pth">download</a> </td>
+</tr>
+ <tr><td align="left"> Swin-Base </td>
+<td align="center">ImageNet-1K</td>
+<td align="center">384x384</td>
+<td align="center">84.5</td>
+<td align="center">97.0</td>
+<td align="center"> - </td>
+<td align="center"> <a href="https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window12_384.pth">download</a> </td>
+</tr>
+ <tr><td align="left"> Swin-Base </td>
+<td align="center">ImageNet-22K</td>
+<td align="center">224x224</td>
+<td align="center">85.2</td>
+<td align="center">97.5</td>
+<td align="center"> <a href="https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window7_224_22k.pth">download</a> </td>
+<td align="center"> <a href="https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window7_224_22kto1k.pth"> download </a> </td>
+</tr>
+ <tr><td align="left"> Swin-Base </td>
+<td align="center">ImageNet-22K</td>
+<td align="center">384x384</td>
+<td align="center">86.4</td>
+<td align="center">98.0</td>
+<td align="center"> <a href="https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window12_384_22k.pth">download</a> </td>
+<td align="center"> <a href="https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window12_384_22kto1k.pth"> download </a> </td>
+</tr>
+</tbody></table>
+
+<details open>
+<summary> <b> Using Swin-Base-224 Backbone in Config </b> </summary>
+
+```python
+from detectron2.config import LazyCall as L
+from detectron2.modeling.backbone import SwinTransformer
+
+# modify backbone config
+model.backbone = L(SwinTransformer)(
+    pretrain_img_size=224,
+    embed_dim=128,
+    depths=(2, 2, 18, 2),
+    num_heads=(4, 8, 16, 32),
+    window_size=7,
+    out_indices=(1, 2, 3),
+)
+
+# setup init checkpoint path
+# train.init_checkpoint = "/path/to/swin_base_patch4_window7_224.pth"
+train.init_checkpoint = "/path/to/swin_base_patch4_window7_224_22kto1k.pth"
+```
+
+<details open>
+<summary> <b> Using Swin-Base-384 Backbone in Config </b> </summary>
+
+```python
+from detectron2.config import LazyCall as L
+from detectron2.modeling.backbone import SwinTransformer
+
+# modify backbone config
+model.backbone = L(SwinTransformer)(
+    pretrain_img_size=384,
+    embed_dim=128,
+    depths=(2, 2, 18, 2),
+    num_heads=(4, 8, 16, 32),
+    window_size=12,
+    out_indices=(1, 2, 3),
+)
+
+# setup init checkpoint path
+# train.init_checkpoint = "/path/to/swin_base_patch4_window12_384.pth"
+train.init_checkpoint = "/path/to/swin_base_patch4_window12_384_22kto1k.pth"
 ```
 
 </details>
