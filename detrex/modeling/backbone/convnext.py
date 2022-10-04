@@ -138,7 +138,7 @@ class ConvNeXt(Backbone):
             cur += depths[i]
 
         norm_layer = partial(LayerNorm, eps=1e-6, channel_last=False)
-        for i_layer in range(4):
+        for i_layer in out_indices:
             layer = norm_layer(dims[i_layer])
             layer_name = f"norm{i_layer}"
             self.add_module(layer_name, layer)
