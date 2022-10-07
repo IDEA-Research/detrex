@@ -2,7 +2,7 @@
 
 Chen, Qiang and Chen, Xiaokang and Wang, Jian and Feng, Haocheng and Han, Junyu and Ding, Errui and Zeng, Gang and Wang, Jingdong
 
-[[`arXiv`](https://arxiv.org/abs/2207.13085)] [[`BibTeX`](#citing-conditional-detr)]
+[[`arXiv`](https://arxiv.org/abs/2207.13085)] [[`BibTeX`](#citing-group-detr)]
 
 <div align="center">
   <img src="./assets/group_detr_arch.png"/>
