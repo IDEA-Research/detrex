@@ -16,7 +16,7 @@ $ conda activate detrex
 ```
 - Secondly, clone `detrex` and initialize the `detectron2` submodule.
 ```bash
-$ git clone https://github.com/IDEACVR/detrex.git
+$ git clone https://github.com/IDEA-Research/detrex.git
 $ cd detrex
 $ git submodule init
 $ git submodule update
