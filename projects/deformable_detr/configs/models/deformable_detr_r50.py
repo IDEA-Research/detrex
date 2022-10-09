@@ -25,7 +25,7 @@ model = L(DeformableDETR)(
             norm="FrozenBN",
         ),
         out_features=["res3", "res4", "res5"],
-        freeze_at=1,
+        freeze_at=2,
     ),
     position_embedding=L(PositionEmbeddingSine)(
         num_pos_feats=128,
@@ -87,7 +87,7 @@ model = L(DeformableDETR)(
             gamma=2.0,
         ),
         weight_dict={
-            "loss_class": 1,
+            "loss_class": 2.0,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
