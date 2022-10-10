@@ -29,9 +29,17 @@ Here we provide the pretrained `Deformable-DETR` weights based on detrex.
 <td align="center">46.32</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/deformable_detr_with_box_refinement_50ep.pth">model</a></td>
 </tr>
+<!-- ROW: deformable_detr_r50_two_stage_50ep -->
+ <tr><td align="left"><a href="configs/deformable_detr_r50_two_stage_50ep.py">Deformable-DETR + Box Refinement + Two Stage</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center"></td>
+<td align="center"> <a href="">model</a></td>
+</tr>
 </tbody></table>
 
-**Notable facts and caveats**: The training settings are different from the original repo, we use `lr=1e-5` for backbone and `1e-4` for the other modules. The original implementation sets `lr` to `2e-5` for `backbone`, `sampling_offsets` and `reference_points`, and `2e-4` for other modules.
+**Notable facts and caveats**: The training settings are different from the original repo, we use `lr=1e-5` for backbone and `1e-4` for the other modules. The original implementation sets `lr` to `2e-5` for `backbone`, `sampling_offsets` and `reference_points`, and `2e-4` for other modules. And we using top-300 confidence boxes for testing, which may get a slightly better results on COCO evaluation.
 
 
 ## Converted Weights
@@ -71,7 +79,7 @@ Here we provide the pretrained `Deformable-DETR` weights based on detrex.
 </tr>
 </tbody></table>
 
-**Note:** Here we borrowed the pretrained weight from [Deformable-DETR](https://github.com/fundamentalvision/Deformable-DETR) official repo. And our detrex training results will be released in the future version. And `two-stage` settings are still under test.
+**Note:** Here we borrowed the pretrained weight from [Deformable-DETR](https://github.com/fundamentalvision/Deformable-DETR) official repo. And all the pretrained weights are tested using `top-300` confidence boxes (`top-100` in original repo) which may brings about `0.2 AP` gain on COCO evaluation.
 
 ## Training
 All configs can be trained with:
