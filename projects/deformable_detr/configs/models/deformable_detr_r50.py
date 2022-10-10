@@ -25,7 +25,7 @@ model = L(DeformableDETR)(
             norm="FrozenBN",
         ),
         out_features=["res3", "res4", "res5"],
-        freeze_at=2,
+        freeze_at=1,
     ),
     position_embedding=L(PositionEmbeddingSine)(
         num_pos_feats=128,
