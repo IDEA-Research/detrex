@@ -34,13 +34,14 @@ Here we provide the pretrained `Deformable-DETR` weights based on detrex.
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center"></td>
-<td align="center"> <a href="">model</a></td>
+<td align="center">47.28</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/deformable_detr_r50_two_stage_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
 
-**Notable facts and caveats**: The training settings are different from the original repo, we use `lr=1e-5` for backbone and `1e-4` for the other modules. The original implementation sets `lr` to `2e-5` for `backbone`, `sampling_offsets` and `reference_points`, and `2e-4` for other modules. And we using top-300 confidence boxes for testing, which may get a slightly better results on COCO evaluation.
+All the models are trained using `8 GPUs` with total batch size equals to `16`. We've observed that the result of `deformable-two-stage` model trained using `8 GPUs` may be  slightly lower than `16 GPUs` with `32` total batch size.
 
+**Notable facts and caveats**: The training settings are different from the original repo, we use `lr=1e-5` for backbone and `1e-4` for the other modules. The original implementation sets `lr` to `2e-5` for `backbone`, `sampling_offsets` and `reference_points`, and `2e-4` for other modules. And we used `top-300` confidence boxes for testing, which may get a slightly better results on COCO evaluation. And we only freeze the stem layer in ResNet backbone by setting `freeze_at=1` in config.
 
 ## Converted Weights
 <table><tbody>
