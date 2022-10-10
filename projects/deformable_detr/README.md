@@ -22,7 +22,7 @@ Here we provide the pretrained `Deformable-DETR` weights based on detrex.
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
 <!-- ROW: deformable_detr_r50_with_box_refinement_50ep -->
- <tr><td align="left"><a href="configs/deformable_detr_r50_with_box_refinement_50ep.py">Deformable-DETR + Box Refinement</a></td>
+ <tr><td align="left"><a href="configs/deformable_detr_r50_with_box_refinement_50ep.py">Deformable-DETR-R50 + Box-Refinement</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
@@ -30,7 +30,7 @@ Here we provide the pretrained `Deformable-DETR` weights based on detrex.
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/deformable_detr_with_box_refinement_50ep.pth">model</a></td>
 </tr>
 <!-- ROW: deformable_detr_r50_two_stage_50ep -->
- <tr><td align="left"><a href="configs/deformable_detr_r50_two_stage_50ep.py">Deformable-DETR + Box Refinement + Two Stage</a></td>
+ <tr><td align="left"><a href="configs/deformable_detr_r50_two_stage_50ep.py">Deformable-DETR-R50 + Box-Refinement + Two-Stage</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
@@ -63,7 +63,7 @@ All the models are trained using `8 GPUs` with total batch size equals to `16`. 
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_deformable_detr_r50.pth">model</a></td>
 </tr>
 <!-- ROW: deformable_detr_r50_with_box_refinement -->
- <tr><td align="left"><a href="configs/deformable_detr_r50_with_box_refinement_50ep.py">Deformable-DETR-R50-Box-Refinement</a></td>
+ <tr><td align="left"><a href="configs/deformable_detr_r50_with_box_refinement_50ep.py">Deformable-DETR-R50 + Box-Refinement</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
@@ -71,7 +71,7 @@ All the models are trained using `8 GPUs` with total batch size equals to `16`. 
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_deformable_detr_r50_with_box_refine_50ep.pth">model</a></td>
 </tr>
 <!-- ROW: deformable_detr_r50_two_stage_50ep -->
- <tr><td align="left"><a href="configs/deformable_detr_r50_two_stage_50ep.py">Deformable-DETR-R50-Two-Stage</a></td>
+ <tr><td align="left"><a href="configs/deformable_detr_r50_two_stage_50ep.py">Deformable-DETR-R50 + Box-Refinement + Two-Stage</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
