@@ -27,6 +27,13 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">46.32</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/deformable_detr_with_box_refinement_50ep.pth"> model </a></td>
 </tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/deformable_detr/configs/deformable_detr_r50_two_stage_50ep.py"> Deformable-DETR + Box Refinement + Two Stage </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">47.28</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/deformable_detr_r50_two_stage_50ep.pth"> model </a></td>
+</tr>
 </tbody></table>
 
 ### Conditional-DETR
