@@ -10,7 +10,7 @@ train = get_config("common/train.py").train
 # modify model config
 # use the original implementation of dab-detr position embedding in 24 epochs training.
 model.position_embedding.temperature = 20
-model.position_embedding.offset = 0.
+model.position_embedding.offset = 0.0
 
 # modify training config
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
