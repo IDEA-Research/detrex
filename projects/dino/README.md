@@ -28,6 +28,14 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">49.05</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_r50_4scale_12ep.pth">model</a></td>
 </tr>
+<!-- ROW: dino_r50_4scale_24ep -->
+ <tr><td align="left"><a href="configs/dino_r50_4cale_24ep.py">DINO-R50-4scale</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">24</td>
+<td align="center">50.60</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r50_4scale_24ep.pth">model</a></td>
+</tr>
 <!-- ROW: dino_r101_4scale_12ep -->
  <tr><td align="left"><a href="configs/dino_r101_4cale_12ep.py">DINO-R101-4scale</a></td>
 <td align="center">R-101</td>
