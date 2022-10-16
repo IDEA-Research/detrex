@@ -87,7 +87,7 @@ model = L(DeformableDETR)(
             gamma=2.0,
         ),
         weight_dict={
-            "loss_class": 2.0,
+            "loss_class": 1.0,
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
