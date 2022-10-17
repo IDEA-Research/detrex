@@ -20,6 +20,13 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">Download</th>
 <!-- TABLE BODY -->
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/deformable_detr/configs/deformable_detr_r50_50ep.py"> Deformable-DETR </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center"></td>
+<td align="center"> <a href=""> model </a></td>
+</tr>
  <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/deformable_detr/configs/deformable_detr_r50_with_box_refinement_50ep.py"> Deformable-DETR + Box Refinement </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
@@ -31,8 +38,8 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">47.28</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/deformable_detr_r50_two_stage_50ep.pth"> model </a></td>
+<td align="center">48.19</td>
+<td align="center"> <a href=""> model </a></td>
 </tr>
 </tbody></table>
 
