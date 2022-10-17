@@ -304,7 +304,7 @@ class DeformableDetrTransformer(nn.Module):
         Args:
             spatial_shapes (Tensor): The shape of all
                 feature maps, has shape (num_level, 2).
-            valid_ratios (Tensor): The radios of valid
+            valid_ratios (Tensor): The ratios of valid
                 points on the feature map, has shape
                 (bs, num_levels, 2)
             device (obj:`device`): The device where
@@ -330,7 +330,7 @@ class DeformableDetrTransformer(nn.Module):
         return reference_points
 
     def get_valid_ratio(self, mask):
-        """Get the valid radios of feature maps of all  level."""
+        """Get the valid ratios of feature maps of all levels."""
         _, H, W = mask.shape
         valid_H = torch.sum(~mask[:, :, 0], 1)
         valid_W = torch.sum(~mask[:, 0, :], 1)
