@@ -1,5 +1,20 @@
 ## Change Log
 
+### v0.1.1 (18/10/2022)
+#### New Features
+- Add model analyze tools for detrex [#79](https://github.com/IDEA-Research/detrex/pull/79)
+- Add benchmark [#81](https://github.com/IDEA-Research/detrex/pull/81)
+- Add visualization for COCO eval results and annotations [#82](https://github.com/IDEA-Research/detrex/pull/82)
+- Support `Group-DETR` algorhtim [#84](https://github.com/IDEA-Research/detrex/pull/84)
+- Release `DINO-Swin` training results [#86](https://github.com/IDEA-Research/detrex/pull/86)
+- Release better `Deformable-DETR` baselines [#102](https://github.com/IDEA-Research/detrex/pull/102) [#103](https://github.com/IDEA-Research/detrex/pull/103) 
+
+#### Bug Fixes
+- Fix bugs in ConvNeXt backbone [#91](https://github.com/IDEA-Research/detrex/pull/91)
+
+#### Documentation
+- Add pretrained model weights download links [#86](https://github.com/IDEA-Research/detrex/pull/86)
+
 ### v0.1.0 (30/09/2022)
 The **beta v0.1.0** version of detrex was released in 30/09/2022
 
