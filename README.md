@@ -59,7 +59,7 @@ v0.1.1 was released on 18/10/2022:
 - Support visualization on COCO eval results and annotations in [tools](./tools/)
 - Support [Group-DETR](./projects/group_detr/).
 - Release more DINO training results including `DINO-R50-24epochs`, `DINO-R101`, `DINO-Swin-Tiny`, `DINO-Swin-Small`, `DINO-Swin-Base`, `DINO-Swin-Large` in [DINO](./projects/dino/).
-- Release better `Deformable-DETR` baselines with **48.2 AP** in [Deformable-DETR](./projects/deformable_detr/).
+- Release better `Deformable-DETR` baselines with **48.2 AP** on COCO dataset in [Deformable-DETR](./projects/deformable_detr/).
 
 
 Please see [changelog.md](./changlog.md) for details and release history.
