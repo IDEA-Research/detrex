@@ -18,7 +18,7 @@
 [🛠️Installation](https://detrex.readthedocs.io/en/latest/tutorials/Installation.html) |
 [👀Model Zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html) |
 [🚀Awesome DETR](https://github.com/IDEA-Research/awesome-detection-transformer) |
-[🆕News](#change-log) |
+[🆕News](#whats-new) |
 [🤔Reporting Issues](https://github.com/IDEA-Research/detrex/issues/new/choose)
 
 
@@ -53,6 +53,16 @@ The repo name detrex has several interpretations:
 
 - <font color=#008000> <b> de-t.rex </b> </font>: de means 'the' in Dutch. T.rex, also called Tyrannosaurus Rex, means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
 
+## What's New
+v0.1.1 was released on 18/10/2022:
+- Add model analysis tools and benchmark in [tools](./tools/).
+- Support visualization on COCO eval results and annotations in [tools](./tools/)
+- Support [Group-DETR](./projects/group_detr/).
+- Release more DINO training results including `DINO-R50-24epochs`, `DINO-R101`, `DINO-Swin-Tiny`, `DINO-Swin-Small`, `DINO-Swin-Base`, `DINO-Swin-Large` in [DINO](./projects/dino/).
+- Release better `Deformable-DETR` baselines with **48.2 AP** in [Deformable-DETR](./projects/deformable_detr/).
+
+
+Please see [changelog.md](./changlog.md) for details and release history.
 
 ## Installation
 
@@ -86,16 +96,6 @@ Please see [projects](./projects/) for the details about projects that are built
 
 </details>
 
-
-## Change Log
-
-The **beta v0.1.0** version was released in 21/09/2022. Highlights of the released version:
-- Support various backbones, including: [FocalNet](https://arxiv.org/abs/2203.11926), [Swin-T](https://arxiv.org/pdf/2103.14030.pdf), [ResNet](https://arxiv.org/abs/1512.03385) and other [detectron2 builtin backbones](https://github.com/facebookresearch/detectron2/tree/main/detectron2/modeling/backbone).
-- Add [timm](https://github.com/rwightman/pytorch-image-models) backbone wrapper and [torchvision](https://github.com/pytorch/vision) backbone wrapper.
-- Support various Transformer-based detection algorithms, including: [DETR](https://arxiv.org/abs/2005.12872), [Deformable-DETR](https://arxiv.org/abs/2010.04159), [Conditional-DETR](https://arxiv.org/abs/2108.06152), [DAB-DETR](https://arxiv.org/abs/2201.12329), [DN-DETR](https://arxiv.org/abs/2203.01305), and [DINO](https://arxiv.org/abs/2203.03605).
-- Support flexible config system based on [Lazy Configs](https://detectron2.readthedocs.io/en/latest/tutorials/lazyconfigs.html)
-
-Please see [changelog.md](./changlog.md) for details and release history.
 
 ## License
 
