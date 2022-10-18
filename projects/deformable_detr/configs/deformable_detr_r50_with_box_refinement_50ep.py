@@ -1,7 +1,6 @@
 from .deformable_detr_r50_50ep import train, dataloader, optimizer, lr_multiplier, model
 
 # modify model config
-# set loss_class to 1.0 brings better results for deformable-detr-box-refinement under lr=1e-4
 model.with_box_refine = True
 
 # modify training config
