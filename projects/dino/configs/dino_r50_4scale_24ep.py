@@ -44,6 +44,8 @@ optimizer.weight_decay = 1e-4
 optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in module_name else 1
 
 # modify dataloader config
+# not filter empty annotations during training
+dataloader.train.dataset.filter_empty = False
 dataloader.train.num_workers = 16
 
 # please notice that this is total batch size.
