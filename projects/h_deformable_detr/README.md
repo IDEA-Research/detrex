@@ -5,11 +5,10 @@ This is the official implementation of the paper "[DETRs with Hybrid Matching](h
 Authors: Ding Jia, Yuhui Yuan, Haodi He, Xiaopei Wu, Haojun Yu, Weihong Lin, Lei Sun, Chao Zhang, Han Hu
 
 
-## Model ZOO
+## Pretrained Models
 
 We provide a set of baseline results and trained models available for download:
 
-### Models with the ResNet-50 backbone
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->

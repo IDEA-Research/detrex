@@ -201,3 +201,90 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_4scale_12ep.pth"> model </a></td>
 </tr>
 </tbody></table>
+
+
+### H-Deformable-DETR
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrained</th>
+<th valign="bottom">Query</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">Download</th>
+<!-- TABLE BODY -->
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/h_deformable_detr/configs/h_deformable_detr_r50_two_stage_12ep.py"> H-Deformable-DETR-R50 + tricks </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">300</td>
+<td align="center">12</td>
+<td align="center">48.9</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/r50_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/h_deformable_detr/configs/h_deformable_detr_r50_two_stage_36ep.py"> H-Deformable-DETR-R50 + tricks </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">300</td>
+<td align="center">36</td>
+<td align="center">50.3</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/r50_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/h_deformable_detr/configs/h_deformable_detr_swin_tiny_two_stage_12ep.py"> H-Deformable-DETR-Swin-T + tricks </a> </td>
+<td align="center">Swin-Tiny</td>
+<td align="center">IN1k</td>
+<td align="center">300</td>
+<td align="center">12</td>
+<td align="center">50.6</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/swin_tiny_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/h_deformable_detr/configs/h_deformable_detr_swin_tiny_two_stage_36ep.py"> H-Deformable-DETR-Swin-T + tricks </a> </td>
+<td align="center">Swin-Tiny</td>
+<td align="center">IN1k</td>
+<td align="center">300</td>
+<td align="center">36</td>
+<td align="center">53.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/swin_tiny_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href=""> H-Deformable-DETR-Swin-L + tricks </a> </td>
+<td align="center">Swin-Large</td>
+<td align="center">IN22k</td>
+<td align="center">300</td>
+<td align="center">36</td>
+<td align="center">56.2</td>
+<td align="center"> <a href=""> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/h_deformable_detr/configs/h_deformable_detr_swin_large_two_stage_12ep.py"> H-Deformable-DETR-Swin-L + tricks </a> </td>
+<td align="center">Swin-Large</td>
+<td align="center">IN22k</td>
+<td align="center">300</td>
+<td align="center">12</td>
+<td align="center">56.2</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/swin_large_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/h_deformable_detr/configs/h_deformable_detr_swin_large_two_stage_36ep.py"> H-Deformable-DETR-Swin-L + tricks </a> </td>
+<td align="center">Swin-Large</td>
+<td align="center">IN22k</td>
+<td align="center">300</td>
+<td align="center">36</td>
+<td align="center">57.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/drop_path0.5_swin_large_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/h_deformable_detr/configs/h_deformable_detr_swin_large_two_stage_12ep_900queries.py"> H-Deformable-DETR-Swin-L + tricks </a> </td>
+<td align="center">Swin-Large</td>
+<td align="center">IN22k</td>
+<td align="center">900</td>
+<td align="center">12</td>
+<td align="center">56.4</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/swin_large_hybrid_branch_lambda1_group6_t1500_n900_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/h_deformable_detr/configs/h_deformable_detr_swin_large_two_stage_36ep_900queries.py"> H-Deformable-DETR-Swin-L + tricks </a> </td>
+<td align="center">Swin-Large</td>
+<td align="center">IN22k</td>
+<td align="center">300</td>
+<td align="center">36</td>
+<td align="center">57.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/drop_path0.5_swin_large_hybrid_branch_lambda1_group6_t1500_n900_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth"> model </a></td>
+</tr>
+</tbody></table>
