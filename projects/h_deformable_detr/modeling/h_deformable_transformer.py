@@ -178,9 +178,7 @@ class HDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 )
             else:
                 assert reference_points.shape[-1] == 2
-                reference_points_input = (
-                    reference_points[:, :, None] * valid_ratios[:, None]
-                )
+                reference_points_input = reference_points[:, :, None] * valid_ratios[:, None]
 
             output = layer(
                 output,
@@ -203,18 +201,14 @@ class HDeformableDetrTransformerDecoder(TransformerLayerSequence):
                 else:
                     assert reference_points.shape[-1] == 2
                     new_reference_points = tmp
-                    new_reference_points[..., :2] = tmp[..., :2] + inverse_sigmoid(
-                        reference_points
-                    )
+                    new_reference_points[..., :2] = tmp[..., :2] + inverse_sigmoid(reference_points)
                     new_reference_points = new_reference_points.sigmoid()
                 reference_points = new_reference_points.detach()
 
             if self.return_intermediate:
                 intermediate.append(output)
                 intermediate_reference_points.append(
-                    new_reference_points
-                    if self.look_forward_twice
-                    else reference_points
+                    new_reference_points if self.look_forward_twice else reference_points
                 )
 
         if self.return_intermediate:
@@ -253,9 +247,7 @@ class HDeformableDetrTransformer(nn.Module):
 
         self.embed_dim = self.encoder.embed_dim
 
-        self.level_embeds = nn.Parameter(
-            torch.Tensor(self.num_feature_levels, self.embed_dim)
-        )
+        self.level_embeds = nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dim))
 
         if self.as_two_stage:
             self.enc_output = nn.Linear(self.embed_dim, self.embed_dim)
@@ -286,9 +278,7 @@ class HDeformableDetrTransformer(nn.Module):
         proposals = []
         _cur = 0
         for lvl, (H, W) in enumerate(spatial_shapes):
-            mask_flatten_ = memory_padding_mask[:, _cur : (_cur + H * W)].view(
-                N, H, W, 1
-            )
+            mask_flatten_ = memory_padding_mask[:, _cur : (_cur + H * W)].view(N, H, W, 1)
             valid_H = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
             valid_W = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
 
@@ -298,31 +288,25 @@ class HDeformableDetrTransformer(nn.Module):
             )
             grid = torch.cat([grid_x.unsqueeze(-1), grid_y.unsqueeze(-1)], -1)
 
-            scale = torch.cat([valid_W.unsqueeze(-1), valid_H.unsqueeze(-1)], 1).view(
-                N, 1, 1, 2
-            )
+            scale = torch.cat([valid_W.unsqueeze(-1), valid_H.unsqueeze(-1)], 1).view(N, 1, 1, 2)
             grid = (grid.unsqueeze(0).expand(N, -1, -1, -1) + 0.5) / scale
-            wh = torch.ones_like(grid) * 0.05 * (2.0 ** lvl)
+            wh = torch.ones_like(grid) * 0.05 * (2.0**lvl)
             proposal = torch.cat((grid, wh), -1).view(N, -1, 4)
             proposals.append(proposal)
             _cur += H * W
 
         output_proposals = torch.cat(proposals, 1)
-        output_proposals_valid = (
-            (output_proposals > 0.01) & (output_proposals < 0.99)
-        ).all(-1, keepdim=True)
+        output_proposals_valid = ((output_proposals > 0.01) & (output_proposals < 0.99)).all(
+            -1, keepdim=True
+        )
         output_proposals = torch.log(output_proposals / (1 - output_proposals))
         output_proposals = output_proposals.masked_fill(
             memory_padding_mask.unsqueeze(-1), float("inf")
         )
-        output_proposals = output_proposals.masked_fill(
-            ~output_proposals_valid, float("inf")
-        )
+        output_proposals = output_proposals.masked_fill(~output_proposals_valid, float("inf"))
 
         output_memory = memory
-        output_memory = output_memory.masked_fill(
-            memory_padding_mask.unsqueeze(-1), float(0)
-        )
+        output_memory = output_memory.masked_fill(memory_padding_mask.unsqueeze(-1), float(0))
         output_memory = output_memory.masked_fill(~output_proposals_valid, float(0))
         output_memory = self.enc_output_norm(self.enc_output(output_memory))
         return output_memory, output_proposals
@@ -372,20 +356,14 @@ class HDeformableDetrTransformer(nn.Module):
     def get_proposal_pos_embed(self, proposals, num_pos_feats=128, temperature=10000):
         """Get the position embedding of proposal."""
         scale = 2 * math.pi
-        dim_t = torch.arange(
-            num_pos_feats, dtype=torch.float32, device=proposals.device
-        )
-        dim_t = temperature ** (
-            2 * torch.div(dim_t, 2, rounding_mode="floor") / num_pos_feats
-        )
+        dim_t = torch.arange(num_pos_feats, dtype=torch.float32, device=proposals.device)
+        dim_t = temperature ** (2 * torch.div(dim_t, 2, rounding_mode="floor") / num_pos_feats)
         # N, L, 4
         proposals = proposals.sigmoid() * scale
         # N, L, 4, 128
         pos = proposals[:, :, :, None] / dim_t
         # N, L, 4, 64, 2
-        pos = torch.stack(
-            (pos[:, :, :, 0::2].sin(), pos[:, :, :, 1::2].cos()), dim=4
-        ).flatten(2)
+        pos = torch.stack((pos[:, :, :, 0::2].sin(), pos[:, :, :, 1::2].cos()), dim=4).flatten(2)
         return pos
 
     def forward(
@@ -426,9 +404,7 @@ class HDeformableDetrTransformer(nn.Module):
         level_start_index = torch.cat(
             (spatial_shapes.new_zeros((1,)), spatial_shapes.prod(1).cumsum(0)[:-1])
         )
-        valid_ratios = torch.stack(
-            [self.get_valid_ratio(m) for m in multi_level_masks], 1
-        )
+        valid_ratios = torch.stack([self.get_valid_ratio(m) for m in multi_level_masks], 1)
 
         reference_points = self.get_reference_points(
             spatial_shapes, valid_ratios, device=feat.device
@@ -453,12 +429,9 @@ class HDeformableDetrTransformer(nn.Module):
                 memory, mask_flatten, spatial_shapes
             )
 
-            enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](
-                output_memory
-            )
+            enc_outputs_class = self.decoder.class_embed[self.decoder.num_layers](output_memory)
             enc_outputs_coord_unact = (
-                self.decoder.bbox_embed[self.decoder.num_layers](output_memory)
-                + output_proposals
+                self.decoder.bbox_embed[self.decoder.num_layers](output_memory) + output_proposals
             )
 
             topk = self.two_stage_num_proposals

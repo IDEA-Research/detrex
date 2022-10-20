@@ -20,13 +20,18 @@ model = L(HDeformableDETR)(
     backbone=L(ResNet)(
         stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
         stages=L(ResNet.make_default_stages)(
-            depth=50, stride_in_1x1=False, norm="FrozenBN",
+            depth=50,
+            stride_in_1x1=False,
+            norm="FrozenBN",
         ),
         out_features=["res3", "res4", "res5"],
         freeze_at=1,
     ),
     position_embedding=L(PositionEmbeddingSine)(
-        num_pos_feats=128, temperature=10000, normalize=True, offset=-0.5,
+        num_pos_feats=128,
+        temperature=10000,
+        normalize=True,
+        offset=-0.5,
     ),
     neck=L(ChannelMapper)(
         input_shapes={
@@ -84,7 +89,11 @@ model = L(HDeformableDETR)(
             alpha=0.25,
             gamma=2.0,
         ),
-        weight_dict={"loss_class": 2.0, "loss_bbox": 5.0, "loss_giou": 2.0,},
+        weight_dict={
+            "loss_class": 2.0,
+            "loss_bbox": 5.0,
+            "loss_giou": 2.0,
+        },
         loss_class_type="focal_loss",
         alpha=0.25,
         gamma=2.0,
