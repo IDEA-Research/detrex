@@ -91,6 +91,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [DN-Deformable-DETR (CVPR'2022 Oral)](./projects/dn_deformable_detr/)
 - [x] [DINO (ArXiv'2022)](./projects/dino/)
 - [x] [Group-DETR (ArXiv' 2022)](./projects/group_detr/)
+- [x] [H-Deformable-DETR (ArXiv' 2022)](./projects/h_deformable_detr/)
 
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 

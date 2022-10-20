@@ -125,9 +125,7 @@ class HDeformableDETR(nn.Module):
         # Decoder layers share the same heads without box refinement, while use the different
         # heads when box refinement is used.
         num_pred = (
-            (transformer.decoder.num_layers + 1)
-            if as_two_stage
-            else transformer.decoder.num_layers
+            (transformer.decoder.num_layers + 1) if as_two_stage else transformer.decoder.num_layers
         )
         if with_box_refine:
             self.class_embed = nn.ModuleList(
@@ -140,9 +138,7 @@ class HDeformableDETR(nn.Module):
             self.transformer.decoder.bbox_embed = self.bbox_embed
         else:
             nn.init.constant_(self.bbox_embed.layers[-1].bias.data[2:], -2.0)
-            self.class_embed = nn.ModuleList(
-                [self.class_embed for _ in range(num_pred)]
-            )
+            self.class_embed = nn.ModuleList([self.class_embed for _ in range(num_pred)])
             self.bbox_embed = nn.ModuleList([self.bbox_embed for _ in range(num_pred)])
             self.transformer.decoder.bbox_embed = None
 
@@ -195,13 +191,9 @@ class HDeformableDETR(nn.Module):
         multi_level_position_embeddings = []
         for feat in multi_level_feats:
             multi_level_masks.append(
-                F.interpolate(img_masks[None], size=feat.shape[-2:])
-                .to(torch.bool)
-                .squeeze(0)
+                F.interpolate(img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0)
             )
-            multi_level_position_embeddings.append(
-                self.position_embedding(multi_level_masks[-1])
-            )
+            multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
 
         # initialize object query embeddings
         query_embeds = None
@@ -212,10 +204,23 @@ class HDeformableDETR(nn.Module):
         """ attention mask to prevent information leakage
         """
         self_attn_mask = (
-            torch.zeros([self.num_queries, self.num_queries,]).bool().to(feat.device)
+            torch.zeros(
+                [
+                    self.num_queries,
+                    self.num_queries,
+                ]
+            )
+            .bool()
+            .to(feat.device)
         )
-        self_attn_mask[self.num_queries_one2one :, 0 : self.num_queries_one2one,] = True
-        self_attn_mask[0 : self.num_queries_one2one, self.num_queries_one2one :,] = True
+        self_attn_mask[
+            self.num_queries_one2one :,
+            0 : self.num_queries_one2one,
+        ] = True
+        self_attn_mask[
+            0 : self.num_queries_one2one,
+            self.num_queries_one2one :,
+        ] = True
 
         (
             inter_states,
@@ -250,15 +255,9 @@ class HDeformableDETR(nn.Module):
                 assert reference.shape[-1] == 2
                 tmp[..., :2] += reference
             outputs_coord = tmp.sigmoid()
-            outputs_classes_one2one.append(
-                outputs_class[:, 0 : self.num_queries_one2one]
-            )
-            outputs_classes_one2many.append(
-                outputs_class[:, self.num_queries_one2one :]
-            )
-            outputs_coords_one2one.append(
-                outputs_coord[:, 0 : self.num_queries_one2one]
-            )
+            outputs_classes_one2one.append(outputs_class[:, 0 : self.num_queries_one2one])
+            outputs_classes_one2many.append(outputs_class[:, self.num_queries_one2one :])
+            outputs_coords_one2one.append(outputs_coord[:, 0 : self.num_queries_one2one])
             outputs_coords_one2many.append(outputs_coord[:, self.num_queries_one2one :])
         outputs_classes_one2one = torch.stack(outputs_classes_one2one)
         # tensor shape: [num_decoder_layers, bs, num_queries_one2one, num_classes]
@@ -407,9 +406,7 @@ class HDeformableDETR(nn.Module):
         new_targets = []
         for targets_per_image in targets:
             h, w = targets_per_image.image_size
-            image_size_xyxy = torch.as_tensor(
-                [w, h, w, h], dtype=torch.float, device=self.device
-            )
+            image_size_xyxy = torch.as_tensor([w, h, w, h], dtype=torch.float, device=self.device)
             gt_classes = targets_per_image.gt_classes
             gt_boxes = targets_per_image.gt_boxes.tensor / image_size_xyxy
             gt_boxes = box_xyxy_to_cxcywh(gt_boxes)
