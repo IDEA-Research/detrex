@@ -24,8 +24,15 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">46.32</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/deformable_detr_with_box_refinement_50ep.pth"> model </a></td>
+<td align="center">46.99</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/deformable_detr_with_box_refinement_50ep_new.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/deformable_detr/configs/deformable_detr_r50_two_stage_50ep.py"> Deformable-DETR + Box Refinement + Two Stage </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">48.19</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/deformable_detr_r50_two_stage_50ep_new.pth"> model </a></td>
 </tr>
 </tbody></table>
 
@@ -76,7 +83,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dab_detr_r101_50ep.pth"> model </a></td>
 </tr>
  <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dab_detr/configs/dab_detr_swin_t_in1k_50ep.py"> DAB-DETR-Swin-T </a> </td>
-<td align="center">Swin-T</td>
+<td align="center">Swin-Tiny-224</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">45.17</td>
@@ -136,5 +143,61 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">12</td>
 <td align="center">49.05</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_r50_4scale_12ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_4scale_24ep.py"> DINO-R50-4Scale </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">24</td>
+<td align="center">50.60</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r50_4scale_24ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r101_4scale_12ep.py"> DINO-R101-4Scale </a> </td>
+<td align="center">R101</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">49.95</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r101_4scale_12ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_swin_tiny_224_4scale_12ep.py"> DINO-Swin-T-224-4Scale </a> </td>
+<td align="center">Swin-Tiny-224</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">51.30</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_tiny_224_4scale_12ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_swin_tiny_224_4scale_12ep.py"> DINO-Swin-T-224-4Scale </a> </td>
+<td align="center">Swin-Tiny-224</td>
+<td align="center">IN22k to IN1k</td>
+<td align="center">12</td>
+<td align="center">52.50</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_tiny_224_22kto1k_finetune_4scale_12ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_swin_small_224_4scale_12ep.py"> DINO-Swin-S-224-4Scale </a> </td>
+<td align="center">Swin-Small-224</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">52.96</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_small_224_4scale_12ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_swin_base_384_4scale_12ep.py"> DINO-Swin-B-384-4Scale </a> </td>
+<td align="center">Swin-Base-384</td>
+<td align="center">IN22k to IN1k</td>
+<td align="center">12</td>
+<td align="center">55.83</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_base_384_4scale_12ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_swin_large_224_4scale_12ep.py"> DINO-Swin-L-224-4Scale </a> </td>
+<td align="center">Swin-Large-224</td>
+<td align="center">IN22k to IN1k</td>
+<td align="center">12</td>
+<td align="center">56.92</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_224_4scale_12ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_swin_large_384_4scale_12ep.py"> DINO-Swin-L-384-4Scale </a> </td>
+<td align="center">Swin-Large-384</td>
+<td align="center">IN22k to IN1k</td>
+<td align="center">12</td>
+<td align="center">56.93</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_4scale_12ep.pth"> model </a></td>
 </tr>
 </tbody></table>

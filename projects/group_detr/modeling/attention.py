@@ -177,7 +177,7 @@ class GroupConditionalSelfAttention(nn.Module):
 
         if not self.batch_first:
             out = out.transpose(0, 1)
-        
+
         if self.training:
             out = torch.cat(out.split(B, dim=1), dim=0)
 
