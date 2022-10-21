@@ -17,7 +17,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <th valign="bottom">Backbone</th>
 <th valign="bottom">Pretrain</th>
 <th valign="bottom">Epochs</th>
-<th valign="bottom">Denoise Query Num</th>
+<th valign="bottom">Denoising Queries</th>
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
