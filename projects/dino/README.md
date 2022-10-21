@@ -17,7 +17,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <th valign="bottom">Backbone</th>
 <th valign="bottom">Pretrain</th>
 <th valign="bottom">Epochs</th>
-<th valign="bottom">Denoise Queries</th>
+<th valign="bottom">Denoise Query Num</th>
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
@@ -37,7 +37,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">12</td>
 <td align="center">300</td>
 <td align="center">49.45</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_300dn.pth">model</a></td>
 </tr>
 <!-- ROW: dino_r50_4scale_24ep -->
  <tr><td align="left"><a href="configs/dino_r50_4cale_24ep.py">DINO-R50-4scale</a></td>

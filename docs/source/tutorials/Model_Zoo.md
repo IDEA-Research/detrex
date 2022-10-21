@@ -134,6 +134,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <th valign="bottom">Backbone</th>
 <th valign="bottom">Pretrained</th>
 <th valign="bottom">Epochs</th>
+<th valign="bottom">Denoise Query Num</th>
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">Download</th>
 <!-- TABLE BODY -->
