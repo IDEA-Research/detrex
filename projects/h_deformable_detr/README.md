@@ -17,7 +17,7 @@ We provide a set of baseline results and trained models available for download:
 <th valign="bottom">Query Num</th>
 <th valign="bottom">Epochs</th>
 <th valign="bottom">AP</th>
-<th valign="bottom">Download</th>
+<th valign="bottom">download</th>
 <!-- TABLE BODY -->
 </tr>
  <tr><td align="left"><a href="configs/h_deformable_detr_r50_two_stage_12ep.py">H-Deformable-DETR + tricks</a></td>
