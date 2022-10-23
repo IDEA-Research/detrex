@@ -14,8 +14,8 @@ We provide a set of baseline results and trained models available for download:
 <!-- TABLE HEADER -->
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
-<th valign="bottom">query</th>
-<th valign="bottom">epochs</th>
+<th valign="bottom">Query Num</th>
+<th valign="bottom">Epochs</th>
 <th valign="bottom">AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
