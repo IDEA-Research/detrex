@@ -7,7 +7,7 @@
 
 
 ## COCO Object Detection Baselines
-Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pretrained weights will be released in the future version.
+Here we provides our pretrained baselines with **detrex**. And more pretrained weights will be released in the future version.
 
 ### Deformable-DETR
 <table class="docutils"><tbody>
@@ -134,7 +134,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <th valign="bottom">Backbone</th>
 <th valign="bottom">Pretrained</th>
 <th valign="bottom">Epochs</th>
-<th valign="bottom">Denoise Query Num</th>
+<th valign="bottom">Denoising Queries</th>
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">Download</th>
 <!-- TABLE BODY -->
@@ -142,13 +142,23 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
+<td align="center">100</td>
 <td align="center">49.05</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_r50_4scale_12ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_4scale_12ep_300dn.py"> DINO-R50-4Scale </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">300</td>
+<td align="center">49.45</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_300dn.pth"> model </a></td>
 </tr>
  <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_4scale_24ep.py"> DINO-R50-4Scale </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">24</td>
+<td align="center">100</td>
 <td align="center">50.60</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r50_4scale_24ep.pth"> model </a></td>
 </tr>
@@ -156,6 +166,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">R101</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
+<td align="center">100</td>
 <td align="center">49.95</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r101_4scale_12ep.pth"> model </a></td>
 </tr>
@@ -163,6 +174,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">Swin-Tiny-224</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
+<td align="center">100</td>
 <td align="center">51.30</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_tiny_224_4scale_12ep.pth"> model </a></td>
 </tr>
@@ -170,6 +182,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">Swin-Tiny-224</td>
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
+<td align="center">100</td>
 <td align="center">52.50</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_tiny_224_22kto1k_finetune_4scale_12ep.pth"> model </a></td>
 </tr>
@@ -177,6 +190,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">Swin-Small-224</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
+<td align="center">100</td>
 <td align="center">52.96</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_small_224_4scale_12ep.pth"> model </a></td>
 </tr>
@@ -184,6 +198,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">Swin-Base-384</td>
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
+<td align="center">100</td>
 <td align="center">55.83</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_base_384_4scale_12ep.pth"> model </a></td>
 </tr>
@@ -191,6 +206,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">Swin-Large-224</td>
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
+<td align="center">100</td>
 <td align="center">56.92</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_224_4scale_12ep.pth"> model </a></td>
 </tr>
@@ -198,6 +214,7 @@ Here we provides our pretrained baselines in `detrex beta v0.1.0`. And more pret
 <td align="center">Swin-Large-384</td>
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
+<td align="center">100</td>
 <td align="center">56.93</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_4scale_12ep.pth"> model </a></td>
 </tr>
