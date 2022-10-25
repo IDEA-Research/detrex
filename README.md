@@ -1,7 +1,13 @@
 <h2 align="left">detrex</h2>
 <p align="left">
+    <a href="https://github.com/IDEA-Research/detrex/releases">
+        <img alt="release" src="https://img.shields.io/github/v/release/IDEA-Research/detrex">
+    </a>
     <a href="https://detrex.readthedocs.io/en/latest/index.html">
         <img alt="docs" src="https://img.shields.io/badge/docs-latest-blue">
+    </a>
+    <a href='https://detrex.readthedocs.io/en/latest/?badge=latest'>
+    <img src='https://readthedocs.org/projects/detrex/badge/?version=latest' alt='Documentation Status' />
     </a>
     <a href="https://github.com/IDEA-Research/detrex/blob/main/LICENSE">
         <img alt="GitHub" src="https://img.shields.io/github/license/IDEA-Research/detrex.svg?color=blue">
@@ -70,7 +76,13 @@ Please refer to [Installation Instructions](https://detrex.readthedocs.io/en/lat
 
 ## Getting Started
 
-Please refer to [Getting Started with detrex](https://detrex.readthedocs.io/en/latest/tutorials/Getting_Started.html) for the basic usage of detrex.
+Please refer to [Getting Started with detrex](https://detrex.readthedocs.io/en/latest/tutorials/Getting_Started.html) for the basic usage of detrex. We also provides other tutorials for:
+- [Learn about the config system of detrex](https://detrex.readthedocs.io/en/latest/tutorials/Config_System.html)
+- [How to the pretrained weights from original detr repo into detrex format](https://detrex.readthedocs.io/en/latest/tutorials/Converters.html)
+- [Visualize your training data and testing results on COCO dataset](https://detrex.readthedocs.io/en/latest/tutorials/Tools.html#visualization)
+- [Analyze the model under detrex](https://detrex.readthedocs.io/en/latest/tutorials/Tools.html#model-analysis)
+- [Download and initialize with the pretrained backbone weights](https://detrex.readthedocs.io/en/latest/tutorials/Using_Pretrained_Backbone.html)
+- [Frequently asked questions](https://github.com/IDEA-Research/detrex/issues/109)
 
 ## Documentation
 
