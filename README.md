@@ -1,7 +1,13 @@
 <h2 align="left">detrex</h2>
 <p align="left">
+    <a href="https://github.com/IDEA-Research/detrex/releases">
+        <img alt="release" src="https://img.shields.io/github/v/release/IDEA-Research/detrex">
+    </a>
     <a href="https://detrex.readthedocs.io/en/latest/index.html">
         <img alt="docs" src="https://img.shields.io/badge/docs-latest-blue">
+    </a>
+    <a href='https://detrex.readthedocs.io/en/latest/?badge=latest'>
+    <img src='https://readthedocs.org/projects/detrex/badge/?version=latest' alt='Documentation Status' />
     </a>
     <a href="https://github.com/IDEA-Research/detrex/blob/main/LICENSE">
         <img alt="GitHub" src="https://img.shields.io/github/license/IDEA-Research/detrex.svg?color=blue">
