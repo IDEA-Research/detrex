@@ -82,6 +82,7 @@ Please refer to [Getting Started with detrex](https://detrex.readthedocs.io/en/l
 - [Visualize your training data and testing results on COCO dataset](https://detrex.readthedocs.io/en/latest/tutorials/Tools.html#visualization)
 - [Analyze the model under detrex](https://detrex.readthedocs.io/en/latest/tutorials/Tools.html#model-analysis)
 - [Download and initialize with the pretrained backbone weights](https://detrex.readthedocs.io/en/latest/tutorials/Using_Pretrained_Backbone.html)
+- [Frequently asked questions](https://github.com/IDEA-Research/detrex/issues/109)
 
 ## Documentation
 
