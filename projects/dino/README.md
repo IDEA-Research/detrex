@@ -118,7 +118,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">36</td>
 <td align="center">100</td>
 <td align="center">58.09</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_swin_large_384_4scale_36ep.pth">model</a></td>
 </tr>
 </tbody></table>
 
