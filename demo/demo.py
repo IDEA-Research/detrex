@@ -11,6 +11,7 @@ import warnings
 import cv2
 import tqdm
 
+from detectron2.structures import Instances, Boxes
 from detectron2.config import LazyConfig, instantiate
 from detectron2.data.detection_utils import read_image
 from detectron2.checkpoint import DetectionCheckpointer
@@ -111,7 +112,7 @@ if __name__ == "__main__":
             # use PIL, to be consistent with evaluation
             img = read_image(path, format="BGR")
             start_time = time.time()
-            predictions, visualized_output = demo.run_on_image(img)
+            predictions, visualized_output = demo.run_on_image(img, args.confidence_threshold)
             logger.info(
                 "{}: {} in {:.2f}s".format(
                     path,

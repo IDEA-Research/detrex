@@ -5,10 +5,25 @@ from collections import deque
 import cv2
 import torch
 
+from detectron2.structures import Instances
 import detectron2.data.transforms as T
 from detectron2.data import MetadataCatalog
 from detectron2.utils.video_visualizer import VideoVisualizer
 from detectron2.utils.visualizer import ColorMode, Visualizer
+
+
+def filter_predictions_with_confidence(predictions, confidence_threshold=0.5):
+    preds = predictions["instances"]
+    keep_idxs = preds.scores > confidence_threshold
+    pred_scores = preds.scores[keep_idxs]
+    pred_classes = preds.pred_classes[keep_idxs]
+    pred_boxes = preds.pred_boxes[keep_idxs]
+    return {"instances": Instances(
+        image_size=preds.image_size, 
+        pred_boxes=pred_boxes,
+        scores=pred_scores,
+        pred_classes=pred_classes,
+    )}
 
 
 class VisualizationDemo(object):
@@ -54,7 +69,7 @@ class VisualizationDemo(object):
                 metadata_dataset=metadata_dataset, 
             )
 
-    def run_on_image(self, image):
+    def run_on_image(self, image, threshold=0.5):
         """
         Args:
             image (np.ndarray): an image of shape (H, W, C) (in BGR order).
@@ -66,6 +81,7 @@ class VisualizationDemo(object):
         """
         vis_output = None
         predictions = self.predictor(image)
+        predictions = filter_predictions_with_confidence(predictions, threshold)
         # Convert image from OpenCV BGR format to Matplotlib RGB format.
         image = image[:, :, ::-1]
         visualizer = Visualizer(image, self.metadata, instance_mode=self.instance_mode)
