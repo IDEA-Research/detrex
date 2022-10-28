@@ -112,7 +112,7 @@ class VisualizationDemo(object):
             else:
                 break
 
-    def run_on_video(self, video):
+    def run_on_video(self, video, threshold=0.5):
         """
         Visualizes predictions on frames of the input video.
 
@@ -125,7 +125,8 @@ class VisualizationDemo(object):
         """
         video_visualizer = VideoVisualizer(self.metadata, self.instance_mode)
 
-        def process_predictions(frame, predictions):
+        def process_predictions(frame, predictions, threshold):
+            predictions = filter_predictions_with_confidence(predictions, threshold)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if "panoptic_seg" in predictions:
                 panoptic_seg, segments_info = predictions["panoptic_seg"]
@@ -157,15 +158,15 @@ class VisualizationDemo(object):
                 if cnt >= buffer_size:
                     frame = frame_data.popleft()
                     predictions = self.predictor.get()
-                    yield process_predictions(frame, predictions)
+                    yield process_predictions(frame, predictions, threshold)
 
             while len(frame_data):
                 frame = frame_data.popleft()
                 predictions = self.predictor.get()
-                yield process_predictions(frame, predictions)
+                yield process_predictions(frame, predictions, threshold)
         else:
             for frame in frame_gen:
-                yield process_predictions(frame, self.predictor(frame))
+                yield process_predictions(frame, self.predictor(frame), threshold)
 
 
 class DefaultPredictor:
