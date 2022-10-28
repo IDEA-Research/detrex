@@ -11,15 +11,15 @@ import warnings
 import cv2
 import tqdm
 
-from detectron2.structures import Instances, Boxes
+from demo.predictors import VisualizationDemo
+from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import LazyConfig, instantiate
 from detectron2.data.detection_utils import read_image
-from detectron2.checkpoint import DetectionCheckpointer
+from detectron2.structures import Boxes, Instances
 from detectron2.utils.logger import setup_logger
 
 sys.path.insert(0, "./")
 
-from demo.predictors import VisualizationDemo
 
 # constants
 WINDOW_NAME = "COCO detections"

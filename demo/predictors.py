@@ -5,9 +5,9 @@ from collections import deque
 import cv2
 import torch
 
-from detectron2.structures import Instances
 import detectron2.data.transforms as T
 from detectron2.data import MetadataCatalog
+from detectron2.structures import Instances
 from detectron2.utils.video_visualizer import VideoVisualizer
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
@@ -18,24 +18,26 @@ def filter_predictions_with_confidence(predictions, confidence_threshold=0.5):
     pred_scores = preds.scores[keep_idxs]
     pred_classes = preds.pred_classes[keep_idxs]
     pred_boxes = preds.pred_boxes[keep_idxs]
-    return {"instances": Instances(
-        image_size=preds.image_size, 
-        pred_boxes=pred_boxes,
-        scores=pred_scores,
-        pred_classes=pred_classes,
-    )}
+    return {
+        "instances": Instances(
+            image_size=preds.image_size,
+            pred_boxes=pred_boxes,
+            scores=pred_scores,
+            pred_classes=pred_classes,
+        )
+    }
 
 
 class VisualizationDemo(object):
     def __init__(
-        self, 
+        self,
         model,
         min_size_test=800,
         max_size_test=1333,
         img_format="RGB",
         metadata_dataset="coco_2017_val",
-        instance_mode=ColorMode.IMAGE, 
-        parallel=False
+        instance_mode=ColorMode.IMAGE,
+        parallel=False,
     ):
         """
         Args:
@@ -54,19 +56,20 @@ class VisualizationDemo(object):
         if parallel:
             num_gpu = torch.cuda.device_count()
             self.predictor = AsyncPredictor(
-                model=model, 
+                model=model,
                 min_size_test=min_size_test,
                 max_size_test=max_size_test,
                 img_format=img_format,
-                metadata_dataset=metadata_dataset, 
-                num_gpus=num_gpu)
+                metadata_dataset=metadata_dataset,
+                num_gpus=num_gpu,
+            )
         else:
             self.predictor = DefaultPredictor(
                 model=model,
                 min_size_test=min_size_test,
                 max_size_test=max_size_test,
                 img_format=img_format,
-                metadata_dataset=metadata_dataset, 
+                metadata_dataset=metadata_dataset,
             )
 
     def run_on_image(self, image, threshold=0.5):
@@ -167,12 +170,12 @@ class VisualizationDemo(object):
 
 class DefaultPredictor:
     def __init__(
-        self, 
+        self,
         model,
         min_size_test=800,
         max_size_test=1333,
         img_format="RGB",
-        metadata_dataset="coco_2017_val"
+        metadata_dataset="coco_2017_val",
     ):
         self.model = model
         # self.model.eval()
@@ -181,9 +184,7 @@ class DefaultPredictor:
         # checkpointer = DetectionCheckpointer(self.model)
         # checkpointer.load(init_checkpoint)
 
-        self.aug = T.ResizeShortestEdge(
-            [min_size_test, min_size_test],  max_size_test
-        )
+        self.aug = T.ResizeShortestEdge([min_size_test, min_size_test], max_size_test)
 
         self.input_format = img_format
         assert self.input_format in ["RGB", "BGR"], self.input_format
@@ -224,9 +225,9 @@ class AsyncPredictor:
 
     class _PredictWorker(mp.Process):
         def __init__(
-            self, 
-            model, 
-            task_queue, 
+            self,
+            model,
+            task_queue,
             result_queue,
             min_size_test=800,
             max_size_test=1333,
@@ -320,4 +321,3 @@ class AsyncPredictor:
     @property
     def default_buffer_size(self):
         return len(self.procs) * 5
-
