@@ -27,7 +27,7 @@ python demo/demo.py --config-file projects/dino/configs/dino_swin_large_384_4sca
                     --opts train.init_checkpoint="./dino_swin_large_384_4scale_36ep.pth"
 ```
 
-For details of the command line arguments, run `python demo/demo.py -h` or look at its source code to understand its behavior.
+For details of the command line arguments, run `python demo/demo.py -h` or look at its source code to understand its behavior. This demo is modified from [detectron2 demo](https://github.com/facebookresearch/detectron2/tree/main/demo). You can also refer to [detectron2 demo documentation](https://detectron2.readthedocs.io/en/latest/tutorials/getting_started.html#inference-demo-with-pre-trained-models) for more details.
 
 
 ## Data Preparation
