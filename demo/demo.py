@@ -53,6 +53,30 @@ def get_parser():
         "If not given, will show output in an OpenCV window.",
     )
     parser.add_argument(
+        "--min_size_test",
+        type=int,
+        default=800,
+        help="Size of the smallest side of the image during testing. Set to zero to disable resize in testing.",
+    )
+    parser.add_argument(
+        "--max_size_test",
+        type=float,
+        default=1333,
+        help="Maximum size of the side of the image during testing.",
+    )
+    parser.add_argument(
+        "--img_format",
+        type=str,
+        default="RGB",
+        help="The format of the loading images.",
+    )
+    parser.add_argument(
+        "--metadata_dataset",
+        type=str,
+        default="coco_2017_val",
+        help="The metadata infomation to be used. Default to COCO val metadata.",
+    )
+    parser.add_argument(
         "--confidence-threshold",
         type=float,
         default=0.5,
@@ -101,7 +125,11 @@ if __name__ == "__main__":
     model.eval()
 
     demo = VisualizationDemo(
-        model = model
+        model=model,
+        min_size_test=args.min_size_test,
+        max_size_test=args.max_size_test,
+        img_format=args.img_format,
+        metadata_dataset=args.metadata_dataset,
     )
 
     if args.input:
