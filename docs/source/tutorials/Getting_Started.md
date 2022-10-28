@@ -1,6 +1,35 @@
 # Getting Started with detrex
 This document provides a brief intro of the usage of builtin command-line tools in detrex.
 
+## Inference Demo with Pre-trained Models
+We've provided [demo](https://github.com/IDEA-Research/detrex/tree/main/demo) as detectron2 for visualizing the customized input images or videos using pretrained weights.
+
+For visualizing demos:
+1. Pick a model and its config file from [projects](https://github.com/IDEA-Research/detrex/tree/main/projects), for example, [dino_swin_large_384_4scale_36ep](https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_swin_large_384_4scale_36ep.py).
+2. Download the pretrained weights from [Model Zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html) or the [project's page](https://github.com/IDEA-Research/detrex/tree/main/projects/dino#pretrained-models) (take DINO as an example).
+3. Using the provided [demo.py](https://github.com/IDEA-Research/detrex/blob/main/demo/demo.py) to demo the input images or videos. Run it as:
+
+```bash
+cd detrex/
+python demo/demo.py --config-file projects/dino/configs/dino_swin_large_384_4scale_36ep.py \
+                    --input input.jpg \
+                    --output visualized_results.jpg \
+                    --opts train.init_checkpoint="./dino_swin_large_384_4scale_36ep.pth"
+
+```
+
+To visualize videos:
+```bash
+cd detrex/
+python demo/demo.py --config-file projects/dino/configs/dino_swin_large_384_4scale_36ep.py \
+                    --video-input ./demo_video.mp4 \
+                    --output visualize_video_results.mp4 \
+                    --opts train.init_checkpoint="./dino_swin_large_384_4scale_36ep.pth"
+```
+
+For details of the command line arguments, run `python demo/demo.py -h` or look at its source code to understand its behavior. This demo is modified from [detectron2 demo](https://github.com/facebookresearch/detectron2/tree/main/demo). You can also refer to [detectron2 demo documentation](https://detectron2.readthedocs.io/en/latest/tutorials/getting_started.html#inference-demo-with-pre-trained-models) for more details.
+
+
 ## Data Preparation
 In detrex, we use the builtin coco datasets borrowed from detectron2, which has builtin support for a few datasets. The datasets are assumed to exist in a directory specified by the environment variable `DETECTRON2_DATASETS`. Here we provide the tutorials about the preparation for `MSCOCO` datasets. For more usage of the detectron2 builtin datasets, please refer to the official documentation: [Use Builtin Datasets](https://detectron2.readthedocs.io/en/latest/tutorials/builtin_datasets.html).
 
