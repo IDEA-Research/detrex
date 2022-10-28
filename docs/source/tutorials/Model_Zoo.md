@@ -221,7 +221,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
  <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_swin_large_384_4scale_36ep.py"> DINO-Swin-L-384-4Scale </a> </td>
 <td align="center">Swin-Large-384</td>
 <td align="center">IN22k to IN1k</td>
-<td align="center">12</td>
+<td align="center">36</td>
 <td align="center">100</td>
 <td align="center">58.09</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_swin_large_384_4scale_36ep.pth"> model </a></td>
