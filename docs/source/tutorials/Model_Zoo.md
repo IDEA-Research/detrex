@@ -93,8 +93,8 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">48.87</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dab_deformable_r50_50ep.pth"> model </a></td>
+<td align="center">49.01</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dab_deformable_detr_r50_50ep_49AP.pth"> model </a></td>
 </tr>
  <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dab_deformable_detr/configs/dab_deformable_detr_r50_two_stage_50ep.py"> DAB-Deformable-DETR-R50-Two-Stage </a> </td>
 <td align="center">R50</td>
