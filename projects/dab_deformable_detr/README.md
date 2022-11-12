@@ -33,8 +33,8 @@ Here we provide the pretrained `DAB-Deformable-DETR` weights based on detrex.
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">49.54</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dab_deformable_r50_two_stage_50ep.pth">model</a></td>
+<td align="center">49.70</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dab_deformable_detr_r50_two_stage_49_7AP.pth">model</a></td>
 </tr>
 </tbody></table>
 
