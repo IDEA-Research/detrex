@@ -273,14 +273,6 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">53.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/swin_tiny_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth"> model </a></td>
 </tr>
- <tr><td align="left"> <a href=""> H-Deformable-DETR-Swin-L + tricks </a> </td>
-<td align="center">Swin-Large</td>
-<td align="center">IN22k</td>
-<td align="center">300</td>
-<td align="center">36</td>
-<td align="center">56.2</td>
-<td align="center"> <a href=""> model </a></td>
-</tr>
  <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/h_deformable_detr/configs/h_deformable_detr_swin_large_two_stage_12ep.py"> H-Deformable-DETR-Swin-L + tricks </a> </td>
 <td align="center">Swin-Large</td>
 <td align="center">IN22k</td>
