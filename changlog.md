@@ -2,7 +2,7 @@
 
 ### v0.2.0 (13/11/2022)
 #### New Features
-- Rebuild a clearer config files for projects [#107](https://github.com/IDEA-Research/detrex/pull/107)
+- Rebuild cleaner config files for projects [#107](https://github.com/IDEA-Research/detrex/pull/107)
 - Support [H-Deformable-DETR](https://github.com/IDEA-Research/detrex/tree/main/projects/h_deformable_detr) [#110](https://github.com/IDEA-Research/detrex/pull/110)
 - Release H-Deformable-DETR pretrained weights including `H-Deformable-DETR-R50`, `H-Deformable-DETR-Swin-Tiny`, `H-Deformable-DETR-Swin-Large`.
 - Add demo for visualizing customized input images or videos using pretrained weights [#119](https://github.com/IDEA-Research/detrex/pull/119)
