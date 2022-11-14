@@ -25,7 +25,7 @@ We provide a set of baseline results and trained models available for download:
 <td align="center">300</td>
 <td align="center">12</td>
 <td align="center">48.9</td>
-<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/r50_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth">model</a></td>
+<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/r50_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth">model</a></td>
 </tr>
 </tr>
  <tr><td align="left"><a href="configs/h_deformable_detr_r50_two_stage_36ep.py">H-Deformable-DETR + tricks</a></td>
@@ -33,14 +33,14 @@ We provide a set of baseline results and trained models available for download:
 <td align="center">300</td>
 <td align="center">36</td>
 <td align="center">50.3</td>
-<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/r50_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth">model</a></td>
+<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/r50_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth">model</a></td>
 </tr>
 <tr><td align="left"><a href="configs/h_deformable_detr_swin_tiny_two_stage_12ep.py">H-Deformable-DETR + tricks</a></td>
 <td align="center">Swin Tiny</td>
 <td align="center">300</td>
 <td align="center">12</td>
 <td align="center">50.6</td>
-<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/swin_tiny_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth">model</a></td>
+<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/swin_tiny_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth">model</a></td>
 </tr>
 </tr>
  <tr><td align="left"><a href="configs/h_deformable_detr_swin_tiny_two_stage_36ep.py">H-Deformable-DETR + tricks</a></td>
@@ -48,14 +48,14 @@ We provide a set of baseline results and trained models available for download:
 <td align="center">300</td>
 <td align="center">36</td>
 <td align="center">53.5</td>
-<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/swin_tiny_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth">model</a></td>
+<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/swin_tiny_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/h_deformable_detr_swin_large_two_stage_12ep.py">H-Deformable-DETR + tricks</a></td>
 <td align="center">Swin Large</td>
 <td align="center">300</td>
 <td align="center">12</td>
 <td align="center">56.2</td>
-<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/swin_large_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth">model</a></td>
+<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/swin_large_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth">model</a></td>
 </tr>
 </tr>
  <tr><td align="left"><a href="configs/h_deformable_detr_swin_large_two_stage_36ep.py">H-Deformable-DETR + tricks</a></td>
@@ -63,7 +63,7 @@ We provide a set of baseline results and trained models available for download:
 <td align="center">300</td>
 <td align="center">36</td>
 <td align="center">57.5</td>
-<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/drop_path0.5_swin_large_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth">model</a></td>
+<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/drop_path0.5_swin_large_hybrid_branch_lambda1_group6_t1500_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth">model</a></td>
 </tr>
 </tr>
  <tr><td align="left"><a href="configs/h_deformable_detr_swin_large_two_stage_12ep_900queries.py">H-Deformable-DETR + tricks</a></td>
@@ -71,7 +71,7 @@ We provide a set of baseline results and trained models available for download:
 <td align="center">900</td>
 <td align="center">12</td>
 <td align="center">56.4</td>
-<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/swin_large_hybrid_branch_lambda1_group6_t1500_n900_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth">model</a></td>
+<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/swin_large_hybrid_branch_lambda1_group6_t1500_n900_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_12eps.pth">model</a></td>
 </tr>
 </tr>
  <tr><td align="left"><a href="configs/h_deformable_detr_swin_large_two_stage_36ep_900queries.py">H-Deformable-DETR + tricks</a></td>
@@ -79,7 +79,7 @@ We provide a set of baseline results and trained models available for download:
 <td align="center">900</td>
 <td align="center">36</td>
 <td align="center">57.7</td>
-<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.2/drop_path0.5_swin_large_hybrid_branch_lambda1_group6_t1500_n900_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth">model</a></td>
+<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/drop_path0.5_swin_large_hybrid_branch_lambda1_group6_t1500_n900_dp0_mqs_lft_deformable_detr_plus_iterative_bbox_refinement_plus_plus_two_stage_36eps.pth">model</a></td>
 </tr>
 </tbody></table>
 
