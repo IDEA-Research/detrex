@@ -25,7 +25,7 @@ Here we provide the pretrained `Conditional-DETR` weights based on detrex.
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">41.60</td>
+<td align="center">41.6</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/conditional_detr_r50_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
@@ -46,7 +46,7 @@ Here we provide the pretrained `Conditional-DETR` weights based on detrex.
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">41.02</td>
+<td align="center">41.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_conditional_detr_r50_50ep.pth">model</a></td>
 </tr>
 <!-- ROW: conditional_detr_r101_50ep -->
@@ -54,7 +54,7 @@ Here we provide the pretrained `Conditional-DETR` weights based on detrex.
 <td align="center">R-101</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">42.97</td>
+<td align="center">43.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_conditional_detr_r101_50ep.pth">model</a></td>
 </tr>
 </tbody></table>

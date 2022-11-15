@@ -26,7 +26,7 @@ Here we provide the pretrained `Deformable-DETR` weights based on detrex.
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">46.99</td>
+<td align="center">47.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/deformable_detr_with_box_refinement_50ep_new.pth">model</a></td>
 </tr>
 <!-- ROW: deformable_detr_r50_two_stage_50ep -->
@@ -34,7 +34,7 @@ Here we provide the pretrained `Deformable-DETR` weights based on detrex.
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">48.19</td>
+<td align="center">48.2</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/deformable_detr_r50_two_stage_50ep_new.pth">model</a></td>
 </tr>
 </tbody></table>
