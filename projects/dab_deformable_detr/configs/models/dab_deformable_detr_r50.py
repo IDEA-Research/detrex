@@ -112,4 +112,3 @@ if model.aux_loss:
         aux_weight_dict.update({k + f"_{i}": v for k, v in base_weight_dict.items()})
     weight_dict.update(aux_weight_dict)
     model.criterion.weight_dict = weight_dict
-
