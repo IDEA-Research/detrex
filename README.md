@@ -125,65 +125,17 @@ If you find the projects held by detrex useful in your research, please consider
 <details>
 <summary> <b> Citation List </b> </summary>
 
+- Cite **detrex**
 ```BibTeX
 @misc{ideacvr2022detrex,
   author =       {detrex contributors},
-  title =        {detrex},
+  title =        {detrex: An Research Platform for Transformer-based Object Detection Algorithms},
   howpublished = {\url{https://github.com/IDEA-Research/detrex}},
   year =         {2022}
 }
 ```
 
-```BibTex
-@inproceedings{
-      liu2022dabdetr,
-      title={{DAB}-{DETR}: Dynamic Anchor Boxes are Better Queries for {DETR}},
-      author={Shilong Liu and Feng Li and Hao Zhang and Xiao Yang and Xianbiao Qi and Hang Su and Jun Zhu and Lei Zhang},
-      booktitle={International Conference on Learning Representations},
-      year={2022},
-      url={https://openreview.net/forum?id=oMI9PjOb9Jl}
-}
-```
-
-```BibTex
-@inproceedings{li2022dn,
-      title={Dn-detr: Accelerate detr training by introducing query denoising},
-      author={Li, Feng and Zhang, Hao and Liu, Shilong and Guo, Jian and Ni, Lionel M and Zhang, Lei},
-      booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-      pages={13619--13627},
-      year={2022}
-}
-```
-
-```BibTex
-@misc{zhang2022dino,
-      title={DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection}, 
-      author={Hao Zhang and Feng Li and Shilong Liu and Lei Zhang and Hang Su and Jun Zhu and Lionel M. Ni and Heung-Yeung Shum},
-      year={2022},
-      eprint={2203.03605},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
-}
-```
-
-```BibTex
-@article{jia2022detrs,
-  title={DETRs with Hybrid Matching},
-  author={Jia, Ding and Yuan, Yuhui and He, Haodi and Wu, Xiaopei and Yu, Haojun and Lin, Weihong and Sun, Lei and Zhang, Chao and Hu, Han},
-  journal={arXiv preprint arXiv:2207.13080},
-  year={2022}
-}
-```
-
-```BibTex
-@inproceedings{meng2021-CondDETR,
-  title       = {Conditional DETR for Fast Training Convergence},
-  author      = {Meng, Depu and Chen, Xiaokang and Fan, Zejia and Zeng, Gang and Li, Houqiang and Yuan, Yuhui and Sun, Lei and Wang, Jingdong},
-  booktitle   = {Proceedings of the IEEE International Conference on Computer Vision (ICCV)},
-  year        = {2021}
-}
-```
-
+- Cite **DETR**
 ```BibTex
 @inproceedings{carion2020end,
   title={End-to-end object detection with transformers},
@@ -195,6 +147,7 @@ If you find the projects held by detrex useful in your research, please consider
 }
 ```
 
+- Cite **Deformable-DETR**
 ```BibTex
 @article{zhu2020deformable,
   title={Deformable DETR: Deformable Transformers for End-to-End Object Detection},
@@ -204,11 +157,67 @@ If you find the projects held by detrex useful in your research, please consider
 }
 ```
 
+- Cite **Conditional-DETR**
+```BibTex
+@inproceedings{meng2021-CondDETR,
+  title       = {Conditional DETR for Fast Training Convergence},
+  author      = {Meng, Depu and Chen, Xiaokang and Fan, Zejia and Zeng, Gang and Li, Houqiang and Yuan, Yuhui and Sun, Lei and Wang, Jingdong},
+  booktitle   = {Proceedings of the IEEE International Conference on Computer Vision (ICCV)},
+  year        = {2021}
+}
+```
+
+- Cite **DAB-DETR**
+```BibTex
+@inproceedings{
+      liu2022dabdetr,
+      title={{DAB}-{DETR}: Dynamic Anchor Boxes are Better Queries for {DETR}},
+      author={Shilong Liu and Feng Li and Hao Zhang and Xiao Yang and Xianbiao Qi and Hang Su and Jun Zhu and Lei Zhang},
+      booktitle={International Conference on Learning Representations},
+      year={2022},
+      url={https://openreview.net/forum?id=oMI9PjOb9Jl}
+}
+```
+
+- Cite **DN-DETR**
+```BibTex
+@inproceedings{li2022dn,
+      title={Dn-detr: Accelerate detr training by introducing query denoising},
+      author={Li, Feng and Zhang, Hao and Liu, Shilong and Guo, Jian and Ni, Lionel M and Zhang, Lei},
+      booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+      pages={13619--13627},
+      year={2022}
+}
+```
+
+- Cite **DINO**
+```BibTex
+@misc{zhang2022dino,
+      title={DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection}, 
+      author={Hao Zhang and Feng Li and Shilong Liu and Lei Zhang and Hang Su and Jun Zhu and Lionel M. Ni and Heung-Yeung Shum},
+      year={2022},
+      eprint={2203.03605},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
+
+- Cite **Group-DETR**
 ```BibTex
 @article{chen2022group,
   title={Group DETR: Fast DETR Training with Group-Wise One-to-Many Assignment},
   author={Chen, Qiang and Chen, Xiaokang and Wang, Jian and Feng, Haocheng and Han, Junyu and Ding, Errui and Zeng, Gang and Wang, Jingdong},
   journal={arXiv preprint arXiv:2207.13085},
+  year={2022}
+}
+```
+
+- Cite **H-DETR**
+```BibTex
+@article{jia2022detrs,
+  title={DETRs with Hybrid Matching},
+  author={Jia, Ding and Yuan, Yuhui and He, Haodi and Wu, Xiaopei and Yu, Haojun and Lin, Weihong and Sun, Lei and Zhang, Chao and Hu, Han},
+  journal={arXiv preprint arXiv:2207.13080},
   year={2022}
 }
 ```
