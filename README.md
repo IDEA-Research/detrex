@@ -120,7 +120,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 
 ## Citation
-If you find the projects hold by detrex useful in your research, please consider cite:
+If you find the projects held by detrex useful in your research, please consider cite:
 
 <details>
 <summary> <b> Citation List </b> </summary>
