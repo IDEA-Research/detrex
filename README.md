@@ -120,13 +120,35 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 
 ## Citation
-If you find this project useful in your research, please consider cite:
+If you find the projects hold by detrex useful in your research, please consider cite:
+
+<details>
+<summary> <b> Citing DAB-DETR </b> </summary>
+
+```BibTex
+@inproceedings{
+      liu2022dabdetr,
+      title={{DAB}-{DETR}: Dynamic Anchor Boxes are Better Queries for {DETR}},
+      author={Shilong Liu and Feng Li and Hao Zhang and Xiao Yang and Xianbiao Qi and Hang Su and Jun Zhu and Lei Zhang},
+      booktitle={International Conference on Learning Representations},
+      year={2022},
+      url={https://openreview.net/forum?id=oMI9PjOb9Jl}
+}
+```
+
+</details>
+
+<details>
+<summary> <b> Citing detrex </b> </summary>
+
 ```BibTeX
-@misc{ren2022detrex,
-  author =       {Tianhe Ren and Shilong Liu and Hao Zhang and
-                  Feng Li and Xingyu Liao and Lei Zhang},
+@misc{ideacvr2022detrex,
+  author =       {detrex contributors},
   title =        {detrex},
   howpublished = {\url{https://github.com/IDEA-Research/detrex}},
   year =         {2022}
 }
 ```
+
+</details>
+
