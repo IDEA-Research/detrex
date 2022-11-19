@@ -56,3 +56,5 @@ model.neck.input_shapes = {
     "p6": ShapeSpec(channels=256),
 }
 model.neck.in_features = ["p2", "p3", "p4", "p5", "p6"]
+model.neck.num_outs = 5
+model.transformer.num_feature_levels = 5
