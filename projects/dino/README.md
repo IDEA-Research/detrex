@@ -147,6 +147,24 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">58.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_swin_large_384_5scale_36ep.pth">model</a></td>
 </tr>
+ <tr><td align="left"><a href="configs/dino_vitdet_base_4scale_12ep
+ ep.py">DINO-ViTDet-4scale</a></td>
+<td align="center">ViT</td>
+<td align="center">IN1k, MAE</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">49.9</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino_vitdet_base_4scale_50ep
+ ep.py">DINO-ViTDet-4scale</a></td>
+<td align="center">ViT</td>
+<td align="center">IN1k, MAE</td>
+<td align="center">50</td>
+<td align="center">100</td>
+<td align="center">53.8</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
 </tbody></table>
 
 **Note**: `Swin-X-384` means the backbone pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
