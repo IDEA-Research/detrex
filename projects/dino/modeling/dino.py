@@ -65,7 +65,7 @@ class DINO(nn.Module):
         num_queries: int,
         criterion: nn.Module,
         pixel_mean: List[float] = [123.675, 116.280, 103.530],
-        pixel_std: List[float] = [123.675, 116.280, 103.530],
+        pixel_std: List[float] = [58.395, 57.120, 57.375],
         aux_loss: bool = True,
         select_box_nums_for_evaluation: int = 300,
         device="cuda",
