@@ -41,7 +41,7 @@ detrex is an open-source toolbox that provides state-of-the-art Transformer-base
 
 - **Modular Design.** detrex decomposes the Transformer-based detection framework into various components which help users easily build their own customized models.
 
-- **State-of-the-art Methods.** detrex provides a series of Transformer-based detection algorithms, including [DINO](https://arxiv.org/abs/2203.03605) which reached the SOTA of DETR-like models with **63.3mAP**!
+- **State-of-the-art Methods.** detrex provides a series of Transformer-based detection algorithms, including [DINO](https://arxiv.org/abs/2203.03605) which reached the SOTA of DETR-like models with **63.3AP**!
 
 - **Easy to Use.** detrex is designed to be **light-weight** and easy for users to use:
   - [LazyConfig System](https://detectron2.readthedocs.io/en/latest/tutorials/lazyconfigs.html) for more flexible syntax and cleaner config files.
