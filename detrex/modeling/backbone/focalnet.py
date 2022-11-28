@@ -32,7 +32,12 @@ class Mlp(nn.Module):
     """Multilayer perceptron."""
 
     def __init__(
-        self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.0
+        self, 
+        in_features, 
+        hidden_features=None, 
+        out_features=None, 
+        act_layer=nn.GELU, 
+        drop=0.0
     ):
         super().__init__()
         out_features = out_features or in_features
@@ -63,8 +68,17 @@ class FocalModulation(nn.Module):
         use_postln (bool, default=False): Whether use post-modulation layernorm
     """
 
-    def __init__(self, dim, proj_drop=0., focal_level=2, focal_window=7, focal_factor=2, use_postln=False, 
-        use_postln_in_modulation=False, normalize_modulator=False):
+    def __init__(
+            self, 
+            dim, 
+            proj_drop=0., 
+            focal_level=2, 
+            focal_window=7, 
+            focal_factor=2, 
+            use_postln=False, 
+            use_postln_in_modulation=False, 
+            normalize_modulator=False
+        ):
 
         super().__init__()
         self.dim = dim
@@ -138,13 +152,22 @@ class FocalModulationBlock(nn.Module):
         focal_window (int): focal kernel size at level 1
     """
 
-    def __init__(self, dim, mlp_ratio=4., drop=0., drop_path=0., 
-                 act_layer=nn.GELU, norm_layer=nn.LayerNorm,
-                 focal_level=2, focal_window=9, 
-                 use_postln=False, use_postln_in_modulation=False, 
-                 normalize_modulator=False, 
-                 use_layerscale=False, 
-                 layerscale_value=1e-4):
+    def __init__(
+            self, 
+            dim, 
+            mlp_ratio=4., 
+            drop=0., 
+            drop_path=0., 
+            act_layer=nn.GELU, 
+            norm_layer=nn.LayerNorm,
+            focal_level=2, 
+            focal_window=9, 
+            use_postln=False, 
+            use_postln_in_modulation=False, 
+            normalize_modulator=False, 
+            use_layerscale=False, 
+            layerscale_value=1e-4
+        ):
         super().__init__()
         self.dim = dim
         self.mlp_ratio = mlp_ratio
@@ -155,7 +178,10 @@ class FocalModulationBlock(nn.Module):
 
         self.norm1 = norm_layer(dim)
         self.modulation = FocalModulation(
-            dim, focal_window=self.focal_window, focal_level=self.focal_level, proj_drop=drop, 
+            dim, 
+            focal_window=self.focal_window, 
+            focal_level=self.focal_level, 
+            proj_drop=drop, 
             use_postln_in_modulation=use_postln_in_modulation, 
             normalize_modulator=normalize_modulator, 
         )            
@@ -305,7 +331,15 @@ class PatchEmbed(nn.Module):
         is_stem (bool): Is the stem block or not. 
     """
 
-    def __init__(self, patch_size=4, in_chans=3, embed_dim=96, norm_layer=None, use_conv_embed=False, is_stem=False):
+    def __init__(
+            self, 
+            patch_size=4, 
+            in_chans=3, 
+            embed_dim=96, 
+            norm_layer=None, 
+            use_conv_embed=False, 
+            is_stem=False
+        ):
         super().__init__()
         patch_size = to_2tuple(patch_size)
         self.patch_size = patch_size
