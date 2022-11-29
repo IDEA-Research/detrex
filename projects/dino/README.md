@@ -148,7 +148,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_swin_large_384_5scale_36ep.pth">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/dino_vitdet_base_4scale_12ep
- ep.py">DINO-ViTDet-4scale</a></td>
+ ep.py">DINO-ViTDet-Base-4scale</a></td>
 <td align="center">ViT</td>
 <td align="center">IN1k, MAE</td>
 <td align="center">12</td>
@@ -157,13 +157,31 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_4scale_12ep.pth">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/dino_vitdet_base_4scale_50ep
- ep.py">DINO-ViTDet-4scale</a></td>
+ ep.py">DINO-ViTDet-Base-4scale</a></td>
 <td align="center">ViT</td>
 <td align="center">IN1k, MAE</td>
 <td align="center">50</td>
 <td align="center">100</td>
 <td align="center">55.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_base_4scale_50ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino_vitdet_large_4scale_12ep
+ ep.py">DINO-ViTDet-Large-4scale</a></td>
+<td align="center">ViT</td>
+<td align="center">IN1k, MAE</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">52.9</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino_vitdet_large_4scale_50ep
+ ep.py">DINO-ViTDet-Large-4scale</a></td>
+<td align="center">ViT</td>
+<td align="center">IN1k, MAE</td>
+<td align="center">50</td>
+<td align="center">100</td>
+<td align="center"></td>
+<td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
 
