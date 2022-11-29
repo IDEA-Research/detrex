@@ -12,7 +12,6 @@ import cv2
 import tqdm
 
 sys.path.insert(0, "./")  # noqa
-
 from demo.predictors import VisualizationDemo
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import LazyConfig, instantiate
