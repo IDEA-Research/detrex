@@ -272,7 +272,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">50</td>
 <td align="center">100</td>
 <td align="center">52.9</td>
-<td align="center"> <a href=""> model </a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_large_4scale_12ep.pth"> model </a></td>
 </tr>
 </tbody></table>
 
