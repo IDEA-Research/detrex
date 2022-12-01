@@ -36,8 +36,8 @@ def apply_label_noise(
     if label_noise_prob > 0:
         p = torch.rand_like(labels.float())
         noised_index = torch.nonzero(p < label_noise_prob).view(-1)
-        new_lebels = torch.randint_like(noised_index, 0, num_classes)
-        noised_labels = labels.scatter_(0, noised_index, new_lebels)
+        new_labels = torch.randint_like(noised_index, 0, num_classes)
+        noised_labels = labels.scatter_(0, noised_index, new_labels)
         return noised_labels
     else:
         return labels

@@ -24,6 +24,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
+from detectron2.modeling.backbone.backbone import Backbone
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 import numpy as np
 
@@ -508,10 +509,11 @@ class PatchEmbed(nn.Module):
         return flops
 
 
-class SwinTransformerV2(nn.Module):
-    r""" Swin Transformer
+class SwinTransformerV2(Backbone):
+    r""" Swin Transformer V2
         A PyTorch impl of : `Swin Transformer: Hierarchical Vision Transformer using Shifted Windows`  -
           https://arxiv.org/pdf/2103.14030
+    
     Args:
         img_size (int | tuple(int)): Input image size. Default 224
         patch_size (int | tuple(int)): Patch size. Default: 4
@@ -533,12 +535,30 @@ class SwinTransformerV2(nn.Module):
         pretrained_window_sizes (tuple(int)): Pretrained window sizes of each layer.
     """
 
-    def __init__(self, img_size=224, patch_size=4, in_chans=3, num_classes=1000,
-                 embed_dim=96, depths=[2, 2, 6, 2], num_heads=[3, 6, 12, 24],
-                 window_size=7, mlp_ratio=4., qkv_bias=True,
-                 drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1,
-                 norm_layer=nn.LayerNorm, ape=False, patch_norm=True,
-                 use_checkpoint=False, pretrained_window_sizes=[0, 0, 0, 0], **kwargs):
+    def __init__(
+        self, 
+        img_size=224, 
+        patch_size=4, 
+        in_chans=3, 
+        num_classes=1000,
+        embed_dim=96, 
+        depths=[2, 2, 6, 2], 
+        num_heads=[3, 6, 12, 24],
+        window_size=7, 
+        mlp_ratio=4., 
+        qkv_bias=True,
+        drop_rate=0., 
+        attn_drop_rate=0., 
+        drop_path_rate=0.1,
+        norm_layer=nn.LayerNorm, 
+        ape=False, 
+        patch_norm=True,
+        out_indices=(0, 1, 2, 3),
+        frozen_stages=-1,
+        use_checkpoint=False, 
+        pretrained_window_sizes=[0, 0, 0, 0], 
+        **kwargs
+    ):
         super().__init__()
 
         self.num_classes = num_classes
@@ -546,8 +566,9 @@ class SwinTransformerV2(nn.Module):
         self.embed_dim = embed_dim
         self.ape = ape
         self.patch_norm = patch_norm
-        self.num_features = int(embed_dim * 2 ** (self.num_layers - 1))
         self.mlp_ratio = mlp_ratio
+        self.out_indices = out_indices
+        self.frozen_stages = frozen_stages
 
         # split image into non-overlapping patches
         self.patch_embed = PatchEmbed(
@@ -586,9 +607,22 @@ class SwinTransformerV2(nn.Module):
                                pretrained_window_size=pretrained_window_sizes[i_layer])
             self.layers.append(layer)
 
-        self.norm = norm_layer(self.num_features)
-        self.avgpool = nn.AdaptiveAvgPool1d(1)
-        self.head = nn.Linear(self.num_features, num_classes) if num_classes > 0 else nn.Identity()
+        num_features = [int(embed_dim * 2**i) for i in range(self.num_layers)]
+        self.num_features = num_features
+
+        # add a norm layer for each output
+        for i_layer in out_indices:
+            layer = norm_layer(num_features[i_layer])
+            layer_name = f"norm{i_layer}"
+            self.add_module(layer_name, layer)
+
+        self._freeze_stages()
+        self._out_features = ["p{}".format(i) for i in self.out_indices]
+        self._out_feature_channels = {
+            "p{}".format(i): self.embed_dim * 2**i for i in self.out_indices
+        }
+        self._out_feature_strides = {"p{}".format(i): 2 ** (i + 2) for i in self.out_indices}
+        self._size_devisibility = 32
 
         self.apply(self._init_weights)
         for bly in self.layers:
@@ -603,38 +637,56 @@ class SwinTransformerV2(nn.Module):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
-    @torch.jit.ignore
-    def no_weight_decay(self):
-        return {'absolute_pos_embed'}
+    @property
+    def size_divisibility(self):
+        return self._size_divisibility
 
-    @torch.jit.ignore
-    def no_weight_decay_keywords(self):
-        return {"cpb_mlp", "logit_scale", 'relative_position_bias_table'}
+    def _freeze_stages(self):
+        if self.frozen_stages >= 0:
+            self.patch_embed.eval()
+            for param in self.patch_embed.parameters():
+                param.requires_grad = False
 
-    def forward_features(self, x):
-        x = self.patch_embed(x)
-        if self.ape:
-            x = x + self.absolute_pos_embed
-        x = self.pos_drop(x)
+        if self.frozen_stages >= 1 and self.ape:
+            self.absolute_pos_embed.requires_grad = False
 
-        for layer in self.layers:
-            x = layer(x)
-
-        x = self.norm(x)  # B L C
-        x = self.avgpool(x.transpose(1, 2))  # B C 1
-        x = torch.flatten(x, 1)
-        return x
+        if self.frozen_stages >= 2:
+            self.pos_drop.eval()
+            for i in range(0, self.frozen_stages - 1):
+                m = self.layers[i]
+                m.eval()
+                for param in m.parameters():
+                    param.requires_grad = False
 
     def forward(self, x):
-        x = self.forward_features(x)
-        x = self.head(x)
-        return x
+        x = self.patch_embed(x)
 
-    def flops(self):
-        flops = 0
-        flops += self.patch_embed.flops()
-        for i, layer in enumerate(self.layers):
-            flops += layer.flops()
-        flops += self.num_features * self.patches_resolution[0] * self.patches_resolution[1] // (2 ** self.num_layers)
-        flops += self.num_features * self.num_classes
-        return flops
+        Wh, Ww = x.size(2), x.size(3)
+        if self.ape:
+            # interpolate the position embedding to the corresponding size
+            absolute_pos_embed = F.interpolate(
+                self.absolute_pos_embed, size=(Wh, Ww), mode="bicubic"
+            )
+            x = (x + absolute_pos_embed).flatten(2).transpose(1, 2)  # B Wh*Ww C
+        else:
+            x = x.flatten(2).transpose(1, 2)
+        x = self.pos_drop(x)
+
+    # def forward_features(self, x):
+    #     x = self.patch_embed(x)
+    #     if self.ape:
+    #         x = x + self.absolute_pos_embed
+    #     x = self.pos_drop(x)
+
+    #     for layer in self.layers:
+    #         x = layer(x)
+
+    #     x = self.norm(x)  # B L C
+    #     x = self.avgpool(x.transpose(1, 2))  # B C 1
+    #     x = torch.flatten(x, 1)
+    #     return x
+
+    # def forward(self, x):
+    #     x = self.forward_features(x)
+    #     x = self.head(x)
+    #     return x
