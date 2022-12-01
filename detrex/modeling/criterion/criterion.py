@@ -245,3 +245,20 @@ class SetCriterion(nn.Module):
             return losses, indices_list
 
         return losses
+
+
+    def __repr__(self):
+        head = "Criterion " + self.__class__.__name__
+        body = [
+            "matcher: {}".format(self.matcher.__repr__(_repr_indent=8)),
+            "losses: {}".format(self.losses),
+            "loss_class_type: {}".format(self.loss_class_type),
+            "weight_dict: {}".format(self.weight_dict),
+            "num_classes: {}".format(self.num_classes),
+            "eos_coef: {}".format(self.eos_coef),
+            "focal loss alpha: {}".format(self.alpha),
+            "focal loss gamma: {}".format(self.gamma),
+        ]
+        _repr_indent = 4
+        lines = [head] + [" " * _repr_indent + line for line in body]
+        return "\n".join(lines)
