@@ -149,3 +149,16 @@ class HungarianMatcher(nn.Module):
             (torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64))
             for i, j in indices
         ]
+
+    def __repr__(self, _repr_indent=4):
+        head = "Matcher " + self.__class__.__name__
+        body = [
+            "cost_class: {}".format(self.cost_class),
+            "cost_bbox: {}".format(self.cost_bbox),
+            "cost_giou: {}".format(self.cost_giou),
+            "cost_class_type: {}".format(self.cost_class_type),
+            "focal cost alpha: {}".format(self.alpha),
+            "focal cost gamma: {}".format(self.gamma),
+        ]
+        lines = [head] + [" " * _repr_indent + line for line in body]
+        return "\n".join(lines)
