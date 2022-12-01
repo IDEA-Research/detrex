@@ -15,7 +15,7 @@ train.max_iter = 375000
 train.init_checkpoint = "detectron2://ImageNetPretrained/MAE/mae_pretrain_vit_large.pth"
 train.output_dir = "./output/dino_vitdet_large_50ep"
 
-# warmup lr scheduler
+# use warmup lr scheduler
 lr_multiplier = L(WarmupParamScheduler)(
     scheduler=L(MultiStepParamScheduler)(
         values=[1.0, 0.1],
