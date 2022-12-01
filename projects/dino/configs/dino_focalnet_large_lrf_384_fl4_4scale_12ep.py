@@ -1,4 +1,4 @@
-from .dino_focalnet_large_4scale_12ep import (
+from .dino_focalnet_large_lrf_384_4scale_12ep import (
     train,
     dataloader,
     optimizer,
