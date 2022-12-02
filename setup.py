@@ -31,7 +31,7 @@ import torch
 from torch.utils.cpp_extension import CUDA_HOME, CppExtension, CUDAExtension
 
 # detrex version info
-version = "0.2.0"
+version = "0.2.1"
 package_name = "detrex"
 cwd = os.path.dirname(os.path.abspath(__file__))
 

@@ -15,7 +15,6 @@ from detectron2.layers import Conv2d, ShapeSpec, get_norm
 
 
 
-# data_loader=None
 dim=256
 n_class=80
 dn="seg"
@@ -116,7 +115,6 @@ model = L(MaskDINO)(
     panoptic_on=False,
     instance_on=True,
     test_topk_per_image=100,
-    # data_loader=data_loader,
     pano_temp=0.06,
     focus_on_box = False,
     transform_eval = True,
