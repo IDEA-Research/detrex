@@ -12,14 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ------------------------------------------------------------------------------------------------
+# Copyright (c) Facebook, Inc. and its affiliates.
+# ------------------------------------------------------------------------------------------------
 
-from .detr_dataset_mapper import DetrDatasetMapper
-from .dataset_mappers import (
-    COCOInstanceNewBaselineDatasetMapper,
-    COCOPanopticNewBaselineDatasetMapper,
-    MaskFormerSemanticDatasetMapper,
-    MaskFormerInstanceDatasetMapper,
-    MaskFormerPanopticDatasetMapper,
+from . import (
+    register_ade20k_full,
+    register_ade20k_panoptic,
+    register_coco_stuff_10k,
+    register_mapillary_vistas,
+    register_coco_panoptic_annos_semseg,
+    register_ade20k_instance,
+    register_mapillary_vistas_panoptic,
 )
-from . import datasets
-from .transforms import ColorAugSSDTransform
