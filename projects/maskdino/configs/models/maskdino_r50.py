@@ -55,7 +55,7 @@ model = L(MaskDINO)(
         transformer_predictor=L(MaskDINODecoder)(
             in_channels=dim,
             mask_classification=True,
-            num_classes=n_class,
+            num_classes="${..num_classes}",
             hidden_dim=dim,
             num_queries=300,
             nheads=8,
@@ -82,7 +82,7 @@ model = L(MaskDINO)(
         ),
     ),
     criterion=L(SetCriterion)(
-        num_classes=80,
+        num_classes="${..sem_seg_head.num_classes}",
         matcher=L(HungarianMatcher)(
             cost_class = 4.0,
             cost_mask = 5.0,

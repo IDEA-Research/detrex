@@ -20,8 +20,9 @@ lr_multiplier = L(WarmupParamScheduler)(
 )
 model.panoptic_on=True
 model.semantic_on=True
+model.sem_seg_head.transformer_predictor.initialize_box_type="no"
+model.sem_seg_head.num_classes=133
 optimizer = get_config("common/optim.py").AdamW
-# lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_50ep
 
 # initialize checkpoint to be loaded
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
@@ -60,5 +61,3 @@ dataloader.train.num_workers = 16
 # # each gpu is 16/4 = 4
 dataloader.train.total_batch_size = 16
 
-# dump the testing results into output_dir for visualization
-dataloader.evaluator.output_dir = train.output_dir

@@ -7,7 +7,7 @@ from detectron2.data import (
     build_detection_train_loader,
     get_detection_dataset_dicts,
 )
-from detectron2.evaluation import COCOPanopticEvaluator
+from detectron2.evaluation import COCOPanopticEvaluator,COCOEvaluator,SemSegEvaluator,DatasetEvaluators
 
 from detrex.data.dataset_mappers import COCOPanopticNewBaselineDatasetMapper, coco_panoptic_transform_gen
 dataloader = OmegaConf.create()
@@ -43,6 +43,19 @@ dataloader.test = L(build_detection_test_loader)(
     num_workers=4,
 )
 
-dataloader.evaluator = L(COCOPanopticEvaluator)(
-    dataset_name="${..test.dataset.names}",
+# dataloader.evaluator = L(COCOPanopticEvaluator)(
+#     dataset_name="${..test.dataset.names}",
+# )
+dataloader.evaluator = L(DatasetEvaluators)(
+    evaluators=[
+        L(COCOPanopticEvaluator)(
+            dataset_name="coco_2017_val_panoptic_with_sem_seg",
+        ),
+        L(COCOEvaluator)(
+            dataset_name="coco_2017_val_panoptic_with_sem_seg",
+        ),
+        L(SemSegEvaluator)(
+            dataset_name="coco_2017_val_panoptic_with_sem_seg",
+        ),
+    ],
 )
