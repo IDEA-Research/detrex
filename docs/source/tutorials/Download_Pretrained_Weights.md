@@ -284,3 +284,80 @@ model.backbone = L(SwinTransformer)(
 train.init_checkpoint = "/path/to/swin_large_patch4_window12_384_22kto1k.pth"
 ```
 </details>
+
+
+## ViTDet
+Here we borrowed the download links from the [official implementation](https://github.com/facebookresearch/mae#fine-tuning-with-pre-trained-checkpoints) of MAE.
+
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom"></th>
+<th valign="bottom">ViT-Base</th>
+<th valign="bottom">ViT-Large</th>
+<th valign="bottom">ViT-Huge</th>
+ <tr><td align="left"> Pretrained Checkpoint </td>
+<td align="center"> <a href="https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_base.pth">download</a> </td>
+<td align="center"> <a href="https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_large.pth">download</a> </td>
+<td align="center"> <a href="https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_huge.pth">download</a> </td>
+</tr>
+</tbody></table>
+
+<details open>
+<summary> <b> Using ViTDet Backbone in Config </b> </summary>
+
+```python
+import torch.nn as nn
+from detectron2.config import LazyCall as L
+from detectron2.layers import ShapeSpec
+from detectron2.modeling import ViT, SimpleFeaturePyramid
+from detectron2.modeling.backbone.fpn import LastLevelMaxPool
+
+from .dino_r50 import model
+
+
+# ViT Base Hyper-params
+embed_dim, depth, num_heads, dp = 768, 12, 12, 0.1
+
+# Creates Simple Feature Pyramid from ViT backbone
+model.backbone = L(SimpleFeaturePyramid)(
+    net=L(ViT)(  # Single-scale ViT backbone
+        img_size=1024,
+        patch_size=16,
+        embed_dim=embed_dim,
+        depth=depth,
+        num_heads=num_heads,
+        drop_path_rate=dp,
+        window_size=14,
+        mlp_ratio=4,
+        qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        window_block_indexes=[
+            # 2, 5, 8 11 for global attention
+            0,
+            1,
+            3,
+            4,
+            6,
+            7,
+            9,
+            10,
+        ],
+        residual_block_indexes=[],
+        use_rel_pos=True,
+        out_feature="last_feat",
+    ),
+    in_feature="${.net.out_feature}",
+    out_channels=256,
+    scale_factors=(2.0, 1.0, 0.5),  # (4.0, 2.0, 1.0, 0.5) in ViTDet
+    top_block=L(LastLevelMaxPool)(),
+    norm="LN",
+    square_pad=1024,
+)
+
+# setup init checkpoint path
+train.init_checkpoint = "/path/to/mae_pretrain_vit_base.pth"
+```
+</details>
+
+Please refer to [DINO](https://github.com/IDEA-Research/detrex/tree/main/projects/dino) project for more details about the usage of vit backbone.
