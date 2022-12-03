@@ -8,8 +8,10 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
   <img src="./assets/dino_arch.png"/>
 </div><br/>
 
-## Pretrained Models
-Here we provide the pretrained `DINO` weights based on detrex.
+## Main Results with Pretrained Models
+
+**Pretrained DINO with ResNet Backbone**
+
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
@@ -66,6 +68,17 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">50.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r101_4scale_12ep.pth">model</a></td>
 </tr>
+</tbody></table>
+
+**Pretrained DINO with Swin-Transformer Backbone**
+<table><tbody>
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
 <!-- ROW: dino_swin_tiny_4cale_12ep -->
  <tr><td align="left"><a href="configs/dino_swin_tiny_4cale_12ep.py">DINO-Swin-T-224-4scale</a></td>
 <td align="center">Swin-Tiny-224</td>
@@ -147,6 +160,17 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">58.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_swin_large_384_5scale_36ep.pth">model</a></td>
 </tr>
+</tbody></table>
+
+**Pretrained DINO with Pure ViT Backbone**
+<table><tbody>
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
  <tr><td align="left"><a href="configs/dino_vitdet_base_4scale_12ep
  ep.py">DINO-ViTDet-Base-4scale</a></td>
 <td align="center">ViT</td>
@@ -180,12 +204,14 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN1k, MAE</td>
 <td align="center">50</td>
 <td align="center">100</td>
-<td align="center"></td>
-<td align="center"> <a href="">model</a></td>
+<td align="center">57.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_large_4scale_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
 
-**Note**: `Swin-X-384` means the backbone pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
+**Note**: 
+- `Swin-X-384` means the backbone pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
+- ViT backbone using MAE pretraining weights following [ViTDet](https://github.com/facebookresearch/detectron2/tree/main/projects/ViTDet)  which can be downloaded in [MAE](https://github.com/facebookresearch/mae).
 
 **Notable facts and caveats**: The position embedding of DINO in detrex is different from the original repo. We set the tempureture and offsets in `PositionEmbeddingSine` to `10000` and `-0.5` which may make the model converge a little bit faster in the early stage and get a slightly better results (about 0.1mAP) in 12 epochs settings.
 
