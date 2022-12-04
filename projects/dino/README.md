@@ -8,8 +8,10 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
   <img src="./assets/dino_arch.png"/>
 </div><br/>
 
-## Pretrained Models
-Here we provide the pretrained `DINO` weights based on detrex.
+## Main Results with Pretrained Models
+
+**Pretrained DINO with ResNet Backbone**
+
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
@@ -31,7 +33,16 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_49_2AP.pth">model</a></td>
 </tr>
 <!-- ROW: dino_r50_4scale_12ep -->
- <tr><td align="left"><a href="configs/dino_r50_4cale_12ep.py">DINO-R50-4scale</a></td>
+ <tr><td align="left"><a href="configs/dino_r50_5cale_12ep.py">DINO-R50-4scale</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">49.6</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_r50_5scale_12ep.pth">model</a></td>
+</tr>
+<!-- ROW: dino_r50_4scale_12ep_300dn -->
+ <tr><td align="left"><a href="configs/dino_r50_4scale_12ep_300dn.py">DINO-R50-4scale</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
@@ -57,6 +68,17 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">50.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r101_4scale_12ep.pth">model</a></td>
 </tr>
+</tbody></table>
+
+**Pretrained DINO with Swin-Transformer Backbone**
+<table><tbody>
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
 <!-- ROW: dino_swin_tiny_4cale_12ep -->
  <tr><td align="left"><a href="configs/dino_swin_tiny_4cale_12ep.py">DINO-Swin-T-224-4scale</a></td>
 <td align="center">Swin-Tiny-224</td>
@@ -110,7 +132,16 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">100</td>
 <td align="center">56.9</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_4scale_12ep.pth">model</a></td>
-</tr><!-- ROW: dino_swin_large_4scale_36ep -->
+</tr>
+ <tr><td align="left"><a href="configs/dino_swin_large_384_5scale_12ep.py">DINO-Swin-L-384-4scale</a></td>
+<td align="center">Swin-Large-384</td>
+<td align="center">IN22k to IN1k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">57.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_swin_large_384_5scale_12ep.pth">model</a></td>
+</tr>
+<!-- ROW: dino_swin_large_4scale_36ep -->
  <tr><td align="left"><a href="configs/dino_swin_large_384_4scale_36
  ep.py">DINO-Swin-L-384-4scale</a></td>
 <td align="center">Swin-Large-384</td>
@@ -120,6 +151,17 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">58.1</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_swin_large_384_4scale_36ep.pth">model</a></td>
 </tr>
+</tbody></table>
+
+**Pretrained DINO with FocalNet Backbone**
+<table><tbody>
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
  <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_4scale_12ep
  ep.py">DINO-Focal-Large-4scale</a></td>
 <td align="center">FocalNet-384-LRF-3Level</td>
@@ -144,7 +186,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN22k</td>
 <td align="center">12</td>
 <td align="center">100</td>
-<td align="center"></td>
+<td align="center">58.0</td>
 <td align="center"> <a href="">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_4scale_12ep
@@ -158,8 +200,56 @@ Here we provide the pretrained `DINO` weights based on detrex.
 </tr>
 </tbody></table>
 
+**Pretrained DINO with ViT Backbone**
+<table><tbody>
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+ <tr><td align="left"><a href="configs/dino_vitdet_base_4scale_12ep
+ ep.py">DINO-ViTDet-Base-4scale</a></td>
+<td align="center">ViT</td>
+<td align="center">IN1k, MAE</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">50.2</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_4scale_12ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino_vitdet_base_4scale_50ep
+ ep.py">DINO-ViTDet-Base-4scale</a></td>
+<td align="center">ViT</td>
+<td align="center">IN1k, MAE</td>
+<td align="center">50</td>
+<td align="center">100</td>
+<td align="center">55.0</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_base_4scale_50ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino_vitdet_large_4scale_12ep
+ ep.py">DINO-ViTDet-Large-4scale</a></td>
+<td align="center">ViT</td>
+<td align="center">IN1k, MAE</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">52.9</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_large_4scale_12ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino_vitdet_large_4scale_50ep
+ ep.py">DINO-ViTDet-Large-4scale</a></td>
+<td align="center">ViT</td>
+<td align="center">IN1k, MAE</td>
+<td align="center">50</td>
+<td align="center">100</td>
+<td align="center">57.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_large_4scale_50ep.pth">model</a></td>
+</tr>
+</tbody></table>
+
 **Note**: 
 - `Swin-X-384` means the backbone pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
+- ViT backbone using MAE pretraining weights following [ViTDet](https://github.com/facebookresearch/detectron2/tree/main/projects/ViTDet)  which can be downloaded in [MAE](https://github.com/facebookresearch/mae).
 - `Focal-LRF-3Level`: means using `Large-Receptive-Field` and `Focal-Level` is setted to `3`, please refer to [FocalNet](https://github.com/microsoft/FocalNet) for more details about the backbone settings.
 
 **Notable facts and caveats**: The position embedding of DINO in detrex is different from the original repo. We set the tempureture and offsets in `PositionEmbeddingSine` to `10000` and `-0.5` which may make the model converge a little bit faster in the early stage and get a slightly better results (about 0.1mAP) in 12 epochs settings.
