@@ -1,44 +1,25 @@
-# coding=utf-8
-# Copyright 2022 The IDEA Authors. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ------------------------------------------------------------------------------------------------
+# --------------------------------------------------------
+# FocalNet for Semantic Segmentation
 # Copyright (c) 2022 Microsoft
-# ------------------------------------------------------------------------------------------------
-# Modified from:
-# https://github.com/FocalNet/FocalNet-DINO/blob/main/models/dino/focal.py
-# ------------------------------------------------------------------------------------------------
-
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Jianwei Yang
+# --------------------------------------------------------
+import math
+import time
+import numpy as np
+import json
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
-
-from detectron2.modeling.backbone import Backbone
-
+# from util.misc import NestedTensor
+from detectron2.modeling import BACKBONE_REGISTRY, Backbone, ShapeSpec
 
 class Mlp(nn.Module):
-    """Multilayer perceptron."""
+    """ Multilayer perceptron."""
 
-    def __init__(
-        self, 
-        in_features, 
-        hidden_features=None, 
-        out_features=None, 
-        act_layer=nn.GELU, 
-        drop=0.0
-    ):
+    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -55,10 +36,9 @@ class Mlp(nn.Module):
         x = self.drop(x)
         return x
 
-
 class FocalModulation(nn.Module):
     """ Focal Modulation
-    
+
     Args:
         dim (int): Number of input channels.
         proj_drop (float, optional): Dropout ratio of output. Default: 0.0
@@ -68,17 +48,8 @@ class FocalModulation(nn.Module):
         use_postln (bool, default=False): Whether use post-modulation layernorm
     """
 
-    def __init__(
-            self, 
-            dim, 
-            proj_drop=0., 
-            focal_level=2, 
-            focal_window=7, 
-            focal_factor=2, 
-            use_postln=False, 
-            use_postln_in_modulation=False, 
-            normalize_modulator=False
-        ):
+    def __init__(self, dim, proj_drop=0., focal_level=2, focal_window=7, focal_factor=2, use_postln=False, 
+        use_postln_in_modulation=False, normalize_modulator=False):
 
         super().__init__()
         self.dim = dim
@@ -113,6 +84,7 @@ class FocalModulation(nn.Module):
 
     def forward(self, x):
         """ Forward function.
+
         Args:
             x: input features with shape of (B, H, W, C)
         """
@@ -138,9 +110,9 @@ class FocalModulation(nn.Module):
         x_out = self.proj_drop(x_out)
         return x_out
 
-
 class FocalModulationBlock(nn.Module):
     """ Focal Modulation Block.
+
     Args:
         dim (int): Number of input channels.
         mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
@@ -152,22 +124,13 @@ class FocalModulationBlock(nn.Module):
         focal_window (int): focal kernel size at level 1
     """
 
-    def __init__(
-            self, 
-            dim, 
-            mlp_ratio=4., 
-            drop=0., 
-            drop_path=0., 
-            act_layer=nn.GELU, 
-            norm_layer=nn.LayerNorm,
-            focal_level=2, 
-            focal_window=9, 
-            use_postln=False, 
-            use_postln_in_modulation=False, 
-            normalize_modulator=False, 
-            use_layerscale=False, 
-            layerscale_value=1e-4
-        ):
+    def __init__(self, dim, mlp_ratio=4., drop=0., drop_path=0., 
+                 act_layer=nn.GELU, norm_layer=nn.LayerNorm,
+                 focal_level=2, focal_window=9, 
+                 use_postln=False, use_postln_in_modulation=False, 
+                 normalize_modulator=False, 
+                 use_layerscale=False, 
+                 layerscale_value=1e-4):
         super().__init__()
         self.dim = dim
         self.mlp_ratio = mlp_ratio
@@ -178,10 +141,7 @@ class FocalModulationBlock(nn.Module):
 
         self.norm1 = norm_layer(dim)
         self.modulation = FocalModulation(
-            dim, 
-            focal_window=self.focal_window, 
-            focal_level=self.focal_level, 
-            proj_drop=drop, 
+            dim, focal_window=self.focal_window, focal_level=self.focal_level, proj_drop=drop, 
             use_postln_in_modulation=use_postln_in_modulation, 
             normalize_modulator=normalize_modulator, 
         )            
@@ -202,6 +162,7 @@ class FocalModulationBlock(nn.Module):
 
     def forward(self, x):
         """ Forward function.
+
         Args:
             x: Input feature, tensor size (B, H*W, C).
             H, W: Spatial resolution of the input feature.
@@ -230,9 +191,9 @@ class FocalModulationBlock(nn.Module):
 
         return x
 
-
 class BasicLayer(nn.Module):
     """ A basic focal modulation layer for one stage.
+
     Args:
         dim (int): Number of feature channels
         depth (int): Depths of this stage.
@@ -299,6 +260,7 @@ class BasicLayer(nn.Module):
 
     def forward(self, x, H, W):
         """ Forward function.
+
         Args:
             x: Input feature, tensor size (B, H*W, C).
             H, W: Spatial resolution of the input feature.
@@ -322,6 +284,7 @@ class BasicLayer(nn.Module):
 
 class PatchEmbed(nn.Module):
     """ Image to Patch Embedding
+
     Args:
         patch_size (int): Patch token size. Default: 4.
         in_chans (int): Number of input image channels. Default: 3.
@@ -331,15 +294,7 @@ class PatchEmbed(nn.Module):
         is_stem (bool): Is the stem block or not. 
     """
 
-    def __init__(
-            self, 
-            patch_size=4, 
-            in_chans=3, 
-            embed_dim=96, 
-            norm_layer=None, 
-            use_conv_embed=False, 
-            is_stem=False
-        ):
+    def __init__(self, patch_size=4, in_chans=3, embed_dim=96, norm_layer=None, use_conv_embed=False, is_stem=False):
         super().__init__()
         patch_size = to_2tuple(patch_size)
         self.patch_size = patch_size
@@ -380,9 +335,9 @@ class PatchEmbed(nn.Module):
         return x
 
 
-class FocalNet(Backbone):
-    """Implement paper `Focal Modulation Networks <https://arxiv.org/pdf/2203.11926.pdf>`_
-    
+class FocalNet(nn.Module):
+    """ FocalNet backbone.
+
     Args:
         pretrain_img_size (int): Input image size for training the pretrained model,
             used in absolute postion embedding. Default 224.
@@ -404,29 +359,28 @@ class FocalNet(Backbone):
         use_checkpoint (bool): Whether to use checkpointing to save memory. Default: False.
     """
 
-    def __init__(
-        self,
-        pretrain_img_size=1600,
-        patch_size=4,
-        in_chans=3,
-        embed_dim=96,
-        depths=[2, 2, 6, 2],
-        mlp_ratio=4.,
-        drop_rate=0.,
-        drop_path_rate=0.3, # 0.3 or 0.4 works better for large+ models
-        norm_layer=nn.LayerNorm,
-        patch_norm=True,
-        out_indices=(0, 1, 2, 3),
-        frozen_stages=-1,
-        focal_levels=[3, 3, 3, 3], 
-        focal_windows=[3, 3, 3, 3],
-        use_conv_embed=False, 
-        use_postln=False, 
-        use_postln_in_modulation=False, 
-        use_layerscale=False, 
-        normalize_modulator=False, 
-        use_checkpoint=False,  
-    ):
+    def __init__(self,
+                 pretrain_img_size=1600,
+                 patch_size=4,
+                 in_chans=3,
+                 embed_dim=96,
+                 depths=[2, 2, 6, 2],
+                 mlp_ratio=4.,
+                 drop_rate=0.,
+                 drop_path_rate=0.2,
+                 norm_layer=nn.LayerNorm,
+                 patch_norm=True,
+                 out_indices=(0, 1, 2, 3),
+                 frozen_stages=-1,
+                 focal_levels=[2,2,2,2], 
+                 focal_windows=[9,9,9,9],
+                 use_conv_embed=False, 
+                 use_postln=False, 
+                 use_postln_in_modulation=False, 
+                 use_layerscale=False, 
+                 normalize_modulator=False, 
+                 use_checkpoint=False,                  
+        ):
         super().__init__()
 
         self.pretrain_img_size = pretrain_img_size
@@ -468,26 +422,16 @@ class FocalNet(Backbone):
                 use_checkpoint=use_checkpoint)
             self.layers.append(layer)
 
-        num_features = [int(embed_dim * 2**i) for i in range(self.num_layers)]
+        num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
         self.num_features = num_features
 
         # add a norm layer for each output
         for i_layer in out_indices:
             layer = norm_layer(num_features[i_layer])
-            layer_name = f"norm{i_layer}"
+            layer_name = f'norm{i_layer}'
             self.add_module(layer_name, layer)
 
         self._freeze_stages()
-
-        # add basic info
-        self._out_features = ["p{}".format(i) for i in self.out_indices]
-        self._out_feature_channels = {
-            "p{}".format(i): self.embed_dim * 2**i for i in self.out_indices
-        }
-        self._out_feature_strides = {"p{}".format(i): 2 ** (i + 2) for i in self.out_indices}
-        self._size_devisibility = 32
-
-        self.apply(self._init_weights)
 
     def _freeze_stages(self):
         if self.frozen_stages >= 0:
@@ -503,38 +447,239 @@ class FocalNet(Backbone):
                 for param in m.parameters():
                     param.requires_grad = False
 
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=0.02)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
-
-    def forward(self, x):
-        """Forward function of `FocalNet`
+    def init_weights(self, pretrained=None):
+        """Initialize the weights in backbone.
 
         Args:
-            x (torch.Tensor): the input tensor for feature extraction.
-
-        Returns:
-            dict[str->Tensor]: mapping from feature name (e.g., "p1") to tensor
+            pretrained (str, optional): Path to pre-trained weights.
+                Defaults to None.
         """
+
+        def _init_weights(m):
+            if isinstance(m, nn.Linear):
+                trunc_normal_(m.weight, std=.02)
+                if isinstance(m, nn.Linear) and m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.LayerNorm):
+                nn.init.constant_(m.bias, 0)
+                nn.init.constant_(m.weight, 1.0)
+
+        # if isinstance(pretrained, str):
+        #     self.apply(_init_weights)
+        #     logger = get_root_logger()
+        #     load_checkpoint(self, pretrained, strict=False, logger=logger)
+        # elif pretrained is None:
+        #     self.apply(_init_weights)
+        # else:
+        #     raise TypeError('pretrained must be a str or None')
+
+    def forward(self, x):
+        """Forward function."""
+        # x = tensor_list.tensors
+        tic = time.time()
         x = self.patch_embed(x)
         Wh, Ww = x.size(2), x.size(3)
 
         x = x.flatten(2).transpose(1, 2)
         x = self.pos_drop(x)
 
+        # outs = []
         outs = {}
         for i in range(self.num_layers):
             layer = self.layers[i]
-            x_out, H, W, x, Wh, Ww = layer(x, Wh, Ww)
+            x_out, H, W, x, Wh, Ww = layer(x, Wh, Ww)            
             if i in self.out_indices:
-                norm_layer = getattr(self, f"norm{i}")
+                norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)
+                
                 out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
-                outs["p{}".format(i)] = out
+                # outs.append(out)
+                outs["res{}".format(i + 2)] = out
+        toc = time.time()
+
+        # # collect for nesttensors
+        # outs_dict = {}
+        # for idx, out_i in enumerate(outs):
+        #     m = tensor_list.mask
+        #     assert m is not None
+        #     mask = F.interpolate(m[None].float(), size=out_i.shape[-2:]).to(torch.bool)[0]
+        #     outs_dict[idx] = NestedTensor(out_i, mask)
 
         return outs
+
+    def train(self, mode=True):
+        """Convert the model into training mode while keep layers freezed."""
+        super(FocalNet, self).train(mode)
+        self._freeze_stages()
+
+
+@BACKBONE_REGISTRY.register()
+class D2FocalNet(FocalNet, Backbone):
+    def __init__(self, cfg, input_shape):
+        kw = cfg.MODEL.FOCAL
+        assert kw.modelname in ['focalnet_L_384_22k', 'focalnet_L_384_22k_fl4', 'focalnet_XL_384_22k']
+        kw = cfg.MODEL.FOCAL
+        if 'focal_levels' in kw:
+            kw['focal_levels'] = [kw['focal_levels']] * 4
+
+        if 'focal_windows' in kw:
+            kw['focal_windows'] = [kw['focal_windows']] * 4
+
+        model_para_dict = {
+            'focalnet_L_384_22k': dict(
+                embed_dim=192,
+                depths=[2, 2, 18, 2],
+                focal_levels=kw.get('focal_levels', [3, 3, 3, 3]),
+                focal_windows=kw.get('focal_windows', [5, 5, 5, 5]),
+                use_conv_embed=True,
+                use_postln=True,
+                use_postln_in_modulation=False,
+                use_layerscale=True,
+                normalize_modulator=False,
+            ),
+            'focalnet_L_384_22k_fl4': dict(
+                embed_dim=192,
+                depths=[2, 2, 18, 2],
+                focal_levels=kw.get('focal_levels', [4, 4, 4, 4]),
+                focal_windows=kw.get('focal_windows', [3, 3, 3, 3]),
+                use_conv_embed=True,
+                use_postln=True,
+                use_postln_in_modulation=False,
+                use_layerscale=True,
+                normalize_modulator=True,
+            ),
+            'focalnet_XL_384_22k': dict(
+                embed_dim=256,
+                depths=[2, 2, 18, 2],
+                focal_levels=kw.get('focal_levels', [3, 3, 3, 3]),
+                focal_windows=kw.get('focal_windows', [5, 5, 5, 5]),
+                use_conv_embed=True,
+                use_postln=True,
+                use_postln_in_modulation=False,
+                use_layerscale=True,
+                normalize_modulator=False,
+            ),
+            'focalnet_huge_224_22k': dict(
+                embed_dim=352,
+                depths=[2, 2, 18, 2],
+                focal_levels=kw.get('focal_levels', [3, 3, 3, 3]),
+                focal_windows=kw.get('focal_windows', [5, 5, 5, 5]),
+                use_conv_embed=True,
+                use_postln=True,
+                use_postln_in_modulation=False,
+                use_layerscale=True,
+                normalize_modulator=False,
+            ),
+        }
+
+        kw_cgf = model_para_dict[kw.modelname]
+        kw1 = {k:v for k, v in kw.items() if 'modelname' not in k and 'out_features' not in k}
+        kw_cgf.update(kw1)
+
+        super().__init__(**kw_cgf)
+
+
+        self._out_features = kw.out_features
+
+        self._out_feature_strides = {
+            "res2": 4,
+            "res3": 8,
+            "res4": 16,
+            "res5": 32,
+        }
+        self._out_feature_channels = {
+            "res2": self.num_features[0],
+            "res3": self.num_features[1],
+            "res4": self.num_features[2],
+            "res5": self.num_features[3],
+        }
+
+    def forward(self, x):
+        """
+        Args:
+            x: Tensor of shape (N,C,H,W). H, W must be a multiple of ``self.size_divisibility``.
+        Returns:
+            dict[str->Tensor]: names and the corresponding features
+        """
+        assert (
+            x.dim() == 4
+        ), f"SwinTransformer takes an input of shape (N, C, H, W). Got {x.shape} instead!"
+        outputs = {}
+        y = super().forward(x)
+        for k in y.keys():
+            if k in self._out_features:
+                outputs[k] = y[k]
+        return outputs
+
+    def output_shape(self):
+        return {
+            name: ShapeSpec(
+                channels=self._out_feature_channels[name], stride=self._out_feature_strides[name]
+            )
+            for name in self._out_features
+        }
+
+    @property
+    def size_divisibility(self):
+        return 32
+
+def build_focalnet(modelname, **kw):
+    assert modelname in ['focalnet_L_384_22k', 'focalnet_L_384_22k_fl4', 'focalnet_XL_384_22k']
+
+    if 'focal_levels' in kw:
+        kw['focal_levels'] = [kw['focal_levels']] * 4
+
+    if 'focal_windows' in kw:
+        kw['focal_windows'] = [kw['focal_windows']] * 4
+
+    model_para_dict = {
+        'focalnet_L_384_22k': dict(
+            embed_dim=192,
+            depths=[ 2, 2, 18, 2 ],
+            focal_levels=kw.get('focal_levels', [3, 3, 3, 3]), 
+            focal_windows=kw.get('focal_windows', [5, 5, 5, 5]), 
+            use_conv_embed=True, 
+            use_postln=True, 
+            use_postln_in_modulation=False, 
+            use_layerscale=True, 
+            normalize_modulator=False, 
+        ),
+        'focalnet_L_384_22k_fl4': dict(
+            embed_dim=192,
+            depths=[ 2, 2, 18, 2 ],
+            focal_levels=kw.get('focal_levels', [4, 4, 4, 4]), 
+            focal_windows=kw.get('focal_windows', [3, 3, 3, 3]), 
+            use_conv_embed=True, 
+            use_postln=True, 
+            use_postln_in_modulation=False, 
+            use_layerscale=True, 
+            normalize_modulator=True, 
+        ),
+        'focalnet_XL_384_22k': dict(
+            embed_dim=256,
+            depths=[ 2, 2, 18, 2 ],
+            focal_levels=kw.get('focal_levels', [3, 3, 3, 3]), 
+            focal_windows=kw.get('focal_windows', [5, 5, 5, 5]), 
+            use_conv_embed=True, 
+            use_postln=True, 
+            use_postln_in_modulation=False, 
+            use_layerscale=True, 
+            normalize_modulator=False, 
+        ),   
+        'focalnet_huge_224_22k': dict(
+            embed_dim=352,
+            depths=[ 2, 2, 18, 2 ],
+            focal_levels=kw.get('focal_levels', [3, 3, 3, 3]), 
+            focal_windows=kw.get('focal_windows', [5, 5, 5, 5]), 
+            use_conv_embed=True, 
+            use_postln=True, 
+            use_postln_in_modulation=False, 
+            use_layerscale=True, 
+            normalize_modulator=False, 
+        ),                
+    }
+
+    kw_cgf = model_para_dict[modelname]
+    kw_cgf.update(kw)
+    model = FocalNet(**kw_cgf)
+    return model

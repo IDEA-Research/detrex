@@ -13,13 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .detr_dataset_mapper import DetrDatasetMapper
-from .dataset_mappers import (
-    COCOInstanceNewBaselineDatasetMapper,
-    COCOPanopticNewBaselineDatasetMapper,
-    MaskFormerSemanticDatasetMapper,
-    MaskFormerInstanceDatasetMapper,
-    MaskFormerPanopticDatasetMapper,
-)
-from . import datasets
-from .transforms import ColorAugSSDTransform
+from .color_augmentation import ColorAugSSDTransform
