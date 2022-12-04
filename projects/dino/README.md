@@ -178,7 +178,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">57.5</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focal_large_lrf_384_4scale_12ep.pth">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_4scale_12ep
  ep.py">DINO-Focal-Large-4scale</a></td>
@@ -196,7 +196,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">58.0</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focal_large_lrf_384_fl4_4scale_12ep.pth">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_4scale_12ep
  ep.py">DINO-Focal-Large-4scale</a></td>
@@ -258,8 +258,8 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 
 **Note**: 
 - `Swin-X-384` means the backbone pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
-- ViT backbone using MAE pretraining weights following [ViTDet](https://github.com/facebookresearch/detectron2/tree/main/projects/ViTDet)  which can be downloaded in [MAE](https://github.com/facebookresearch/mae).
-- `Focal-LRF-3Level`: means using `Large-Receptive-Field` and `Focal-Level` is setted to `3`, please refer to [FocalNet](https://github.com/microsoft/FocalNet) for more details about the backbone settings.
+- ViT backbone using MAE pretraining weights following [ViTDet](https://github.com/facebookresearch/detectron2/tree/main/projects/ViTDet)  which can be downloaded in [MAE](https://github.com/facebookresearch/mae). And it's not stable to train ViTDet-DINO without warmup lr-scheduler.
+- `Focal-LRF-3Level`: means using `Large-Receptive-Field (LRF)` and `Focal-Level` is setted to `3`, please refer to [FocalNet](https://github.com/microsoft/FocalNet) for more details about the backbone settings.
 
 **Notable facts and caveats**: The position embedding of DINO in detrex is different from the original repo. We set the tempureture and offsets in `PositionEmbeddingSine` to `10000` and `-0.5` which may make the model converge a little bit faster in the early stage and get a slightly better results (about 0.1mAP) in 12 epochs settings.
 
