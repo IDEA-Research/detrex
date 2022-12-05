@@ -133,7 +133,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center">56.9</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_4scale_12ep.pth">model</a></td>
 </tr>
- <tr><td align="left"><a href="configs/dino_swin_large_384_5scale_12ep.py">DINO-Swin-L-384-4scale</a></td>
+ <tr><td align="left"><a href="configs/dino_swin_large_384_5scale_12ep.py">DINO-Swin-L-384-5scale</a></td>
 <td align="center">Swin-Large-384</td>
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
@@ -182,30 +182,12 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 </tr>
  <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_4scale_12ep
  ep.py">DINO-Focal-Large-4scale</a></td>
-<td align="center">FocalNet-384-LRF-3Level</td>
-<td align="center">IN22k</td>
-<td align="center">36</td>
-<td align="center">100</td>
-<td align="center"></td>
-<td align="center"> <a href="">model</a></td>
-</tr>
- <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_4scale_12ep
- ep.py">DINO-Focal-Large-4scale</a></td>
 <td align="center">FocalNet-384-LRF-4Level</td>
 <td align="center">IN22k</td>
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">58.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focal_large_lrf_384_fl4_4scale_12ep.pth">model</a></td>
-</tr>
- <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_4scale_12ep
- ep.py">DINO-Focal-Large-4scale</a></td>
-<td align="center">FocalNet-384-LRF-4Level</td>
-<td align="center">IN22k</td>
-<td align="center">36</td>
-<td align="center">100</td>
-<td align="center"></td>
-<td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
 
