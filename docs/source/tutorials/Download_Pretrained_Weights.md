@@ -361,3 +361,74 @@ train.init_checkpoint = "/path/to/mae_pretrain_vit_base.pth"
 </details>
 
 Please refer to [DINO](https://github.com/IDEA-Research/detrex/tree/main/projects/dino) project for more details about the usage of vit backbone.
+
+## FocalNet
+Here we borrowed the download links from the [official implementation](https://github.com/microsoft/FocalNet#imagenet-22k-pretrained) of FocalNet.
+
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Model</th>
+<th valign="bottom">Depth</th>
+<th valign="bottom">Dim</th>
+<th valign="bottom">Kernels</th>
+<th valign="bottom">#Params. (M)</th>
+<th valign="bottom">Download</th>
+ <tr><td align="left"> FocalNet-L </td>
+<td align="center">[2, 2, 18, 2]</td>
+<td align="center">192</td>
+<td align="center">[5, 7, 9]</td>
+<td align="center"> 207 </td>
+<td align="center"> <a href="https://projects4jw.blob.core.windows.net/focalnet/release/classification/focalnet_large_lrf_384.pth">download</a> </td>
+ <tr><td align="left"> FocalNet-L </td>
+<td align="center">[2, 2, 18, 2]</td>
+<td align="center">192</td>
+<td align="center">[3, 5, 7, 9]</td>
+<td align="center"> 207 </td>
+<td align="center"> <a href="https://projects4jw.blob.core.windows.net/focalnet/release/classification/focalnet_large_lrf_384_fl4.pth">download</a> </td>
+ <tr><td align="left"> FocalNet-XL </td>
+<td align="center">[2, 2, 18, 2]</td>
+<td align="center">256</td>
+<td align="center">[5, 7, 9]</td>
+<td align="center"> 366 </td>
+<td align="center"> <a href="https://projects4jw.blob.core.windows.net/focalnet/release/classification/focalnet_xlarge_lrf_384.pth">download</a> </td>
+ <tr><td align="left"> FocalNet-XL </td>
+<td align="center">[2, 2, 18, 2]</td>
+<td align="center">256</td>
+<td align="center">[3, 5, 7, 9]</td>
+<td align="center"> 207 </td>
+<td align="center"> <a href="https://projects4jw.blob.core.windows.net/focalnet/release/classification/focalnet_xlarge_lrf_384_fl4.pth">download</a> </td>
+ <tr><td align="left"> FocalNet-H </td>
+<td align="center">[2, 2, 18, 2]</td>
+<td align="center">352</td>
+<td align="center">[5, 7, 9]</td>
+<td align="center"> 687 </td>
+<td align="center"> <a href="https://projects4jw.blob.core.windows.net/focalnet/release/classification/focalnet_huge_lrf_224.pth">download</a> </td>
+ <tr><td align="left"> FocalNet-H </td>
+<td align="center">[2, 2, 18, 2]</td>
+<td align="center">352</td>
+<td align="center">[3, 5, 7, 9]</td>
+<td align="center"> 687 </td>
+<td align="center"> <a href="https://projects4jw.blob.core.windows.net/focalnet/release/classification/focalnet_huge_lrf_224_fl4.pth">download</a> </td>
+</tr>
+</tbody></table>
+
+<details open>
+<summary> <b> Using FocalNet Backbone in Config </b> </summary>
+
+```python
+# focalnet-large-4scale baseline
+model.backbone = L(FocalNet)(
+    embed_dim=192,
+    depths=(2, 2, 18, 2),
+    focal_levels=(3, 3, 3, 3),
+    focal_windows=(5, 5, 5, 5),
+    use_conv_embed=True,
+    use_postln=True,
+    use_postln_in_modulation=False,
+    use_layerscale=True,
+    normalize_modulator=False,
+    out_indices=(1, 2, 3),
+)
+```
+</details>
