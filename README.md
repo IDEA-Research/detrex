@@ -60,13 +60,12 @@ The repo name detrex has several interpretations:
 - <font color=#008000> <b> de-t.rex </b> </font>: de means 'the' in Dutch. T.rex, also called Tyrannosaurus Rex, means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
 
 ## What's New
-v0.1.1 was released on 18/10/2022:
-- Add model analysis tools and benchmark in [tools](./tools/).
-- Support visualization on COCO eval results and annotations in [tools](./tools/)
-- Support [Group-DETR](./projects/group_detr/).
-- Release more DINO training results including `DINO-R50-24epochs`, `DINO-R101`, `DINO-Swin-Tiny`, `DINO-Swin-Small`, `DINO-Swin-Base`, `DINO-Swin-Large` in [DINO](./projects/dino/).
-- Release better `Deformable-DETR` baselines with **48.2 AP** on COCO dataset in [Deformable-DETR](./projects/deformable_detr/).
-
+v0.2.0 was released on 13/11/2022:
+- Release new baselines for `DINO-R50-12ep`, `DINO-Swin-Large-36ep`, `DAB-Deformable-DETR-R50-50ep`, `DAB-Deformable-DETR-R50-Two-Stage`, please check [Model Zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html).
+- Rebuild more clear config files for projects.
+- Support [H-Deformable-DETR](./projects/h_deformable_detr/)
+- Release H-Deformable-DETR pretrained weights including `H-Deformable-DETR-R50`, `H-Deformable-DETR-Swin-Tiny`, `H-Deformable-DETR-Swin-Large` in [H-Deformable-DETR](./projects/h_deformable_detr/)
+- Add demo for visualizing customized input images or videos using pretrained weights in [demo](./demo/)
 
 Please see [changelog.md](./changlog.md) for details and release history.
 

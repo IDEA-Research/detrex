@@ -27,8 +27,8 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
-<td align="center">49.05</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dino_r50_4scale_12ep.pth">model</a></td>
+<td align="center">49.2</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_49_2AP.pth">model</a></td>
 </tr>
 <!-- ROW: dino_r50_4scale_12ep -->
  <tr><td align="left"><a href="configs/dino_r50_4cale_12ep.py">DINO-R50-4scale</a></td>
@@ -36,7 +36,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">300</td>
-<td align="center">49.45</td>
+<td align="center">49.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_300dn.pth">model</a></td>
 </tr>
 <!-- ROW: dino_r50_4scale_24ep -->
@@ -45,7 +45,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN1k</td>
 <td align="center">24</td>
 <td align="center">100</td>
-<td align="center">50.60</td>
+<td align="center">50.6</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r50_4scale_24ep.pth">model</a></td>
 </tr>
 <!-- ROW: dino_r101_4scale_12ep -->
@@ -54,7 +54,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
-<td align="center">49.95</td>
+<td align="center">50.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r101_4scale_12ep.pth">model</a></td>
 </tr>
 <!-- ROW: dino_swin_tiny_4cale_12ep -->
@@ -63,7 +63,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
-<td align="center">51.30</td>
+<td align="center">51.3</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_tiny_224_4scale_12ep.pth">model</a></td>
 </tr>
 <!-- ROW: dino_swin_tiny_4cale_12ep -->
@@ -72,7 +72,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
-<td align="center">52.50</td>
+<td align="center">52.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_tiny_224_22kto1k_finetune_4scale_12ep.pth">model</a></td>
 </tr>
 <!-- ROW: dino_swin_small_4cale_12ep -->
@@ -81,7 +81,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
-<td align="center">52.96</td>
+<td align="center">53.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_small_224_4scale_12ep.pth">model</a></td>
 </tr>
 <!-- ROW: dino_swin_base_4scale_12ep -->
@@ -90,7 +90,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
-<td align="center">55.83</td>
+<td align="center">55.8</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_base_384_4scale_12ep.pth">model</a></td>
 </tr>
 <!-- ROW: dino_swin_large_224_4scale_12ep -->
@@ -99,7 +99,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
-<td align="center">56.92</td>
+<td align="center">56.9</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_224_4scale_12ep.pth">model</a></td>
 </tr>
 <!-- ROW: dino_swin_large_4scale_12ep -->
@@ -108,7 +108,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN22k to IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
-<td align="center">56.93</td>
+<td align="center">56.9</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_large_4scale_12ep.pth">model</a></td>
 </tr><!-- ROW: dino_swin_large_4scale_36ep -->
  <tr><td align="left"><a href="configs/dino_swin_large_384_4scale_36
@@ -117,7 +117,7 @@ Here we provide the pretrained `DINO` weights based on detrex.
 <td align="center">IN22k to IN1k</td>
 <td align="center">36</td>
 <td align="center">100</td>
-<td align="center">58.09</td>
+<td align="center">58.1</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_swin_large_384_4scale_36ep.pth">model</a></td>
 </tr>
 </tbody></table>

@@ -10,6 +10,9 @@ train = get_config("common/train.py").train
 train.init_checkpoint = "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
 train.output_dir = "./output/dab_deformable_detr_r50_50ep"
 
+# set training seed
+train.seed = 42
+
 # max training iterations
 train.max_iter = 375000
 

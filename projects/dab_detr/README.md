@@ -25,7 +25,7 @@ Here we provide the pretrained `DAB-DETR` weights based on detrex.
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">43.28</td>
+<td align="center">43.3</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dab_detr_r50_50ep.pth">model</a></td>
 </tr>
 <!-- ROW: dab_detr_r101_50ep -->
@@ -33,7 +33,7 @@ Here we provide the pretrained `DAB-DETR` weights based on detrex.
 <td align="center">R-101</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">43.98</td>
+<td align="center">44.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dab_detr_r101_50ep.pth">model</a></td>
 </tr>
 <!-- ROW: dab_detr_swin_t_in1k_50ep -->
@@ -41,7 +41,7 @@ Here we provide the pretrained `DAB-DETR` weights based on detrex.
 <td align="center">Swin-T</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
-<td align="center">45.17</td>
+<td align="center">45.2</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dab_detr_swin_t_in1k_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
