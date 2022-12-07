@@ -42,8 +42,8 @@ train = dict(
             project="detrex",
             name="detrex_experiment",
         )
-    )
+    ),
 
-    device="cuda"
+    device="cuda",
     # ...
 )

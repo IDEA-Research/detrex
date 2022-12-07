@@ -35,8 +35,9 @@ class WandbWriter(EventWriter):
 
         self._writer = wandb.init(
             config=cfg,
-            **cfg.wandb.params,
+            **cfg.train.wandb.params,
         )
+        self._last_write = -1
     
     def write(self):
         storage = get_event_storage()
