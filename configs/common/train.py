@@ -33,6 +33,17 @@ train = dict(
     eval_period=5000,
     # Output log to console every `log_period` number of iterations.
     log_period=20,
+
+    # wandb logging params
+    wandb=dict(
+        enabled=False,
+        params=dict(
+            dir="./wandb_output",
+            project="detrex",
+            name="detrex_experiment",
+        )
+    )
+
     device="cuda"
     # ...
 )
