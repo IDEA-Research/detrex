@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import wandb
+from PIL import Image
 
 from detectron2.utils.events import EventWriter, get_event_storage
 
@@ -31,7 +33,6 @@ class WandbWriter(EventWriter):
             kwargs: other arguments passed to `torch.utils.tensorboard.SummaryWriter(...)`
         """
         self._window_size = window_size
-        import wandb
 
         self._writer = wandb.init(
             config=cfg,
@@ -47,6 +48,19 @@ class WandbWriter(EventWriter):
                 self._writer.log({k: v}, step=iter)
                 new_last_write = max(new_last_write, iter)
         self._last_write = new_last_write
+
+        # visualize training samples
+        if len(storage._vis_data) >= 1:
+            for img_name, img, step_num in storage._vis_data:
+                log_img = Image.fromarray(img.transpose(1, 2, 0))  # convert to (h, w, 3) PIL.Image
+                log_img = wandb.Image(log_img, caption=img_name)
+                self._writer.log({img_name: log_img}, step=step_num)
+            # Storage stores all image data and rely on this writer to clear them.
+            # As a result it assumes only one writer will use its image data.
+            # An alternative design is to let storage store limited recent
+            # data (e.g. only the most recent image) that all writers can access.
+            # In that case a writer may not see all image data if its period is long.
+            storage.clear_images()
     
     def close(self):
         if hasattr(self, "_writer"):
