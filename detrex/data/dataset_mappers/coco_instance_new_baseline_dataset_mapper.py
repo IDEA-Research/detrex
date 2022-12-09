@@ -25,6 +25,7 @@ import logging
 import numpy as np
 import torch
 
+from detectron2.structures import Instances, Boxes, PolygonMasks
 from detectron2.data import detection_utils as utils
 from detectron2.data import transforms as T
 
@@ -162,6 +163,8 @@ class COCOInstanceNewBaselineDatasetMapper:
             # [(0,0), (2,0), (0,2)] cropped by a box [(1,0),(2,2)] (XYXY format). The tight
             # bounding box of the cropped triangle should be [(1,0),(2,1)], which is not equal to
             # the intersection of original bounding box and the cropping box.
+            if not instances.has('gt_masks'): 
+                instances.gt_masks = PolygonMasks([])  # for negative examples
             instances.gt_boxes = instances.gt_masks.get_bounding_boxes()
             # Need to filter empty instances first (due to augmentation)
             instances = utils.filter_empty_instances(instances)
