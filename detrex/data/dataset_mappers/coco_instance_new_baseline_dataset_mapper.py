@@ -25,7 +25,7 @@ import logging
 import numpy as np
 import torch
 
-from detectron2.structures import PolygonMasks
+from detectron2.structures import Instances, Boxes, PolygonMasks
 from detectron2.data import detection_utils as utils
 from detectron2.data import transforms as T
 
