@@ -49,7 +49,7 @@ def apply_box_noise(
 ):
     """
     Args:
-        boxes (torch.Tensor): Bounding boxes in format ``(x1, y1, x2, y2)`` with
+        boxes (torch.Tensor): Bounding boxes in format ``(x_c, y_c, w, h)`` with
             shape ``(num_boxes, 4)``
         box_noise_scale (float): Scaling factor for box noising. Default: 0.4.
     """
