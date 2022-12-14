@@ -33,7 +33,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_49_2AP.pth">model</a></td>
 </tr>
 <!-- ROW: dino_r50_4scale_12ep -->
- <tr><td align="left"><a href="configs/dino_r50_5cale_12ep.py">DINO-R50-4scale</a></td>
+ <tr><td align="left"><a href="configs/dino_r50_5scale_12ep.py">DINO-R50-5scale</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
@@ -188,6 +188,15 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
 <td align="center">100</td>
 <td align="center">58.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focal_large_lrf_384_fl4_4scale_12ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_5scale_12ep
+ ep.py">DINO-Focal-Large-5scale</a></td>
+<td align="center">FocalNet-384-LRF-4Level</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">58.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focalnet_large_lrf_384_fl4_5scale_12ep.pth">model</a></td>
 </tr>
 </tbody></table>
 
