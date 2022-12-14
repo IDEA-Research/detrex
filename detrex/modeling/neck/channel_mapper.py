@@ -159,8 +159,8 @@ class ChannelMapper(nn.Module):
         Return:
             tuple(torch.Tensor): A tuple of the processed features.
         """
-        assert len(inputs) == len(self.convs)
-        outs = [self.convs[i](inputs[self.in_features[i]]) for i in range(len(inputs))]
+        assert len(inputs) >= len(self.convs)
+        outs = [self.convs[i](inputs[f]) for i, f in enumerate(self.in_features)]
         if self.extra_convs:
             for i in range(len(self.extra_convs)):
                 if i == 0:
