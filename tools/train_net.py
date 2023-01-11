@@ -32,6 +32,14 @@ from detectron2.engine import (
 from detectron2.engine.defaults import create_ddp_model
 from detectron2.evaluation import inference_on_dataset, print_csv_format
 from detectron2.utils import comm
+from detectron2.utils.file_io import PathManager
+from detectron2.utils.events import (
+    CommonMetricPrinter, 
+    JSONWriter, 
+    TensorboardXWriter
+)
+
+from detrex.utils import WandbWriter
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
@@ -182,6 +190,19 @@ def do_train(args, cfg):
         trainer=trainer,
     )
 
+    if comm.is_main_process():
+        # writers = default_writers(cfg.train.output_dir, cfg.train.max_iter)
+        output_dir = cfg.train.output_dir
+        PathManager.mkdirs(output_dir)
+        writers = [
+            CommonMetricPrinter(cfg.train.max_iter),
+            JSONWriter(os.path.join(output_dir, "metrics.json")),
+            TensorboardXWriter(output_dir),
+        ]
+        if cfg.train.wandb.enabled:
+            PathManager.mkdirs(cfg.train.wandb.params.dir)
+            writers.append(WandbWriter(cfg))
+
     trainer.register_hooks(
         [
             hooks.IterationTimer(),
@@ -191,7 +212,7 @@ def do_train(args, cfg):
             else None,
             hooks.EvalHook(cfg.train.eval_period, lambda: do_test(cfg, model)),
             hooks.PeriodicWriter(
-                default_writers(cfg.train.output_dir, cfg.train.max_iter),
+                writers,
                 period=cfg.train.log_period,
             )
             if comm.is_main_process()

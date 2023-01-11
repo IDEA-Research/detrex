@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import copy
 import math
-from typing import List
+import numpy as np
+from typing import List, Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -26,6 +26,8 @@ from detrex.utils import inverse_sigmoid
 
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
+from detectron2.utils.events import get_event_storage
+from detectron2.data.detection_utils import convert_image_to_rgb
 
 
 class DINO(nn.Module):
@@ -72,6 +74,8 @@ class DINO(nn.Module):
         dn_number: int = 100,
         label_noise_ratio: float = 0.2,
         box_noise_scale: float = 1.0,
+        input_format: Optional[str] = "RGB",
+        vis_period: int = 0,
     ):
         super().__init__()
         # define backbone and position embedding module
@@ -136,6 +140,13 @@ class DINO(nn.Module):
 
         # set topk boxes selected for inference
         self.select_box_nums_for_evaluation = select_box_nums_for_evaluation
+
+        # the period for visualizing training samples
+        self.input_format = input_format
+        self.vis_period = vis_period
+        if vis_period > 0:
+            assert input_format is not None, "input_format is required for visualization!"
+
 
     def forward(self, batched_inputs):
         """Forward function of `DINO` which excepts a list of dict as inputs.
@@ -265,6 +276,16 @@ class DINO(nn.Module):
         output["enc_outputs"] = {"pred_logits": interm_class, "pred_boxes": interm_coord}
 
         if self.training:
+            # visualize training samples
+            if self.vis_period > 0:
+                storage = get_event_storage()
+                if storage.iter % self.vis_period == 0:
+                    box_cls = output["pred_logits"]
+                    box_pred = output["pred_boxes"]
+                    results = self.inference(box_cls, box_pred, images.image_sizes)
+                    self.visualize_training(batched_inputs, results)
+            
+            # compute loss
             loss_dict = self.criterion(output, targets, dn_meta)
             weight_dict = self.criterion.weight_dict
             for k in loss_dict.keys():
@@ -284,6 +305,30 @@ class DINO(nn.Module):
                 r = detector_postprocess(results_per_image, height, width)
                 processed_results.append({"instances": r})
             return processed_results
+
+    def visualize_training(self, batched_inputs, results):
+        from detectron2.utils.visualizer import Visualizer
+
+        storage = get_event_storage()
+        max_vis_box = 20
+
+        for input, results_per_image in zip(batched_inputs, results):
+            img = input["image"]
+            img = convert_image_to_rgb(img.permute(1, 2, 0), self.input_format)
+            v_gt = Visualizer(img, None)
+            v_gt = v_gt.overlay_instances(boxes=input["instances"].gt_boxes)
+            anno_img = v_gt.get_image()
+            v_pred = Visualizer(img, None)
+            v_pred = v_pred.overlay_instances(
+                boxes=results_per_image.pred_boxes[:max_vis_box].tensor.detach().cpu().numpy()
+            )
+            pred_img = v_pred.get_image()
+            vis_img = np.concatenate((anno_img, pred_img), axis=1)
+            vis_img = vis_img.transpose(2, 0, 1)
+            vis_name = "Left: GT bounding boxes;  Right: Predicted boxes"
+            storage.put_image(vis_name, vis_img)
+            break  # only visualize one image in a batch
+
 
     @torch.jit.unused
     def _set_aux_loss(self, outputs_class, outputs_coord):
