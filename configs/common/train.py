@@ -33,8 +33,8 @@ train = dict(
     eval_period=5000,
     # Output log to console every `log_period` number of iterations.
     log_period=20,
-
     # wandb logging params
+    # note that you should add wandb writer in `train_net.py``
     wandb=dict(
         enabled=False,
         params=dict(
@@ -43,7 +43,7 @@ train = dict(
             name="detrex_experiment",
         )
     ),
-
+    # the training device, choose from {"cuda", "cpu"}
     device="cuda",
     # ...
 )

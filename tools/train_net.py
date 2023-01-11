@@ -33,6 +33,11 @@ from detectron2.engine.defaults import create_ddp_model
 from detectron2.evaluation import inference_on_dataset, print_csv_format
 from detectron2.utils import comm
 from detectron2.utils.file_io import PathManager
+from detectron2.utils.events import (
+    CommonMetricPrinter, 
+    JSONWriter, 
+    TensorboardXWriter
+)
 
 from detrex.utils import WandbWriter
 
@@ -186,11 +191,17 @@ def do_train(args, cfg):
     )
 
     if comm.is_main_process():
-        writers = default_writers(cfg.train.output_dir, cfg.train.max_iter)
+        # writers = default_writers(cfg.train.output_dir, cfg.train.max_iter)
+        output_dir = cfg.train.output_dir
+        PathManager.mkdirs(output_dir)
+        writers = [
+            CommonMetricPrinter(cfg.train.max_iter),
+            JSONWriter(os.path.join(output_dir, "metrics.json")),
+            TensorboardXWriter(output_dir),
+        ]
         if cfg.train.wandb.enabled:
             PathManager.mkdirs(cfg.train.wandb.params.dir)
-            wandb_writer = WandbWriter(cfg)
-            writers.append(wandb_writer)
+            writers.append(WandbWriter(cfg))
 
     trainer.register_hooks(
         [

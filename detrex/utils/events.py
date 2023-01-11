@@ -54,7 +54,7 @@ class WandbWriter(EventWriter):
             for img_name, img, step_num in storage._vis_data:
                 log_img = Image.fromarray(img.transpose(1, 2, 0))  # convert to (h, w, 3) PIL.Image
                 log_img = wandb.Image(log_img, caption=img_name)
-                self._writer.log({img_name: log_img}, step=step_num)
+                self._writer.log({img_name: [log_img]})
             # Storage stores all image data and rely on this writer to clear them.
             # As a result it assumes only one writer will use its image data.
             # An alternative design is to let storage store limited recent
