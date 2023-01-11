@@ -127,6 +127,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 </tbody></table>
 
 ### DINO
+**Pretrained DINO with ResNet Backbone**
 <table class="docutils"><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
@@ -146,7 +147,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">49.2</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_49_2AP.pth"> model </a></td>
 </tr>
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_5scale_12ep.py"> DINO-R50-4scale </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_5scale_12ep.py"> DINO-R50-5scale </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
@@ -178,6 +179,19 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">50.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r101_4scale_12ep.pth"> model </a></td>
 </tr>
+</tbody></table>
+
+**Pretrained DINO with Swin-Transformer Backbone**
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrained</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">Download</th>
  <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_swin_tiny_224_4scale_12ep.py"> DINO-Swin-T-224-4scale </a> </td>
 <td align="center">Swin-Tiny-224</td>
 <td align="center">IN1k</td>
@@ -249,22 +263,56 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">100</td>
 <td align="center">58.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_swin_large_384_5scale_36ep.pth"> model </a></td>
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_focalnet_large_lrf_384_4scale_12ep.py"> DINO-ViTDet-Large-4scale </a> </td>
-<td align="center">ViT</td>
-<td align="center">IN1k, MAE</td>
-<td align="center">50</td>
+</tbody></table>
+
+**Pretrained DINO with FocalNet Backbone**
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrained</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">Download</th>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_focalnet_large_lrf_384_4scale_12ep.py"> DINO-FocalNet-Large-4scale </a> </td>
+<td align="center">FocalNet-384-LRF-3Level</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
 <td align="center">100</td>
 <td align="center">57.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focal_large_lrf_384_4scale_12ep.pth"> model </a></td>
 </tr>
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_focalnet_large_lrf_384_4scale_12ep.py"> DINO-ViTDet-Large-4scale </a> </td>
-<td align="center">ViT</td>
-<td align="center">IN1k, MAE</td>
-<td align="center">50</td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_focalnet_large_lrf_384_fl4_4scale_12ep.py"> DINO-FocalNet-Large-4scale </a> </td>
+<td align="center">FocalNet-384-LRF-4Level</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
 <td align="center">100</td>
 <td align="center">58.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focal_large_lrf_384_fl4_4scale_12ep.pth"> model </a></td>
 </tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_focalnet_large_lrf_384_fl4_5scale_36ep.py"> DINO-FocalNet-Large-5scale </a> </td>
+<td align="center">FocalNet-384-LRF-4Level</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">58.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focalnet_large_lrf_384_fl4_5scale_12ep.pth"> model </a></td>
+</tr>
+</tbody></table>
+
+**Pretrained DINO with ViTDet Backbone**
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrained</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">Download</th>
 </tr>
  <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_vitdet_base_4scale_12ep.py"> DINO-ViTDet-Base-4scale </a> </td>
 <td align="center">ViT</td>

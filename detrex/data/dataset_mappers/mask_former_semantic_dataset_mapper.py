@@ -33,33 +33,32 @@ from detectron2.data import MetadataCatalog
 from detectron2.data import detection_utils as utils
 from detectron2.data import transforms as T
 from detectron2.structures import BitMasks, Instances
+from detectron2.projects.point_rend import ColorAugSSDTransform
 
-from detrex.data.transforms import ColorAugSSDTransform
+# from detrex.data.transforms import ColorAugSSDTransform
 
 __all__ = ["MaskFormerSemanticDatasetMapper"]
 
 
 def build_transform_gen(
-    min_size_train,
-    max_size_train,
-    min_size_train_sampling,
-    enabled_crop: bool,
-    crop_params: dict,
-    color_aug_ssd: bool,
-    img_format: str,
-    is_train: bool = True
+        min_size_train,
+        max_size_train,
+        min_size_train_sampling,
+        enabled_crop: bool,
+        crop_params: dict,
+        color_aug_ssd: bool,
+        img_format: str,
+        is_train: bool = True
 ):
     assert is_train, "Only support training augmentation."
-    
+
     augmentations = []
     augmentations.append(
-        [
-            T.ResizeShortestEdge(
-                min_size_train, 
-                max_size_train, 
-                min_size_train_sampling
-            )
-        ]
+        T.ResizeShortestEdge(
+            min_size_train,
+            max_size_train,
+            min_size_train_sampling
+        )
     )
     if enabled_crop:
         augmentations.append(
@@ -70,7 +69,7 @@ def build_transform_gen(
     if color_aug_ssd:
         augmentations.append(ColorAugSSDTransform(img_format=img_format))
     augmentations.append(T.RandomFlip())
-    
+
     return augmentations
 
 
@@ -86,18 +85,17 @@ class MaskFormerSemanticDatasetMapper:
     """
 
     def __init__(
-        self,
-        is_train=True,
-        *,
-        dataset_names,
-        augmentations,
-        image_format,
-        ignore_label,
-        size_divisibility,
+            self,
+            is_train=True,
+            *,
+            meta,
+            augmentation,
+            image_format,
+            size_divisibility,
     ):
         """
         NOTE: this interface is experimental.
-        
+
         Args:
             is_train: for training or inference
             augmentations: a list of augmentations or deterministic transforms to apply
@@ -106,19 +104,14 @@ class MaskFormerSemanticDatasetMapper:
             size_divisibility: pad image size to be divisible by this value
         """
         self.is_train = is_train
-        self.tfm_gens = augmentations
+        self.tfm_gens = augmentation
         self.img_format = image_format
-        self.ignore_label = ignore_label
         self.size_divisibility = size_divisibility
-
-        dataset_names = dataset_names,
-        meta = MetadataCatalog.get(dataset_names[0]),
         self.ignore_label = meta.ignore_label
 
         logger = logging.getLogger(__name__)
         mode = "training" if is_train else "inference"
-        logger.info(f"[{self.__class__.__name__}] Augmentations used in {mode}: {augmentations}")
-
+        logger.info(f"[{self.__class__.__name__}] Augmentations used in {mode}: {augmentation}")
 
     def __call__(self, dataset_dict):
         """
@@ -203,6 +196,7 @@ class MaskFormerSemanticDatasetMapper:
                 )
                 instances.gt_masks = masks.tensor
 
+            instances.gt_boxes = masks.get_bounding_boxes()
             dataset_dict["instances"] = instances
 
         return dataset_dict
