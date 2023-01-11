@@ -26,3 +26,4 @@ from .resnet import (
 )
 from .convnext import ConvNeXt
 from .focalnet import FocalNet
+from .swin_transformer_v2 import SwinTransformerV2
