@@ -1,6 +1,8 @@
 # Frequently Asked Questions
 Here we provided some common troubles faced by the users and their corresponding solutions here. If the contents here do not cover your issue, please create an issue about it.
 
+We've already opened an issue about FAQs, please refer to [Frequently Asked Questions](https://github.com/IDEA-Research/detrex/issues/109) for more details.
+
 ## Training
 - "assert (boxes1[:, 2:] >= boxes1[:, :2]).all()" in `generalized_box_iou`
     This means the model produces **illegal box predictions**. You may solute this issue as follows:
