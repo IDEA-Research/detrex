@@ -226,8 +226,8 @@ class DabDetrTransformerDecoder_qr(TransformerLayerSequence):
                 else:
                     intermediate.append(query)
 
-            query_list_reserve.extend([_ for _ in torch.split(query, 2, dim=1)])
-            reference_boxes_list_reserve.extend([_ for _ in torch.split(reference_boxes, 2, dim=1)])
+            query_list_reserve.extend([_ for _ in torch.split(query, batchsize, dim=1)])
+            reference_boxes_list_reserve.extend([_ for _ in torch.split(reference_boxes, batchsize, dim=1)])
 
         if self.post_norm_layer is not None:
             query = self.post_norm_layer(query)
@@ -235,8 +235,8 @@ class DabDetrTransformerDecoder_qr(TransformerLayerSequence):
                 intermediate.pop()
                 intermediate.append(query)
 
-        intermediate = [i for s in [list(torch.split(k, 2, dim=1)) for k in intermediate] for i in s]
-        intermediate_ref_boxes = [i for s in [list(torch.split(k, 2, dim=1)) for k in intermediate_ref_boxes] for i in s]
+        intermediate = [i for s in [list(torch.split(k, batchsize, dim=1)) for k in intermediate] for i in s]
+        intermediate_ref_boxes = [i for s in [list(torch.split(k, batchsize, dim=1)) for k in intermediate_ref_boxes] for i in s]
 
         if self.return_intermediate:
             if self.bbox_embed is not None:
