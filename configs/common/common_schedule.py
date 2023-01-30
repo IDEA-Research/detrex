@@ -42,6 +42,28 @@ def multistep_lr_scheduler(
         warmup_factor=warmup_factor,
     )
 
+def step_lr_scheduler(
+    values, 
+    warmup_steps, 
+    num_updates, 
+    warmup_method="linear", 
+    warmup_factor=0.001, 
+):
+    
+    # define step scheduler
+    scheduler = L(StepParamScheduler)(
+        values=values,
+        num_updates=num_updates
+    )
+
+    # wrap with warmup scheduler
+    return L(WarmupParamScheduler)(
+        scheduler=scheduler,
+        warmup_length=warmup_steps / num_updates,
+        warmup_method=warmup_method,
+        warmup_factor=warmup_factor,
+    )
+
 def cosine_lr_scheduler():
     pass
 
@@ -54,5 +76,4 @@ def constant_lr_scheduler():
 def exponential_lr_scheduler():
     pass
 
-def step_lr_scheduler():
-    pass
+

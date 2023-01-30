@@ -54,6 +54,33 @@ plt.xlabel('Iterations')
 plt.ylabel('Learning Rate')
 plt.title('MultiStep Scheduler')
 
-# Save the plot as an image
+# Save the plot image
 plt.savefig('line_plot.png')
 ```
+
+</details>
+
+### Step LR
+A modified version of multi-step scheduler based on fvcore's [StepParamScheduler](https://detectron2.readthedocs.io/en/latest/modules/fvcore.html#fvcore.common.param_scheduler.StepParamScheduler).
+
+**Example:**
+```python
+from detectron2.config import instantiate
+from detrex.config.configs.common.common_schedule import step_lr_scheduler
+
+# define `lr_multiplier` config
+lr_multiplier = step_lr_scheduler(
+    values=[1.0, 0.5, 0.25, 0.1],
+    warmup_steps=100,
+    num_updates=1000,
+    warmup_method="linear",
+    warmup_factor=0.001,
+)
+```
+
+It will automatically divide the ``num_updates`` into **several equal intervals**, then assign the specified value in ``values`` to each interval according to the index.
+
+In this example, the parameter value will increase linearly from 0.001 to 0.1 for steps 0 to 99, and will be 1.0 for steps 100 to 249, 0.5 for steps 250 to 499, 0.25 for steps 500 to 749 and 0.1 for steps 750 to 1000. If we plot this scheduler, it will be looked like:
+
+![](./assets/step_lr_example.png)
+

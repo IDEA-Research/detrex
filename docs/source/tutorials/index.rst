@@ -12,6 +12,7 @@ Tutorials
    Download_Pretrained_Weights.md
    Using_Pretrained_Backbone.md
    Tools.md
+   Customize_Training.md
    Model_Zoo.md
    FAQs.md
    
