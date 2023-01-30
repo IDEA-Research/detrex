@@ -64,6 +64,32 @@ def step_lr_scheduler(
         warmup_factor=warmup_factor,
     )
 
+def step_lr_scheduler_with_fixed_gamma(
+        base_value,
+        num_decays,
+        gamma,
+        num_updates,
+        warmup_steps,
+        warmup_method="linear",
+        warmup_factor=0.001,
+):
+    
+    # define step scheduler with fixed gamma
+    scheduler = L(StepWithFixedGammaParamScheduler)(
+        base_value=base_value,
+        num_decays=num_decays,
+        gamma=gamma,
+        num_updates=num_updates,
+    )
+
+    # wrap with warmup scheduler
+    return L(WarmupParamScheduler)(
+        scheduler=scheduler,
+        warmup_length=warmup_steps / num_updates,
+        warmup_method=warmup_method,
+        warmup_factor=warmup_factor,
+    )
+
 def cosine_lr_scheduler():
     pass
 
