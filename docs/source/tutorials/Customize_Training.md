@@ -1,7 +1,7 @@
 # Customize Training Settings
 This document provides a brief tutorials about how to customize training components in detrex.
 
-## Learning Rate Scheduler
+## Customize LR Scheduler
 We've provide a series of commonly used scheduler configs in [common_schedule.py](), which is a simple wrapper of fvcore's [ParamSchduler](https://detectron2.readthedocs.io/en/latest/modules/fvcore.html#fvcore.common.param_scheduler.ParamScheduler) for better usage in detrex. Here we provide examples with images to demonstrate the use of these default configurations. The users can also refer to fvcore's [documentation](https://detectron2.readthedocs.io/en/latest/modules/fvcore.html#) for more detailed API reference.
 
 ### MultiStep LR

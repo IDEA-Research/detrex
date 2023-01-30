@@ -42,6 +42,7 @@ def multistep_lr_scheduler(
         warmup_factor=warmup_factor,
     )
 
+
 def step_lr_scheduler(
     values, 
     warmup_steps, 
@@ -63,6 +64,7 @@ def step_lr_scheduler(
         warmup_method=warmup_method,
         warmup_factor=warmup_factor,
     )
+
 
 def step_lr_scheduler_with_fixed_gamma(
         base_value,
@@ -90,16 +92,93 @@ def step_lr_scheduler_with_fixed_gamma(
         warmup_factor=warmup_factor,
     )
 
-def cosine_lr_scheduler():
-    pass
 
-def linear_lr_scheduler():
-    pass
+def cosine_lr_scheduler(
+    start_value,
+    end_value,
+    num_updates,
+    warmup_steps,
+    warmup_method="linear",
+    warmup_factor=0.001,
+):
+    
+    # define cosine scheduler
+    scheduler = L(CosineParamScheduler)(
+        start_value=start_value,
+        end_value=end_value,
+    )
 
-def constant_lr_scheduler():
-    pass
+    # wrap with warmup scheduler
+    return L(WarmupParamScheduler)(
+        scheduler=scheduler,
+        warmup_length=warmup_steps / num_updates,
+        warmup_method=warmup_method,
+        warmup_factor=warmup_factor,
+    )
 
-def exponential_lr_scheduler():
-    pass
+def linear_lr_scheduler(
+    start_value,
+    end_value,
+    num_updates,
+    warmup_steps,
+    warmup_method="linear",
+    warmup_factor=0.001,
+):
+    
+    # define linear scheduler
+    scheduler = L(LinearParamScheduler)(
+        start_value=start_value,
+        end_value=end_value,
+    )
 
+    # wrap with warmup scheduler
+    return L(WarmupParamScheduler)(
+        scheduler=scheduler,
+        warmup_length=warmup_steps / num_updates,
+        warmup_method=warmup_method,
+        warmup_factor=warmup_factor,
+    )
 
+def constant_lr_scheduler(
+    value,
+    num_updates,
+    warmup_steps,
+    warmup_method="linear",
+    warmup_factor=0.001,
+):
+    
+    # define constant scheduler
+    scheduler = L(ConstantParamScheduler)(
+        value=value
+    )
+
+    # wrap with warmup scheduler
+    return L(WarmupParamScheduler)(
+        scheduler=scheduler,
+        warmup_length=warmup_steps / num_updates,
+        warmup_method=warmup_method,
+        warmup_factor=warmup_factor,
+    )
+
+def exponential_lr_scheduler(
+    start_value,
+    decay,
+    num_updates,
+    warmup_steps,
+    warmup_method="linear",
+    warmup_factor=0.001,
+):
+    
+    # define exponential scheduler
+    scheduler = L(ExponentialParamScheduler)(
+        start_value=start_value,
+        decay=decay,
+    )
+
+    # wrap with warmup scheduler
+    return L(WarmupParamScheduler)(
+        scheduler=scheduler,
+        warmup_length=warmup_steps / num_updates,
+        warmup_method=warmup_method,
+        warmup_factor=warmup_factor,
+    )
