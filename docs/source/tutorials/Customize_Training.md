@@ -2,7 +2,7 @@
 This document provides a brief tutorials about how to customize training components in detrex.
 
 ## Customize LR Scheduler
-We've provide a series of commonly used scheduler configs in [common_schedule.py](), which is a simple wrapper of fvcore's [ParamSchduler](https://detectron2.readthedocs.io/en/latest/modules/fvcore.html#fvcore.common.param_scheduler.ParamScheduler) for better usage in detrex. Here we provide examples with images to demonstrate the use of these default configurations. The users can also refer to fvcore's [documentation](https://detectron2.readthedocs.io/en/latest/modules/fvcore.html#) for more detailed API reference.
+We've provide a series of commonly used scheduler configs in [common_schedule.py](), which is a simple wrapper of fvcore's [ParamSchduler](https://detectron2.readthedocs.io/en/latest/modules/fvcore.html#fvcore.common.param_scheduler.ParamScheduler) for better usage in detrex. Here we provide examples with images to demonstrate the use of these default configurations. The users can also refer to fvcore's [documentation](https://detectron2.readthedocs.io/en/latest/modules/fvcore.html#) for more detailed API reference. Note that all of the pre-defined scheduler functions return the scheduler config object in detrex, you should only use it in your own config file and assign it with ``lr_multiplier`` namespace.
 
 ### MultiStep LR
 A modified version of multi-step scheduler based on fvcore's [MultiStepParamScheduler](https://detectron2.readthedocs.io/en/latest/modules/fvcore.html#fvcore.common.param_scheduler.MultiStepParamScheduler) which has the same functionality as Pytorch's [MultiStepLR](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.MultiStepLR.html?highlight=multistep#torch.optim.lr_scheduler.MultiStepLR).
@@ -31,7 +31,7 @@ lr_multiplier = multistep_lr_scheduler(
 
 In this example, the parameter value will increase linearly from 0.001 to 0.1 for steps 0 to 99, and will be 1.0 for steps 100 to 599, 0.1 for steps 600 to 899, and 0.01 for steps 900 to 1000. If we plot this scheduler, it will be looked like:
 
-![](./assets/multi_step_example.png)
+![](./assets/multi_step_lr_scheduler.png)
 
 <details>
 <summary> The simple code for visualization </summary>
@@ -82,7 +82,7 @@ It will automatically divide the ``num_updates`` into **several equal intervals*
 
 In this example, the parameter value will increase linearly from 0.001 to 0.1 for steps 0 to 99, and will be 1.0 for steps 100 to 249, 0.5 for steps 250 to 499, 0.25 for steps 500 to 749 and 0.1 for steps 750 to 1000. If we plot this scheduler, it will be looked like:
 
-![](./assets/step_lr_example.png)
+![](./assets/step_lr_scheduler.png)
 
 
 ### Step LR with Fixed Gamma
