@@ -239,4 +239,3 @@ class GenerateDNQueries(nn.Module):
             self.denoising_groups,
             max_gt_num_per_image,
         )
-   
