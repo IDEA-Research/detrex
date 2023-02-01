@@ -1,5 +1,25 @@
 ## Change Log
 
+### v0.2.1 (01/02/2023)
+#### New Algorithm
+- MaskDINO COCO instance-seg/panoptic-seg pre-release [#154](https://github.com/IDEA-Research/detrex/pull/154)
+
+#### New Features
+- New baselines for `Res/Swin-DINO-5scale`, `ViTDet-DINO`, `FocalNet-DINO`, etc. [#138](https://github.com/IDEA-Research/detrex/pull/138), [#155](https://github.com/IDEA-Research/detrex/pull/155)
+- Support FocalNet backbone [#145](https://github.com/IDEA-Research/detrex/pull/145)
+- Support Swin-V2 backbone [#152](https://github.com/IDEA-Research/detrex/pull/152)
+
+#### Documentation
+- Add ViTDet / FocalNet download links and usage example, please refer to [Download Pretrained Weights](https://detrex.readthedocs.io/en/latest/tutorials/Download_Pretrained_Weights.html).
+- Add tutorial on how to verify the correct installation of detrex. [#194](https://github.com/IDEA-Research/detrex/pull/194)
+
+#### Bug Fixes
+- Fix demo confidence filter not to remove mask predictions [#156](https://github.com/IDEA-Research/detrex/pull/156)
+
+#### Code Refinement
+- Make more readable logging info for criterion and matcher [#151](https://github.com/IDEA-Research/detrex/pull/151)
+- Modified learning rate scheduler config usage, add fundamental scheduler configuration [#191](https://github.com/IDEA-Research/detrex/pull/191)
+
 ### v0.2.0 (13/11/2022)
 #### New Features
 - Rebuild cleaner config files for projects [#107](https://github.com/IDEA-Research/detrex/pull/107)
