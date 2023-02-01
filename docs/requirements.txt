@@ -22,7 +22,8 @@ autoflake
 timm
 pytest
 scipy==1.7.3
-git+https://github.com/facebookresearch/fvcore.git
+fvcore==0.1.5.post20220512
+# git+https://github.com/facebookresearch/fvcore.git
 git+https://github.com/facebookresearch/detectron2.git
 https://download.pytorch.org/whl/cpu/torch-1.8.1%2Bcpu-cp37-cp37m-linux_x86_64.whl
 https://download.pytorch.org/whl/cpu/torchvision-0.9.1%2Bcpu-cp37-cp37m-linux_x86_64.whl
