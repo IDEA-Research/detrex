@@ -239,3 +239,32 @@ class GenerateDNQueries(nn.Module):
             self.denoising_groups,
             max_gt_num_per_image,
         )
+
+
+class GenerateCDNQueries(nn.Module):
+    def __init__(
+        self,
+        num_queries: int = 300,
+        num_classes: int = 80,
+        label_embed_dim: int = 256,
+        denoising_nums: int = 100,
+        label_noise_prob: float = 0.5,
+        box_noise_scale: float = 1.0,
+    ):
+        super(GenerateCDNQueries, self).__init__()
+        self.num_queries = num_queries
+        self.num_classes = num_classes
+        self.label_embed_dim = label_embed_dim
+        self.denoising_nums = denoising_nums
+        self.label_noise_prob = label_noise_prob
+        self.box_noise_scale = box_noise_scale
+        
+        self.label_encoder = nn.Embedding(num_classes, label_embed_dim)
+    
+    def forward(
+        self,
+        gt_labels_list,
+        gt_boxes_list,
+    ):
+        denoising_nums = self.denoising_nums * 2
+        

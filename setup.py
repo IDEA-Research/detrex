@@ -216,10 +216,10 @@ if __name__ == "__main__":
 
     setup(
         name="detrex",
-        version="0.1.0",
+        version="0.2.1",
         author="International Digital Economy Academy",
         url="https://github.com/rentainhe/detrex",
-        description="IDEA open source toolbox for visual recognition tasks",
+        description="IDEA open source toolbox for transformer-based instance recognition tasks",
         license=license,
         install_requires=parse_requirements("requirements.txt"),
         packages=find_packages(
