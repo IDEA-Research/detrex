@@ -96,3 +96,14 @@ python tools/train_net.py \
     --num-gpus 8 \
     --resume
 ```
+
+### Fast Debugging
+We have set an additional configuration for fast debugging named `cfg.train.fast_dev_run=bool`, which is `False` by default. if user enables this configuration, we perform it in a straightforward manner by setting `train.max_iter=20`, `train.eval_period=10`, `train.log_period=1`.
+
+To start fast debugging:
+```bash
+python tools/train_net.py \
+    --config-file projects/dab_detr/configs/dab_detr_r50_50ep.py \
+    --num-gpus 8 \
+    train.fast_dev_run.enabled=True
+```
