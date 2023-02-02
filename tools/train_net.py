@@ -25,7 +25,6 @@ from detectron2.engine import (
     SimpleTrainer,
     default_argument_parser,
     default_setup,
-    default_writers,
     hooks,
     launch,
 )
@@ -72,8 +71,8 @@ class Trainer(SimpleTrainer):
                 from torch.cuda.amp import GradScaler
 
                 grad_scaler = GradScaler()
-            self.grad_scaler = grad_scaler
-
+        self.grad_scaler = grad_scaler
+        
         # set True to use amp training
         self.amp = amp
 
@@ -98,8 +97,8 @@ class Trainer(SimpleTrainer):
         """
         If you want to do something with the losses, you can wrap the model.
         """
-        loss_dict = self.model(data)
         with autocast(enabled=self.amp):
+            loss_dict = self.model(data)
             if isinstance(loss_dict, torch.Tensor):
                 losses = loss_dict
                 loss_dict = {"total_loss": loss_dict}
@@ -134,6 +133,17 @@ class Trainer(SimpleTrainer):
                 parameters=params,
                 **self.clip_grad_params,
             )
+
+    def state_dict(self):
+        ret = super().state_dict()
+        if self.grad_scaler and self.amp:
+            ret["grad_scaler"] = self.grad_scaler.state_dict()
+        return ret
+
+    def load_state_dict(self, state_dict):
+        super().load_state_dict(state_dict)
+        if self.grad_scaler and self.amp:
+            self.grad_scaler.load_state_dict(state_dict["grad_scaler"])
 
 
 def do_test(cfg, model):
