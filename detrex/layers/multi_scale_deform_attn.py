@@ -324,9 +324,11 @@ class MultiScaleDeformableAttention(nn.Module):
                     reference_points.shape[-1]
                 )
             )
+        
+        # the original impl for fp32 training
         if torch.cuda.is_available() and value.is_cuda:
             output = MultiScaleDeformableAttnFunction.apply(
-                value,
+                value.to(torch.float32) if value.dtype==torch.float16 else value,
                 spatial_shapes,
                 level_start_index,
                 sampling_locations,
@@ -337,6 +339,9 @@ class MultiScaleDeformableAttention(nn.Module):
             output = multi_scale_deformable_attn_pytorch(
                 value, spatial_shapes, sampling_locations, attention_weights
             )
+
+        if value.dtype==torch.float16:
+            output=output.to(torch.float16)
 
         output = self.output_proj(output)
 
