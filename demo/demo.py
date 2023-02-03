@@ -19,6 +19,7 @@ from detectron2.data.detection_utils import read_image
 from detectron2.utils.logger import setup_logger
 
 
+
 # constants
 WINDOW_NAME = "COCO detections"
 

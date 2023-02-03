@@ -89,10 +89,9 @@ class MaskFormerSemanticDatasetMapper:
         self,
         is_train=True,
         *,
-        dataset_names,
-        augmentations,
+        meta,
+        augmentation,
         image_format,
-        ignore_label,
         size_divisibility,
     ):
         """
@@ -106,18 +105,14 @@ class MaskFormerSemanticDatasetMapper:
             size_divisibility: pad image size to be divisible by this value
         """
         self.is_train = is_train
-        self.tfm_gens = augmentations
+        self.tfm_gens = augmentation
         self.img_format = image_format
-        self.ignore_label = ignore_label
         self.size_divisibility = size_divisibility
-
-        dataset_names = dataset_names,
-        meta = MetadataCatalog.get(dataset_names[0]),
         self.ignore_label = meta.ignore_label
 
         logger = logging.getLogger(__name__)
         mode = "training" if is_train else "inference"
-        logger.info(f"[{self.__class__.__name__}] Augmentations used in {mode}: {augmentations}")
+        logger.info(f"[{self.__class__.__name__}] Augmentations used in {mode}: {augmentation}")
 
 
     def __call__(self, dataset_dict):

@@ -69,7 +69,7 @@ model = L(MaskDINO)(
             initialize_box_type='mask2box',
             initial_pred=True,
             learn_tgt=False,
-            total_num_feature_levels= 4,
+            total_num_feature_levels= "${..pixel_decoder.total_num_feature_levels}",
             dropout = 0.0,
             activation= 'relu',
             nhead= 8,
@@ -144,7 +144,6 @@ elif dn == "seg":
     dn_losses = ["labels", "masks", "boxes"]
 else:
     dn_losses = []
-# if deep_supervision:
 
 aux_weight_dict = {}
 for i in range(dec_layers):

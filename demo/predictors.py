@@ -1,6 +1,5 @@
 import atexit
 import bisect
-from copy import copy
 import multiprocessing as mp
 from collections import deque
 import cv2
@@ -14,12 +13,19 @@ from detectron2.utils.visualizer import ColorMode, Visualizer
 
 
 def filter_predictions_with_confidence(predictions, confidence_threshold=0.5):
-    if "instances" in predictions:
-        preds = predictions["instances"]
-        keep_idxs = preds.scores > confidence_threshold
-        predictions = copy(predictions) # don't modify the original
-        predictions["instances"] = preds[keep_idxs]
-    return predictions
+    preds = predictions["instances"]
+    keep_idxs = preds.scores > confidence_threshold
+    pred_scores = preds.scores[keep_idxs]
+    pred_classes = preds.pred_classes[keep_idxs]
+    pred_boxes = preds.pred_boxes[keep_idxs]
+    return {
+        "instances": Instances(
+            image_size=preds.image_size,
+            pred_boxes=pred_boxes,
+            scores=pred_scores,
+            pred_classes=pred_classes,
+        )
+    }
 
 
 class VisualizationDemo(object):
