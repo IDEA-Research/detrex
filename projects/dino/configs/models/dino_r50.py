@@ -56,6 +56,7 @@ model = L(DINO)(
             num_layers=6,
             post_norm=False,
             num_feature_levels="${..num_feature_levels}",
+            use_checkpoint=False
         ),
         decoder=L(DINOTransformerDecoder)(
             embed_dim=256,
@@ -66,6 +67,7 @@ model = L(DINO)(
             num_layers=6,
             return_intermediate=True,
             num_feature_levels="${..num_feature_levels}",
+            use_checkpoint=False,
         ),
         num_feature_levels=4,
         two_stage_num_proposals="${..num_queries}",
@@ -74,6 +76,7 @@ model = L(DINO)(
     num_classes=80,
     num_queries=900,
     aux_loss=True,
+    use_checkpoint=False,
     criterion=L(DINOCriterion)(
         num_classes="${..num_classes}",
         matcher=L(HungarianMatcher)(
