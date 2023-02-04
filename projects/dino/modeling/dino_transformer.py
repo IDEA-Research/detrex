@@ -27,6 +27,7 @@ from detrex.layers import (
 )
 from detrex.utils import inverse_sigmoid
 
+from fairscale.nn.checkpoint import checkpoint_wrapper
 
 class DINOTransformerEncoder(TransformerLayerSequence):
     def __init__(
@@ -39,6 +40,7 @@ class DINOTransformerEncoder(TransformerLayerSequence):
         num_layers: int = 6,
         post_norm: bool = False,
         num_feature_levels: int = 4,
+        use_checkpoint: bool = False,
     ):
         super(DINOTransformerEncoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
@@ -68,6 +70,11 @@ class DINOTransformerEncoder(TransformerLayerSequence):
             self.post_norm_layer = nn.LayerNorm(self.embed_dim)
         else:
             self.post_norm_layer = None
+
+        # use encoder checkpoint
+        if use_checkpoint:
+            for layer in self.layers:
+                layer = checkpoint_wrapper(layer)
 
     def forward(
         self,
@@ -110,7 +117,8 @@ class DINOTransformerDecoder(TransformerLayerSequence):
         num_layers: int = 6,
         return_intermediate: bool = True,
         num_feature_levels: int = 4,
-        look_forward_twice=True,
+        look_forward_twice: bool = True,
+        use_checkpoint: bool = True,
     ):
         super(DINOTransformerDecoder, self).__init__(
             transformer_layers=BaseTransformerLayer(
@@ -148,6 +156,11 @@ class DINOTransformerDecoder(TransformerLayerSequence):
         self.class_embed = None
         self.look_forward_twice = look_forward_twice
         self.norm = nn.LayerNorm(embed_dim)
+
+        # decoder checkpoint
+        if use_checkpoint:
+            for layer in self.layers:
+                layer = checkpoint_wrapper(layer)
 
     def forward(
         self,
