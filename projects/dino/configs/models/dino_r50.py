@@ -76,7 +76,6 @@ model = L(DINO)(
     num_classes=80,
     num_queries=900,
     aux_loss=True,
-    use_checkpoint=False,
     criterion=L(DINOCriterion)(
         num_classes="${..num_classes}",
         matcher=L(HungarianMatcher)(
