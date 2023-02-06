@@ -29,11 +29,11 @@ train = dict(
     # after every `checkpointer.period` iterations,
     # and only `checkpointer.max_to_keep` number of checkpoint will be kept.
     checkpointer=dict(period=5000, max_to_keep=100),
-    # Run evaluation after every `eval_period` number of iterations
+    # run evaluation after every `eval_period` number of iterations
     eval_period=5000,
-    # Output log to console every `log_period` number of iterations.
+    # output log to console every `log_period` number of iterations.
     log_period=20,
-    # wandb logging params
+    # logging training info to Wandb
     # note that you should add wandb writer in `train_net.py``
     wandb=dict(
         enabled=False,
@@ -42,6 +42,13 @@ train = dict(
             project="detrex",
             name="detrex_experiment",
         )
+    ),
+    # model ema
+    model_ema=dict(
+        enabled=False,
+        decay=0.999,
+        device="",
+        use_ema_weights_for_eval_only=True,
     ),
     # the training device, choose from {"cuda", "cpu"}
     device="cuda",
