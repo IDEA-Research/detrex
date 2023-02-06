@@ -48,7 +48,7 @@ train = dict(
         enabled=False,
         decay=0.999,
         device="",
-        use_ema_weights_for_eval_only=True,
+        use_ema_weights_for_eval_only=False,
     ),
     # the training device, choose from {"cuda", "cpu"}
     device="cuda",

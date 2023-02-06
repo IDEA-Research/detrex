@@ -145,24 +145,39 @@ class Trainer(SimpleTrainer):
             self.grad_scaler.load_state_dict(state_dict["grad_scaler"])
 
 
-def do_test(cfg, model):
+def do_test(cfg, model, eval_only=False):
     logger = logging.getLogger("detectron2")
-    if cfg.train.model_ema.enabled:
-        logger.info("Run evaluation with EMA.")
-        with ema.apply_model_ema_and_restore(model):
-            if "evaluator" in cfg.dataloader:
-                ret = inference_on_dataset(
-                    model, instantiate(cfg.dataloader.test), instantiate(cfg.dataloader.evaluator)
-                )
-                print_csv_format(ret)
-                return ret
-    else:
+
+    if eval_only:
+        logger.info("Run evaluation under eval-only mode")
+        if cfg.train.model_ema.enabled and cfg.train.model_ema.use_ema_weights_for_eval_only:
+            logger.info("Run evaluation with EMA.")
+        else:
+            logger.info("Run evaluation without EMA.")
         if "evaluator" in cfg.dataloader:
-                ret = inference_on_dataset(
-                    model, instantiate(cfg.dataloader.test), instantiate(cfg.dataloader.evaluator)
-                )
-                print_csv_format(ret)
-                return ret
+            ret = inference_on_dataset(
+                model, instantiate(cfg.dataloader.test), instantiate(cfg.dataloader.evaluator)
+            )
+            print_csv_format(ret)
+        return ret
+    
+    logger.info("Run evaluation without EMA.")
+    if "evaluator" in cfg.dataloader:
+        ret = inference_on_dataset(
+            model, instantiate(cfg.dataloader.test), instantiate(cfg.dataloader.evaluator)
+        )
+        print_csv_format(ret)
+
+        if cfg.train.model_ema.enabled:
+            logger.info("Run evaluation with EMA.")
+            with ema.apply_model_ema_and_restore(model):
+                if "evaluator" in cfg.dataloader:
+                    ema_ret = inference_on_dataset(
+                        model, instantiate(cfg.dataloader.test), instantiate(cfg.dataloader.evaluator)
+                    )
+                    print_csv_format(ema_ret)
+                    ret.update(ema_ret)
+        return ret
 
 
 def do_train(args, cfg):
@@ -285,7 +300,7 @@ def main(args):
         # Apply ema state for evaluation
         if cfg.train.model_ema.enabled and cfg.train.model_ema.use_ema_weights_for_eval_only:
             ema.apply_model_ema(model)
-        print(do_test(cfg, model))
+        print(do_test(cfg, model, eval_only=True))
     else:
         do_train(args, cfg)
 
