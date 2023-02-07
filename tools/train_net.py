@@ -225,14 +225,12 @@ def do_train(args, cfg):
         clip_grad_params=cfg.train.clip_grad.params if cfg.train.clip_grad.enabled else None,
     )
     
-    kwargs = {}
-    kwargs.update(ema.may_get_ema_checkpointer(cfg, model))
     checkpointer = DetectionCheckpointer(
         model,
         cfg.train.output_dir,
         trainer=trainer,
         # save model ema
-        **kwargs
+        **ema.may_get_ema_checkpointer(cfg, model)
     )
 
     if comm.is_main_process():
@@ -294,9 +292,7 @@ def main(args):
         
         # using ema for evaluation
         ema.may_build_model_ema(cfg, model)
-        kwargs = {}
-        kwargs.update(ema.may_get_ema_checkpointer(cfg, model))
-        DetectionCheckpointer(model, **kwargs).load(cfg.train.init_checkpoint)
+        DetectionCheckpointer(model, **ema.may_get_ema_checkpointer(cfg, model)).load(cfg.train.init_checkpoint)
         # Apply ema state for evaluation
         if cfg.train.model_ema.enabled and cfg.train.model_ema.use_ema_weights_for_eval_only:
             ema.apply_model_ema(model)
