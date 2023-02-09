@@ -6,6 +6,7 @@ from typing import Dict, List
 import torch
 from tabulate import tabulate
 
+from detectron2.utils.logger import setup_logger
 
 def convert_basic_c2_names(original_keys):
     """
@@ -250,7 +251,7 @@ def align_and_update_state_dicts(model_state_dict, ckpt_state_dict, c2_conversio
     # remove indices that correspond to no-match
     idxs[max_match_size == 0] = -1
 
-    logger = logging.getLogger(__name__)
+    logger = setup_logger(name=__name__)
     # matched_pairs (matched checkpoint key --> matched model key)
     matched_keys = {}
     result_state_dict = {}

@@ -19,7 +19,6 @@ import time
 import torch
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
-from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import LazyConfig, instantiate
 from detectron2.engine import (
     SimpleTrainer,
@@ -40,6 +39,8 @@ from detectron2.utils.events import (
 
 from detrex.utils import WandbWriter
 from detrex.modeling import ema
+# from detectron2.checkpoint import DetectionCheckpointer
+from detrex.checkpoint import DetectionCheckpointer
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
