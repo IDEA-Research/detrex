@@ -14,3 +14,4 @@
 # limitations under the License.
 
 from .color_augmentation import ColorAugSSDTransform
+from .auto_augmentation import AutoAugment

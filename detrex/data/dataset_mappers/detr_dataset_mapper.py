@@ -48,7 +48,6 @@ class DetrDatasetMapper:
     Args:
         augmentation (list[detectron.data.Transforms]): The geometric transforms for
             the input raw image and annotations.
-        augmentation_with_crop (list[detectron.data.Transforms]): The geometric transforms with crop.
         is_train (bool): Whether to load train set or val set. Default: True.
         mask_on (bool): Whether to return the mask annotations. Default: False.
         img_format (str): The format of the input raw images. Default: RGB.
@@ -60,17 +59,15 @@ class DetrDatasetMapper:
     def __init__(
         self,
         augmentation,
-        augmentation_with_crop,
         is_train=True,
         mask_on=False,
         img_format="RGB",
     ):
         self.mask_on = mask_on
         self.augmentation = augmentation
-        self.augmentation_with_crop = augmentation_with_crop
         logger.info(
-            "Full TransformGens used in training: {}, crop: {}".format(
-                str(self.augmentation), str(self.augmentation_with_crop)
+            "Full TransformGens used in training: {}.".format(
+                str(self.augmentation)
             )
         )
 
@@ -89,13 +86,8 @@ class DetrDatasetMapper:
         image = utils.read_image(dataset_dict["file_name"], format=self.img_format)
         utils.check_image_size(dataset_dict, image)
 
-        if self.augmentation_with_crop is None:
-            image, transforms = T.apply_transform_gens(self.augmentation, image)
-        else:
-            if np.random.rand() > 0.5:
-                image, transforms = T.apply_transform_gens(self.augmentation, image)
-            else:
-                image, transforms = T.apply_transform_gens(self.augmentation_with_crop, image)
+        aug_input = T.AugInput(image=image)
+        transforms = self.augmentation(aug_input)
 
         image_shape = image.shape[:2]  # h, w
 
