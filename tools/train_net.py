@@ -19,7 +19,6 @@ import time
 import torch
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
-from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import LazyConfig, instantiate
 from detectron2.engine import (
     SimpleTrainer,
@@ -37,6 +36,8 @@ from detectron2.utils.events import (
     JSONWriter, 
     TensorboardXWriter
 )
+from detectron2.checkpoint import DetectionCheckpointer
+# from detrex.checkpoint import DetectionCheckpointer
 
 from detrex.utils import WandbWriter
 from detrex.modeling import ema
