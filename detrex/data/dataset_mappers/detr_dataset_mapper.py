@@ -88,6 +88,7 @@ class DetrDatasetMapper:
 
         aug_input = T.AugInput(image=image)
         transforms = self.augmentation(aug_input)
+        image = aug_input.image
 
         image_shape = image.shape[:2]  # h, w
 

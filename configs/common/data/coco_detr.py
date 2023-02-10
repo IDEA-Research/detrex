@@ -58,10 +58,12 @@ dataloader.test = L(build_detection_test_loader)(
     mapper=L(DetrDatasetMapper)(
         augmentation=L(AutoAugment)(
             policies=[
-                L(T.ResizeShortestEdge)(
-                    short_edge_length=800,
-                    max_size=1333,
-                ),
+                [
+                    L(T.ResizeShortestEdge)(
+                        short_edge_length=800,
+                        max_size=1333,
+                    ),
+                ]
             ],
         ),
         is_train=False,
