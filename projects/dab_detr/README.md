@@ -59,13 +59,21 @@ Here are the converted the pretrained weights from [DAB-DETR](https://github.com
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
+<!-- ROW: dab_detr_r50_3patterns_50ep -->
+ <tr><td align="left"><a href="configs/dab_detr_r50_3patterns_50ep.py">DAB-DETR-R50-3patterns</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">42.8</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_dab_detr_r50_3patterns.pth">model</a></td>
+</tr>
 <!-- ROW: dab_detr_r50_dc5_50ep -->
  <tr><td align="left"><a href="configs/dab_detr_r50_dc5_50ep.py">DAB-DETR-R50-DC5</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
 <td align="center">44.6</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_dab_detr_r50_dc5.pth">model</a></td>
 </tr>
 </tbody></table>
 

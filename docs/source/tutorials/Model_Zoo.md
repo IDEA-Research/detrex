@@ -7,7 +7,51 @@
 
 
 ## COCO Object Detection Baselines
-Here we provides our pretrained baselines with **detrex**. And more pretrained weights will be released in the future version.
+Here we provides our pretrained baselines with **detrex**. And more pretrained weights will be released in the future version. We also provide our converted pretrained for the users which will be marked as `(converted)`.
+
+### DETR
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrained</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">Download</th>
+<!-- TABLE BODY -->
+<!-- ROW: detr_r50 -->
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/detr/configs/detr_r50_300ep.py">DETR-R50 (converted)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">500</td>
+<td align="center">42.0</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_detr_r50_500ep.pth">model</a></td>
+<!-- ROW: detr_r50_dc5 -->
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/detr/configs/detr_r50_dc5_300ep.py">DETR-R50-DC5 (converted)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">500</td>
+<td align="center">43.4</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_detr_r50_dc5.pth">model</a></td>
+</tr>
+<!-- ROW: detr_r101 -->
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/detr/configs/detr_r101_300ep.py">DETR-R101 (converted)</a></td>
+<td align="center">R-101</td>
+<td align="center">IN1k</td>
+<td align="center">500</td>
+<td align="center">43.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_detr_r101_500ep.pth">model</a></td>
+</tr>
+<!-- ROW: detr_r101_dc5 -->
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/detr/configs/detr_r101_dc5_300ep.py">DETR-R101-DC5 (converted)</a></td>
+<td align="center">R-101</td>
+<td align="center">IN1k</td>
+<td align="center">500</td>
+<td align="center">44.9</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_detr_r101_dc5.pth">model</a></td>
+</tr>
+</tbody></table>
 
 ### Deformable-DETR
 <table class="docutils"><tbody>
