@@ -31,13 +31,29 @@ Here we provides the weights which are converted by [converter.py](./converter.p
 <td align="center">42.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_detr_r50_500ep.pth">model</a></td>
 </tr>
-<!-- ROW: detr_r50 -->
- <tr><td align="left"><a>DETR-R101</a></td>
+<!-- ROW: detr_r50_dc5 -->
+ <tr><td align="left"><a>DETR-R50-DC5</a></td>
 <td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">500</td>
+<td align="center">43.4</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+<!-- ROW: detr_r101 -->
+ <tr><td align="left"><a>DETR-R101</a></td>
+<td align="center">R-101</td>
 <td align="center">IN1k</td>
 <td align="center">500</td>
 <td align="center">43.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_detr_r101_500ep.pth">model</a></td>
+</tr>
+<!-- ROW: detr_r101_dc5 -->
+ <tr><td align="left"><a>DETR-R101-DC5</a></td>
+<td align="center">R-101</td>
+<td align="center">IN1k</td>
+<td align="center">500</td>
+<td align="center">43.5</td>
+<td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
 
