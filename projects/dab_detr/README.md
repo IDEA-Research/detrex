@@ -47,6 +47,28 @@ Here we provide the pretrained `DAB-DETR` weights based on detrex.
 </tbody></table>
 
 
+## Converted Models
+Here are the converted the pretrained weights from [DAB-DETR](https://github.com/IDEA-Research/DAB-DETR) official repo.
+<table><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+<!-- ROW: dab_detr_r50_dc5_50ep -->
+ <tr><td align="left"><a href="configs/dab_detr_r50_dc5_50ep.py">DAB-DETR-R50-DC5</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">44.6</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+</tbody></table>
+
 ## Training
 All configs can be trained with:
 ```bash
