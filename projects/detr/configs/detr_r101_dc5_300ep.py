@@ -10,4 +10,4 @@ train.init_checkpoint = "https://download.pytorch.org/models/resnet101-63fe2227.
 train.output_dir = "./output/detr_r50_dc5_300ep"
 
 # modify model
-model.name = "resnet101"
+model.backbone.name = "resnet101"
