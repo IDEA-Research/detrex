@@ -49,6 +49,13 @@ Here we provide the pretrained `Conditional-DETR` weights based on detrex.
 <td align="center">41.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_conditional_detr_r50_50ep.pth">model</a></td>
 </tr>
+ <tr><td align="left"><a href="configs/conditional_detr_r50_dc5_50ep.py">Conditional-DETR-R50-DC5</a></td>
+<td align="center">R-50-DC5</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">43.8</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_conditional_detr_r50_dc5.pth">model</a></td>
+</tr>
 <!-- ROW: conditional_detr_r101_50ep -->
  <tr><td align="left"><a href="configs/conditional_detr_r101_50ep.py">Conditional-DETR-R101</a></td>
 <td align="center">R-101</td>
@@ -56,6 +63,13 @@ Here we provide the pretrained `Conditional-DETR` weights based on detrex.
 <td align="center">50</td>
 <td align="center">43.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_conditional_detr_r101_50ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/conditional_detr_r101_dc5_50ep.py">Conditional-DETR-R101-DC5</a></td>
+<td align="center">R-101-DC5</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">45.1</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_conditional_detr_r101_dc5.pth">model</a></td>
 </tr>
 </tbody></table>
 
