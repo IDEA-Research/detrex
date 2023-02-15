@@ -258,11 +258,17 @@ class DabDetrTransformerDecoder(TransformerLayerSequence):
 
 
 class DabDetrTransformer(nn.Module):
-    def __init__(self, encoder=None, decoder=None):
+    def __init__(self, encoder=None, decoder=None, num_patterns=0):
         super(DabDetrTransformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.embed_dim = self.encoder.embed_dim
+
+        # using patterns designed as AnchorDETR
+        assert isinstance(num_patterns, int), "num_patterns should be int but got {}".format(type(num_patterns))
+        self.num_patterns = num_patterns
+        if self.num_patterns > 0:
+            self.patterns = nn.Embedding(self.num_patterns, self.embed_dim)
 
         self.init_weights()
 
@@ -285,7 +291,13 @@ class DabDetrTransformer(nn.Module):
             query_key_padding_mask=mask,
         )
         num_queries = anchor_box_embed.shape[0]
-        target = torch.zeros(num_queries, bs, self.embed_dim, device=anchor_box_embed.device)
+
+
+        if self.num_patterns == 0:
+            target = torch.zeros(num_queries, bs, self.embed_dim, device=anchor_box_embed.device)
+        else:
+            target = self.patterns.weight[:, None, None, :].repeat(1, num_queries, bs, 1).flatten(0, 1)
+            anchor_box_embed = anchor_box_embed.repeat(self.num_patterns, 1, 1)
 
         hidden_state, reference_boxes = self.decoder(
             query=target,

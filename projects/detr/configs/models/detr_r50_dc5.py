@@ -1,8 +1,8 @@
 from detectron2.config import LazyCall as L
+
 from detrex.modeling.backbone.torchvision_resnet import TorchvisionResNet
 
-from .dab_detr_r50 import model
-
+from .detr_r50 import model
 
 model.backbone=L(TorchvisionResNet)(
     name="resnet50",

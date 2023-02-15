@@ -52,6 +52,7 @@ model = L(DABDETR)(
             num_layers=6,
             modulate_hw_attn=True,
         ),
+        num_patterns=0,  # pattern embedding as in Anchor-DETR
     ),
     embed_dim=256,
     num_classes=80,
