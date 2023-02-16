@@ -83,6 +83,11 @@ Please refer to [Getting Started with detrex](https://detrex.readthedocs.io/en/l
 - [Analyze the model under detrex](https://detrex.readthedocs.io/en/latest/tutorials/Tools.html#model-analysis)
 - [Download and initialize with the pretrained backbone weights](https://detrex.readthedocs.io/en/latest/tutorials/Using_Pretrained_Backbone.html)
 - [Frequently asked questions](https://github.com/IDEA-Research/detrex/issues/109)
+- [A simple onnx convert tutorial provided by powermano](https://github.com/IDEA-Research/detrex/issues/192)
+- Simple training techniques: [Model-EMA](https://github.com/IDEA-Research/detrex/pull/201), [Mixed Precision Training](https://github.com/IDEA-Research/detrex/pull/198), [Activation Checkpoint](https://github.com/IDEA-Research/detrex/pull/200)
+- [Simple tutorial about custom dataset training](https://github.com/IDEA-Research/detrex/pull/187)
+
+Although some of the tutorials are currently presented with relatively simple content, we will constantly improve our documentation to help users achieve a better user experience.
 
 ## Documentation
 
