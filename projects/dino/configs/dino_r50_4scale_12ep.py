@@ -36,7 +36,7 @@ model.device = train.device
 optimizer.lr = 1e-4
 optimizer.betas = (0.9, 0.999)
 optimizer.weight_decay = 1e-4
-optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in module_name else 1
+# optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in module_name else 1
 
 # modify dataloader config
 dataloader.train.num_workers = 16

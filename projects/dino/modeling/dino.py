@@ -24,6 +24,7 @@ import torch.nn.functional as F
 from detrex.layers import MLP, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from detrex.utils import inverse_sigmoid
 
+from detectron2.layers import move_device_like
 from detectron2.modeling import detector_postprocess
 from detectron2.structures import Boxes, ImageList, Instances
 from detectron2.utils.events import get_event_storage
@@ -108,10 +109,9 @@ class DINO(nn.Module):
         self.box_noise_scale = box_noise_scale
 
         # normalizer for input raw images
-        self.device = device
-        pixel_mean = torch.Tensor(pixel_mean).to(self.device).view(3, 1, 1)
-        pixel_std = torch.Tensor(pixel_std).to(self.device).view(3, 1, 1)
-        self.normalizer = lambda x: (x - pixel_mean) / pixel_std
+        # self.device = device
+        self.register_buffer("pixel_mean", torch.tensor(pixel_mean).view(3, 1, 1), False)
+        self.register_buffer("pixel_std", torch.tensor(pixel_std).view(3, 1, 1), False)
 
         # initialize weights
         prior_prob = 0.01
@@ -147,6 +147,13 @@ class DINO(nn.Module):
         if vis_period > 0:
             assert input_format is not None, "input_format is required for visualization!"
 
+
+    @property
+    def device(self):
+        return self.pixel_mean.device
+
+    def _move_to_current_device(self, x):
+        return move_device_like(x, self.pixel_mean)
 
     def forward(self, batched_inputs):
         """Forward function of `DINO` which excepts a list of dict as inputs.
@@ -499,8 +506,10 @@ class DINO(nn.Module):
             dn_metas["output_known_lbs_bboxes"] = out
         return outputs_class, outputs_coord
 
+
     def preprocess_image(self, batched_inputs):
-        images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
+        images = [self._move_to_current_device(x["image"]) for x in batched_inputs]
+        images = [(x - self.pixel_mean) / self.pixel_std for x in images]
         images = ImageList.from_tensors(images)
         return images
 
