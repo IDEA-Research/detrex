@@ -1,0 +1,15 @@
+
+partition: research # Partition where to submit
+ngpus: ${num_gpus} # Number of gpus to request on each node
+nodes: ${num_machines} # Number of nodes to request
+cpus_per_task: 5 # Number of cpus per task/gpu
+timeout: 240 # Duration of the job, in hours
+job_name: "detrex" # job_name to display with `squeue`
+job_dir: ~ # Job directory; leave empty for default (hydra.run.dir)
+exclude_node: ~ # The node(s) to be excluded for slurm assignment, e.g. SH-IDC1-10-198-3-[10,20]
+comment: ~ # Comment to pass to scheduler, e.g. priority message
+quotatype: ~ # Some clusters may set different quotatype with different priority, e.g. reserved/spot
+
+ddp_comm_mode: "tcp" # ddp communication mode, "file" or "tcp"
+share_root: /path/that/can/be/accessed/by/all/machines # for "file" mode only
+master_port: ~ # for "tcp" mode only, leave empty to find available port automatically
