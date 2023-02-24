@@ -8,19 +8,32 @@ A script to launch training, it surpports:
 
 Example usage:
 
+STER 1: modify slurm config
+```
+$ cp configs/hydra/slurm/research.yaml configs/hydra/slurm/${CLUSTER_ID}.yaml && \
+    vim configs/hydra/slurm/${CLUSTER_ID}.yaml 
+```
+
+STEP 2: launch training
+```
 $ python tools/hydra_train_net.py \
      num_machines=2 num_gpus=8 auto_output_dir=true \
      config_file=projects/detr/configs/detr_r50_300ep.py \
      +model.num_queries=50 \
      +slurm=${CLUSTER_ID}
+```
 
+STEP 3 (optional): check output dir
+```
 $ tree -L 2 ./outputs/
 ./outputs/
 └── +model.num_queries.50-num_gpus.8-num_machines.2
     └── 20230224-09:06:28
+```
 
 Contact ZHU Lei (ray.leizhu@outlook.com) for inquries about this script
 """
+
 import sys 
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
