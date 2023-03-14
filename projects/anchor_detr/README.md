@@ -8,11 +8,7 @@ Yingming Wang, Xiangyu Zhang, Tong Yang, Jian Sun
   <img src="./assets/anchor_detr_arch.png"/>
 </div><br/>
 
-We reproduce DETR in detrex based on [Detectron2 wrapper for DETR](https://github.com/facebookresearch/detr/tree/main/d2).
-
 ## Converted Weights
-Here we provides the weights which are converted by [converter.py](./converter.py) from the official DETR repo.
-
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
@@ -56,10 +52,10 @@ Here we provides the weights which are converted by [converter.py](./converter.p
 **Note:** Here we borrowed the pretrained weight from [DETR](https://github.com/facebookresearch/detr) official repo. And our detrex training results will be released in the future version.
 
 ## Training
-Training DETR model for 300 epochs:
+Training Anchor-DETR-R50 model:
 ```bash
 cd detrex
-python tools/train_net.py --config-file projects/detr/configs/detr_r50_300ep.py --num-gpus 8
+python tools/train_net.py --config-file projects/anchor_detr/configs/anchor_detr_r50_50ep.py --num-gpus 8
 ```
 By default, we use 8 GPUs with total batch size as 64 for training.
 
@@ -67,23 +63,10 @@ By default, we use 8 GPUs with total batch size as 64 for training.
 Model evaluation can be done as follows:
 ```bash
 cd detrex
-python tools/train_net.py --config-file projects/detr/configs/path/to/config.py \
+python tools/train_net.py --config-file projects/anchor_detr/configs/path/to/config.py \
     --eval-only train.init_checkpoint=/path/to/model_checkpoint
 ```
 
-## Evaluating the official DETR model
-Using the modified conversion script to convert models trained by the official [DETR](https://github.com/facebookresearch/detr) training loop into the format of detrex model. To download and evaluate `DETR-R50` model, simply run:
-```bash
-cd detrex
-python projects/detr/converter.py \
-    --source_model https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth \
-    --output_model converted_detr_r50_model.pth
-```
-Then evaluate the converted model like:
-```bash
-python tools/train_net.py --config-file projects/detr/configs/detr_r50_300ep.py \
-    --eval-only train.init_checkpoint="./converted_detr_r50_model.pth"
-```
 
 ## Citing Anchor-DETR
 ```BibTex
