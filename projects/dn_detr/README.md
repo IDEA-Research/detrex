@@ -32,6 +32,29 @@ Here we provide the pretrained `DN-DETR` weights based on detrex.
 </tbody></table>
 
 
+## Converted Models
+<table><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+<!-- ROW: dn_detr_r50_50ep -->
+ <tr><td align="left"><a href="configs/dn_detr_r50_dc5_50ep.py">DN-DETR-R50-DC5</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">46.3</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_dn_detr_r50_dc5.pth">model</a></td>
+</tr>
+</tr>
+</tbody></table>
+
+
 ## Training
 All configs can be trained with:
 ```bash

@@ -7,7 +7,7 @@
 
 
 ## COCO Object Detection Baselines
-Here we provides our pretrained baselines with **detrex**. And more pretrained weights will be released in the future version. We also provide our converted pretrained for the users which will be marked as `(converted)`.
+Here we provides our pretrained baselines with **detrex**. And more pretrained weights will be released in the future version. We also provide our converted pretrained weights for the users which will be marked as `(converted)`.
 
 ### DETR
 <table class="docutils"><tbody>
@@ -98,6 +98,28 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">50</td>
 <td align="center">41.6</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/conditional_detr_r50_50ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/conditional_detr/configs/conditional_detr_r50_dc5_50ep.py">Conditional-DETR-R50-DC5 (converted)</a></td>
+<td align="center">R-50-DC5</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">43.8</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_conditional_detr_r50_dc5.pth">model</a></td>
+</tr>
+<!-- ROW: conditional_detr_r101_50ep -->
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/conditional_detr/configs/conditional_detr_r101_50ep.py">Conditional-DETR-R101 (converted)</a></td>
+<td align="center">R-101</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">43.0</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_conditional_detr_r101_50ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/conditional_detr/configs/conditional_detr_r101_dc5_50ep.py">Conditional-DETR-R101-DC5 (converted)</a></td>
+<td align="center">R-101-DC5</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">45.1</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_conditional_detr_r101_dc5.pth">model</a></td>
 </tr>
 </tbody></table>
 
@@ -195,6 +217,13 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">50</td>
 <td align="center">44.7</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dn_detr_r50_50ep.pth"> model </a></td>
+</tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dn_detr/configs/dn_detr_r50_dc5_50ep.py"> DN-DETR-R50-DC5 (converted) </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">46.3</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_dn_detr_r50_dc5.pth"> model </a></td>
 </tr>
 </tbody></table>
 

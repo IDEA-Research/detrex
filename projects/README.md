@@ -9,3 +9,4 @@ Here are projects that are built on detrex which show you use detrex as a librar
 - [DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection](./dino)
 - [Group DETR: Fast DETR Training with Group-Wise One-to-Many Assignment](./group_detr/)
 - [DETRs with Hybrid Matching](./h_deformable_detr/)
+- [Mask DINO: Towards A Unified Transformer-based Framework for Object Detection and Segmentation](./maskdino/)

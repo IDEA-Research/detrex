@@ -1,15 +1,12 @@
-from .dab_detr_r50_50ep import (
+from .dn_detr_r50_50ep import (
     train,
     dataloader,
     optimizer,
     lr_multiplier,
 )
-from .models.dab_detr_r50_dc5 import model
+from .models.dn_detr_r50_dc5 import model
 
 # modify training config
 train.init_checkpoint = "https://download.pytorch.org/models/resnet50-0676ba61.pth"
 train.output_dir = "./output/dab_detr_r50_dc5_50ep"
 
-# modify model
-# DAB-DETR using 10 temperature for DC5 model
-model.position_embedding.temperature = 10
