@@ -113,7 +113,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">43.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r101_50ep.pth">model</a></td>
 </tr>
- <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/anchor_detr/configs/detr_r101_dc5_300ep.py">DETR-R101-DC5 (converted)</a></td>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/anchor_detr/configs/detr_r101_dc5_300ep.py">Anchor-DETR-R101-DC5 (converted)</a></td>
 <td align="center">R-101</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
