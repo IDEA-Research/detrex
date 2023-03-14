@@ -56,9 +56,8 @@ class AnchorDETR(nn.Module):
         backbone: nn.Module,
         in_features: List[str],
         in_channels: int,
-        position_embedding: nn.Module,
         transformer: nn.Module,
-        num_feature_levels: int,
+        embed_dim: int,
         criterion: nn.Module,
         aux_loss: bool = True,
         pixel_mean: List[float] = [123.675, 116.280, 103.530],
@@ -70,12 +69,15 @@ class AnchorDETR(nn.Module):
         # define backbone and position embedding module
         self.backbone = backbone
         self.in_features = in_features
-        self.position_embedding = position_embedding
         self.transformer = transformer
 
         # where to calculate auxiliary loss in criterion
         self.aux_loss = aux_loss
         self.criterion = criterion
+
+        # project the backbone output feature
+        # into the required dim for transformer block
+        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
 
         # normalizer for input raw images
         self.device = device
@@ -114,6 +116,7 @@ class AnchorDETR(nn.Module):
         """
         images = self.preprocess_image(batched_inputs)
 
+        # compute the image's padding part for masking
         if self.training:
             batch_size, _, H, W = images.tensor.shape
             img_masks = images.tensor.new_ones(batch_size, H, W)
@@ -127,9 +130,8 @@ class AnchorDETR(nn.Module):
         # only use the last level feature in Anchor-DETR
         features = self.backbone(images.tensor)[self.in_features[-1]]
         features = self.input_proj(features)
+        features = features.unsqueeze(1)
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
-        # pos_embed = self.position_embedding(img_masks)
-
 
         outputs_class, outputs_coord = self.transformer(features, img_masks)
 

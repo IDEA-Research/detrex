@@ -47,7 +47,7 @@ class AnchorDETRTransformer(nn.Module):
             dim_feedforward=1024, 
             dropout=0.,
             activation="relu", 
-            num_feature_levels=3,
+            num_feature_levels=1,
             num_query_position=300,
             num_query_pattern=3,
             spatial_prior="learned",
@@ -128,7 +128,6 @@ class AnchorDETRTransformer(nn.Module):
 
 
     def forward(self, srcs, masks):
-
         # prepare input for decoder
         bs, l, c, h, w = srcs.shape
 
@@ -148,8 +147,7 @@ class AnchorDETRTransformer(nn.Module):
         tgt = self.pattern.weight.reshape(1, self.num_pattern, 1, c).repeat(bs, 1, self.num_position, 1).reshape(
             bs, self.num_pattern * self.num_position, c)
 
-
-        mask = masks[-1].unsqueeze(1).repeat(1,l,1,1).reshape(bs*l,h,w)
+        mask = masks.unsqueeze(1).repeat(1,l,1,1).reshape(bs*l,h,w)
         pos_col, pos_row = mask2pos(mask)
         if self.attention_type=="RCDA":
             posemb_row = self.adapt_pos1d(pos2posemb1d(pos_row))
@@ -164,8 +162,6 @@ class AnchorDETRTransformer(nn.Module):
 
         for idx in range(len(self.encoder_layers)):
             outputs = self.encoder_layers[idx](outputs, mask, posemb_row, posemb_col,posemb_2d)
-            if idx < self.num_encoder_layers_level:
-                outputs = self.encoder_layers_level[idx](outputs, level_emb=self.level_embed.weight.unsqueeze(1).unsqueeze(0).repeat(bs,1,1,1).reshape(bs*l,1,c))
 
         srcs = outputs.reshape(bs, l, c, h, w)
 
