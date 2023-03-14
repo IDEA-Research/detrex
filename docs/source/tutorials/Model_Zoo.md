@@ -82,7 +82,45 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 
 
 ### Anchor-DETR
-
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/anchor_detr/configs/anchor_detr_r50_50ep.py">Anchor-DETR-R50 (converted)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">42.2</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r50_50ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/anchor_detr/configs/detr_r50_dc5_300ep.py">Anchor-R50-DC5 (converted)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">44.2</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r50_dc5_50ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/anchor_detr/configs/detr_r101_300ep.py">Anchor-DETR-R101 (converted)</a></td>
+<td align="center">R-101</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">43.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r101_50ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/anchor_detr/configs/detr_r101_dc5_300ep.py">DETR-R101-DC5 (converted)</a></td>
+<td align="center">R-101</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">45.1</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r101_dc5_50ep.pth">model</a></td>
+</tr>
+</tbody></table>
 
 
 ### Conditional-DETR

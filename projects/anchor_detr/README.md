@@ -29,27 +29,27 @@ Yingming Wang, Xiangyu Zhang, Tong Yang, Jian Sun
  <tr><td align="left"><a href="configs/detr_r50_dc5_300ep.py">Anchor-R50-DC5</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
-<td align="center">500</td>
+<td align="center">50</td>
 <td align="center">44.2</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r50_dc5_50ep.pth">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/detr_r101_300ep.py">Anchor-DETR-R101</a></td>
 <td align="center">R-101</td>
 <td align="center">IN1k</td>
-<td align="center">500</td>
+<td align="center">50</td>
 <td align="center">43.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r101_50ep.pth">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/detr_r101_dc5_300ep.py">DETR-R101-DC5</a></td>
 <td align="center">R-101</td>
 <td align="center">IN1k</td>
-<td align="center">500</td>
+<td align="center">50</td>
 <td align="center">45.1</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r101_dc5_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
 
-**Note:** Here we borrowed the pretrained weight from [DETR](https://github.com/facebookresearch/detr) official repo. And our detrex training results will be released in the future version.
+**Note:** Here we borrowed the pretrained weight from [Anchor-DETR](https://github.com/megvii-research/AnchorDETR) official repo. And our detrex training results will be released in the future version.
 
 ## Training
 Training Anchor-DETR-R50 model:
