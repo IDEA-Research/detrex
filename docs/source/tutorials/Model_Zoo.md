@@ -218,6 +218,13 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">44.7</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/dn_detr_r50_50ep.pth"> model </a></td>
 </tr>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dn_detr/configs/dn_detr_r50_dc5_50ep.py"> DN-DETR-R50-DC5 (converted) </a> </td>
+<td align="center">R50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">46.3</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_dn_detr_r50_dc5.pth"> model </a></td>
+</tr>
 </tbody></table>
 
 ### DINO
