@@ -26,7 +26,7 @@ Yingming Wang, Xiangyu Zhang, Tong Yang, Jian Sun
 <td align="center">42.2</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r50_50ep.pth">model</a></td>
 </tr>
- <tr><td align="left"><a href="configs/detr_r50_dc5_300ep.py">Anchor-R50-DC5</a></td>
+ <tr><td align="left"><a href="configs/detr_r50_dc5_300ep.py">Anchor-DETR-R50-DC5</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
