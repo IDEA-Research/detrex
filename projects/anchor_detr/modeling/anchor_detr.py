@@ -77,7 +77,10 @@ class AnchorDETR(nn.Module):
 
         # project the backbone output feature
         # into the required dim for transformer block
-        self.input_proj = nn.Conv2d(in_channels, embed_dim, kernel_size=1)
+        self.input_proj = nn.Sequential(
+            nn.Conv2d(in_channels, embed_dim, kernel_size=1),
+            nn.GroupNorm(32, embed_dim),
+        )
 
         # normalizer for input raw images
         self.device = device

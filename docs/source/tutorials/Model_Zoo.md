@@ -80,6 +80,11 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 </tr>
 </tbody></table>
 
+
+### Anchor-DETR
+
+
+
 ### Conditional-DETR
 <table class="docutils"><tbody>
 <!-- START TABLE -->

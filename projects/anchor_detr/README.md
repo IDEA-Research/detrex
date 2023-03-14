@@ -23,37 +23,33 @@ Here we provides the weights which are converted by [converter.py](./converter.p
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
-<!-- ROW: detr_r50 -->
- <tr><td align="left"><a href="configs/detr_r50_300ep.py">DETR-R50</a></td>
+ <tr><td align="left"><a href="configs/anchor_detr_r50_50ep.py">Anchor-DETR-R50</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">42.2</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r50_50ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/detr_r50_dc5_300ep.py">Anchor-R50-DC5</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">500</td>
-<td align="center">42.0</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_detr_r50_500ep.pth">model</a></td>
+<td align="center">44.2</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r50_dc5_50ep.pth">model</a></td>
 </tr>
-<!-- ROW: detr_r50_dc5 -->
- <tr><td align="left"><a href="configs/detr_r50_dc5_300ep.py">DETR-R50-DC5</a></td>
-<td align="center">R-50</td>
-<td align="center">IN1k</td>
-<td align="center">500</td>
-<td align="center">43.4</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_detr_r50_dc5.pth">model</a></td>
-</tr>
-<!-- ROW: detr_r101 -->
- <tr><td align="left"><a href="configs/detr_r101_300ep.py">DETR-R101</a></td>
+ <tr><td align="left"><a href="configs/detr_r101_300ep.py">Anchor-DETR-R101</a></td>
 <td align="center">R-101</td>
 <td align="center">IN1k</td>
 <td align="center">500</td>
 <td align="center">43.5</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.0/converted_detr_r101_500ep.pth">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r101_50ep.pth">model</a></td>
 </tr>
-<!-- ROW: detr_r101_dc5 -->
  <tr><td align="left"><a href="configs/detr_r101_dc5_300ep.py">DETR-R101-DC5</a></td>
 <td align="center">R-101</td>
 <td align="center">IN1k</td>
 <td align="center">500</td>
-<td align="center">44.9</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_detr_r101_dc5.pth">model</a></td>
+<td align="center">45.1</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_anchor_detr_r101_dc5_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
 

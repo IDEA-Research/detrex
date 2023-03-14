@@ -1,11 +1,8 @@
-import torch.nn as nn
+from detectron2.config import LazyCall as L
 
 from detrex.modeling.matcher import HungarianMatcher
 from detrex.modeling.criterion import SetCriterion
-from detrex.layers import PositionEmbeddingSine
 from detrex.modeling.backbone.torchvision_resnet import TorchvisionResNet
-
-from detectron2.config import LazyCall as L
 
 from projects.anchor_detr.modeling import (
     AnchorDETR,
