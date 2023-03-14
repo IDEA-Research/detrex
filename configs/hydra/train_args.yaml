@@ -1,0 +1,35 @@
+######### converted from default argparse args ###########
+# config_file: ''
+config_file: ${pycfg_dir}/${pycfg_file}
+resume: false
+eval_only: false
+num_gpus: 1
+num_machines: 1
+machine_rank: 0
+dist_url: tcp://127.0.0.1:24999
+opts: []
+############################################################
+
+# aux params for easier management of overrides
+pycfg_dir: projects/detr/configs
+pycfg_file: detr_r50_300ep.py
+
+# use automatic experiment name / output dir
+auto_output_dir: True
+
+hydra:
+  run:
+    # https://hydra.cc/docs/configure_hydra/workdir/
+    dir: "outputs/${hydra.job.override_dirname}/${now:%Y%m%d-%H:%M:%S}"
+  job:
+    config:
+      override_dirname:
+        kv_sep: '.'
+        item_sep: '-'
+        exclude_keys:
+          - config_file
+          - pycfg_dir
+          - slurm
+          - slurm.quotatype
+          - dist_url
+          - auto_output_dir
