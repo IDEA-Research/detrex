@@ -30,8 +30,8 @@ model = L(AnchorDETR)(
         activation="relu", 
         num_query_position=300,
         num_query_pattern=3,
-        spatial_prior="learned",
-        attention_type="RCDA",
+        spatial_prior="learned",  # choose from ["learned", "grid"]
+        attention_type="RCDA",  # choose from ["RCDA", "nn.MultiheadAttention"]
         num_classes=80,
     ),
     criterion=L(SetCriterion)(
