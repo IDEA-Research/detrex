@@ -92,6 +92,13 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/anchor_detr/configs/anchor_detr_r50_50ep.py">Anchor-DETR-R50 </a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">50</td>
+<td align="center">41.9</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/anchor_detr_r50_50ep.pth">model</a></td>
+</tr>
  <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/anchor_detr/configs/anchor_detr_r50_50ep.py">Anchor-DETR-R50 (converted)</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
