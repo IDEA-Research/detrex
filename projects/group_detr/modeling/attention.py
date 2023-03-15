@@ -147,15 +147,16 @@ class GroupConditionalSelfAttention(nn.Module):
 
         # hack in attention layer to implement group-detr
         if self.training:
-            q = torch.cat(q.split(N // self.group_nums, dim=0), dim=1)
+            q = torch.cat(q.split(N // self.group_nums, dim=0), dim=1)  # (num_queries, num_groups * batch_size, hidden_dim)
             k = torch.cat(k.split(N // self.group_nums, dim=0), dim=1)
             v = torch.cat(v.split(N // self.group_nums, dim=0), dim=1)
 
-        q = q.reshape(N, B, self.num_heads, C // self.num_heads).permute(
-            1, 2, 0, 3
-        )  # (B, num_heads, N, head_dim)
-        k = k.reshape(N, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
-        v = v.reshape(N, B, self.num_heads, C // self.num_heads).permute(1, 2, 0, 3)
+        # if group_nums=11, new_bs = group_nums * B
+        N, new_bs, C = q.shape
+
+        q = q.reshape(N, new_bs * self.num_heads, C // self.num_heads).transpose(0, 1)
+        k = k.reshape(N, new_bs * self.num_heads, C // self.num_heads).transpose(0, 1)
+        v = v.reshape(N, new_bs * self.num_heads, C // self.num_heads).transpose(0, 1)
 
         q = q * self.scale
         attn = q @ k.transpose(-2, -1)
@@ -172,7 +173,7 @@ class GroupConditionalSelfAttention(nn.Module):
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
-        out = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        out = (attn @ v).transpose(1, 2).reshape(new_bs, N, C)
         out = self.out_proj(out)
 
         if not self.batch_first:
