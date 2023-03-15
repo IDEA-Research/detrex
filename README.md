@@ -102,14 +102,15 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [DETR (ECCV'2020)](./projects/detr/)
 - [x] [Deformable-DETR (ICLR'2021 Oral)](./projects/deformable_detr/)
 - [x] [Conditional-DETR (ICCV'2021)](./projects/conditional_detr/)
+- [x] [Anchor-DETR (AAAI 2022)](./projects/anchor_detr/)
 - [x] [DAB-DETR (ICLR'2022)](./projects/dab_detr/)
 - [x] [DAB-Deformable-DETR (ICLR'2022)](./projects/dab_deformable_detr/)
 - [x] [DN-DETR (CVPR'2022 Oral)](./projects/dn_detr/)
 - [x] [DN-Deformable-DETR (CVPR'2022 Oral)](./projects/dn_deformable_detr/)
 - [x] [DINO (ICLR'2023)](./projects/dino/)
 - [x] [Group-DETR (ArXiv'2022)](./projects/group_detr/)
-- [x] [H-Deformable-DETR (ArXiv'2022)](./projects/h_deformable_detr/)
-- [x] [MaskDINO (ArXiv'2022)](./projects/maskdino/)
+- [x] [H-Deformable-DETR (CVPR'2023)](./projects/h_deformable_detr/)
+- [x] [MaskDINO (CVPR'2023)](./projects/maskdino/)
 
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
