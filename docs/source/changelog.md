@@ -1,5 +1,16 @@
 ## Change Log
 
+### v0.3.0 (17/03/2023)
+- Support new algorithms including `Anchor-DETR` and `DETA`.
+- Release more than 10+ pretrained models (including the converted weights): `DETR-R50 & R101`, `DETR-R50 & R101-DC5`, `DAB-DETR-R50 & R101-DC5`, `DAB-DETR-R50-3patterns`, `Conditional-DETR-R50 & R101-DC5`, `DN-DETR-R50-DC5`, `Anchor-DETR` and the `DETA-Swin-o365-finetune` model which can achieve **`62.9AP`** on coco val.
+- Support **MaskDINO** on ADE20k semantic segmentation task.
+- Support `EMAHook` during training by setting `train.model_ema.enabled=True`, which can enhance the model performance. DINO with EMA can achieve **`49.4AP`** with only 12epoch training.
+- Support mixed precision training by setting `train.amp.enabled=True`, which will **reduce 20% to 30% GPU memory usage**.
+- Support `train.fast_dev_run=True` for **fast debugging**.
+- Support **encoder-decoder checkpoint** in DINO, which may reduce **30% GPU** memory usage.
+- Support a great slurm training scripts by @rayleizhu, please check this issue for more details [#213](https://github.com/IDEA-Research/detrex/issues/213)
+
+
 ### v0.2.1 (01/02/2023)
 #### New Algorithm
 - MaskDINO COCO instance-seg/panoptic-seg pre-release [#154](https://github.com/IDEA-Research/detrex/pull/154)
