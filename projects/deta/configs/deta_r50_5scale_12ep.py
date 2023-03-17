@@ -4,7 +4,6 @@ from .scheduler.coco_scheduler import lr_multiplier_12ep_10drop as lr_multiplier
 
 # using the default optimizer and dataloader
 dataloader = get_config("common/data/coco_detr.py").dataloader
-optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
 # modify training config
@@ -31,12 +30,6 @@ train.clip_grad.params.norm_type = 2
 # set training devices
 train.device = "cuda"
 model.device = train.device
-
-# modify optimizer config
-optimizer.lr = 1e-4
-optimizer.betas = (0.9, 0.999)
-optimizer.weight_decay = 1e-4
-optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in module_name else 1
 
 # modify dataloader config
 dataloader.train.num_workers = 16

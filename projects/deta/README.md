@@ -1,4 +1,4 @@
-## Anchor DETR: Query Design for Transformer-Based Object Detection
+## NMS strikes back
 
 Jeffrey Ouyang-Zhang, Jang Hyun Cho, Xingyi Zhou, Philipp Krähenbühl
 
