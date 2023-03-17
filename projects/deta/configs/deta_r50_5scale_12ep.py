@@ -12,20 +12,8 @@ train.output_dir = "./output/deta_r50_5scale_12ep"
 
 # max training iterations
 train.max_iter = 90000
-
-# run evaluation every epoch (about 7500 iters)
 train.eval_period = 7500
-
-# log training infomation every 20 iters
-train.log_period = 20
-
-# save checkpoint every epoch (about 7500 iters)
 train.checkpointer.period = 7500
-
-# gradient clipping for training
-train.clip_grad.enabled = True
-train.clip_grad.params.max_norm = 0.1
-train.clip_grad.params.norm_type = 2
 
 # set training devices
 train.device = "cuda"
@@ -39,5 +27,3 @@ dataloader.train.num_workers = 16
 # each gpu is 16/4 = 4
 dataloader.train.total_batch_size = 16
 
-# dump the testing results into output_dir for visualization
-dataloader.evaluator.output_dir = train.output_dir

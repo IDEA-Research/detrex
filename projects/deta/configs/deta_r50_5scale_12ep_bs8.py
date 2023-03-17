@@ -17,6 +17,10 @@ train.eval_period = 15000
 train.checkpointer.period = 15000
 
 
+# only freeze stem during training
+model.backbone.freeze_at = 1 
+
+
 # modify optimizer config
 optimizer.lr = 1e-4
 optimizer.betas = (0.9, 0.999)
