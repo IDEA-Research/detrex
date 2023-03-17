@@ -11,3 +11,4 @@ Here are projects that are built on detrex which show you use detrex as a librar
 - [Group DETR: Fast DETR Training with Group-Wise One-to-Many Assignment](./group_detr/)
 - [DETRs with Hybrid Matching](./h_deformable_detr/)
 - [Mask DINO: Towards A Unified Transformer-based Framework for Object Detection and Segmentation](./maskdino/)
+- [NMS strikes back](./deta/)
