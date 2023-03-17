@@ -13,11 +13,7 @@ train.output_dir = "./output/deta_r50_5scale_12ep_bs8"
 
 # max training iterations
 train.max_iter = 180000
-
-# run evaluation every epoch (about 7500 iters)
 train.eval_period = 15000
-
-# save checkpoint every epoch (about 7500 iters)
 train.checkpointer.period = 15000
 
 
@@ -32,5 +28,3 @@ optimizer.params.lr_factor_func = lambda module_name: 0.1 if "backbone" in modul
 # each gpu is 16/4 = 4
 dataloader.train.total_batch_size = 8
 
-# dump the testing results into output_dir for visualization
-dataloader.evaluator.output_dir = train.output_dir
