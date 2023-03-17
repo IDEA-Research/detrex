@@ -25,15 +25,14 @@ Here we provide our pretrained DETA model based on detrex.
 <td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">50.0</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/deta_r50_5scale_12ep_bs8.pth">model</a></td>
 </tr>
 </tbody></table>
 
 - For training DETA model with `batch_size=1` for each gpu. We recommend to use the default [train_net.py](https://github.com/IDEA-Research/detrex/blob/main/tools/train_net.py) to reproduce the results.
 - We also align the training hyper-param in the modified [train_net.py](./train_net.py) by hacking the optimizer.
 
-**Note:**
-- Using detrex default trainer with `optim.lr=1e-4`, it's better to train DETA model with `dataloader.train.total_batch_size=8` for 180000 iters, which can achieve 50.0 AP. However, with batch=16 for 90000 iters may only get 49.4AP, we guess the different hyper-param between our implementation and the official repo may influence the results.
+**Notable facts and caveats**: Using detrex default trainer with `optim.lr=1e-4`, it's better to train DETA model with `dataloader.train.total_batch_size=8` for 180000 iters, which can achieve 50.0 AP. However, with batch=16 for 90000 iters may only get 49.4AP, we guess the different hyper-param between our implementation and the official repo may influence the results.
 
 ## Converted Weights
 <table><tbody>
