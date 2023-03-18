@@ -104,6 +104,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 
 - [x] [DETR (ECCV'2020)](./projects/detr/)
 - [x] [Deformable-DETR (ICLR'2021 Oral)](./projects/deformable_detr/)
+- [x] [PnP-DETR (ICCV'2021)](./projects/pnp_detr/)
 - [x] [Conditional-DETR (ICCV'2021)](./projects/conditional_detr/)
 - [x] [Anchor-DETR (AAAI 2022)](./projects/anchor_detr/)
 - [x] [DAB-DETR (ICLR'2022)](./projects/dab_detr/)
