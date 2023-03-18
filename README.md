@@ -60,13 +60,16 @@ The repo name detrex has several interpretations:
 - <font color=#008000> <b> de-t.rex </b> </font>: de means 'the' in Dutch. T.rex, also called Tyrannosaurus Rex, means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
 
 ## What's New
-v0.2.1 was released on 01/02/2023:
-- Support **MaskDINO** coco instance segmentation.
-- Support new **DINO** baselines: `ViTDet-DINO`, `Focal-DINO`.
-- Support `FocalNet` Backbone.
-- Add tutorial about `downloading pretrained backbones`, `verify installation`.
-- Modified learning rate scheduler usage and add tutorial on `customized scheduler`.
-- Add more readable logging information for criterion and matcher.
+v0.3.0 was released on 03/17/2023:
+- Support new algorithms including `Anchor-DETR` and `DETA`.
+- Release more than 10+ pretrained models (including the converted weights): `DETR-R50 & R101`, `DETR-R50 & R101-DC5`, `DAB-DETR-R50 & R101-DC5`, `DAB-DETR-R50-3patterns`, `Conditional-DETR-R50 & R101-DC5`, `DN-DETR-R50-DC5`, `Anchor-DETR` and the `DETA-Swin-o365-finetune` model which can achieve **`62.9AP`** on coco val.
+- Support **MaskDINO** on ADE20k semantic segmentation task.
+- Support `EMAHook` during training by setting `train.model_ema.enabled=True`, which can enhance the model performance. DINO with EMA can achieve **`49.4AP`** with only 12epoch training.
+- Support mixed precision training by setting `train.amp.enabled=True`, which will **reduce 20% to 30% GPU memory usage**.
+- Support `train.fast_dev_run=True` for **fast debugging**.
+- Support **encoder-decoder checkpoint** in DINO, which may reduce **30% GPU** memory usage.
+- Support a great `slurm training scripts` by @rayleizhu, please check this issue for more details [#213](https://github.com/IDEA-Research/detrex/issues/213)
+
 
 Please see [changelog.md](./changlog.md) for details and release history.
 
@@ -101,6 +104,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 
 - [x] [DETR (ECCV'2020)](./projects/detr/)
 - [x] [Deformable-DETR (ICLR'2021 Oral)](./projects/deformable_detr/)
+- [x] [PnP-DETR (ICCV'2021)](./projects/pnp_detr/)
 - [x] [Conditional-DETR (ICCV'2021)](./projects/conditional_detr/)
 - [x] [Anchor-DETR (AAAI 2022)](./projects/anchor_detr/)
 - [x] [DAB-DETR (ICLR'2022)](./projects/dab_detr/)
