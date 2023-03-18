@@ -2,7 +2,13 @@
 
 This is the official implementation of the paper "[DETRs with Hybrid Matching](https://arxiv.org/abs/2207.13080)". 
 
-Authors: Ding Jia, Yuhui Yuan, Haodi He, Xiaopei Wu, Haojun Yu, Weihong Lin, Lei Sun, Chao Zhang, Han Hu
+Ding Jia, Yuhui Yuan, Haodi He, Xiaopei Wu, Haojun Yu, Weihong Lin, Lei Sun, Chao Zhang, Han Hu
+
+[[`arXiv`](https://arxiv.org/abs/2207.13080)] [[`BibTeX`](#citing-h-deformable-detr)]
+
+<div align="center">
+  <img src="./assets/h_detr_arch.png"/>
+</div><br/>
 
 ## Pretrained Models
 Here we provide the H-Deformable-DETR model pretrained weights based on detrex:
