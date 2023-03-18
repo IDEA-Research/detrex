@@ -20,12 +20,20 @@ Here we provide our pretrained DETA model based on detrex.
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
- <tr><td align="left"><a href="configs/deta_r50_5scale_12ep.py">DETA-R50-5scale-12ep (bs=1)</a></td>
+ <tr><td align="left"><a href="configs/deta_r50_5scale_12ep.py">DETA-R50-5scale-12ep (bs=8)</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">50.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/deta_r50_5scale_12ep_bs8.pth">model</a></td>
+</tr>
+<!-- TABLE BODY -->
+ <tr><td align="left"><a href="configs/deta_r50_5scale_12ep.py">DETA-R50-5scale-12ep (with hacked trainer with bs=16)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">49.9</td>
+<td align="center"> <a href="">model</a></td>
 </tr>
 </tbody></table>
 
@@ -71,12 +79,20 @@ Here we provide our pretrained DETA model based on detrex.
 **Note:** Here we borrowed the pretrained weight from [DETA](https://github.com/jozhang97/DETA) official repo. And our detrex training results will be released in the future version.
 
 ## Training
-Training DETA-R50 model:
+**We prefer the users to train DETA with the hacked trainer:**
+
 ```bash
+# 49.9 - 50.0AP
 cd detrex
-python tools/train_net.py --config-file projects/anchor_detr/configs/anchor_detr_r50_50ep.py --num-gpus 8
+python projects/deta/train_net.py --config-file projects/deta/configs/deta_r50_5scale_12ep.py --num-gpus 8
 ```
-By default, we use 8 GPUs with total batch size as 64 for training.
+
+**Or you can also using the default training engine with bs=8 to get 50.0AP result**
+```bash
+# 50.0 AP
+cd detrex
+python tools/train_net.py --config-file projects/deta/configs/deta_r50_5scale_12ep.py --num-gpus 8
+```
 
 ## Evaluation
 Model evaluation can be done as follows:
