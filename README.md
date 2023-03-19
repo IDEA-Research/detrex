@@ -112,7 +112,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [DN-DETR (CVPR'2022 Oral)](./projects/dn_detr/)
 - [x] [DN-Deformable-DETR (CVPR'2022 Oral)](./projects/dn_deformable_detr/)
 - [x] [Group-DETR (ArXiv'2022)](./projects/group_detr/)
-- [x] [NMS strikes back (ArXiv'2022)](./projects/deta/)
+- [x] [DETA (ArXiv'2022)](./projects/deta/)
 - [x] [DINO (ICLR'2023)](./projects/dino/)
 - [x] [H-Deformable-DETR (CVPR'2023)](./projects/h_deformable_detr/)
 - [x] [MaskDINO (CVPR'2023)](./projects/maskdino/)
