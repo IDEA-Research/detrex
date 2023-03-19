@@ -28,12 +28,19 @@ Here we provide our pretrained DETA model based on detrex.
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/deta_r50_5scale_12ep_bs8.pth">model</a></td>
 </tr>
 <!-- TABLE BODY -->
- <tr><td align="left"><a href="configs/deta_r50_5scale_12ep.py">DETA-R50-5scale-12ep (with hacked trainer with bs=16)</a></td>
+ <tr><td align="left"><a href="configs/deta_r50_5scale_12ep.py">DETA-R50-5scale-12ep (with hacked trainer and bs=16)</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">49.9</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/deta_r50_5scale_12ep_hacked_trainer.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/deta_r50_5scale_no_frozen_backbone.py">DETA-R50-5scale-12ep (no frozen backbone)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">50.2</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/deta_r50_5scale_12ep_no_freeze_backbone.pth">model</a></td>
 </tr>
 </tbody></table>
 
