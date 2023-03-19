@@ -22,7 +22,7 @@ Chen, Qiang and Chen, Xiaokang and Wang, Jian and Feng, Haocheng and Han, Junyu 
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
 <!-- ROW: dn_detr_r50_50ep -->
- <tr><td align="left"><a href="configs/dn_detr_r50_dc5_50ep.py">Group-DETR-R50</a></td>
+ <tr><td align="left"><a href="configs/group_detr_r50_12ep.py">Group-DETR-R50</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>

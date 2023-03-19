@@ -173,6 +173,27 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 </tr>
 </tbody></table>
 
+### Group-DETR
+<table class="docutils"><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/group_detr/configs/group_detr_r50_12ep.py">Group-DETR-R50 (converted)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">37.8</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/converted_group_detr_r50_12ep.pth">model</a></td>
+</tr>
+</tbody></table>
+
+
 ### DAB-DETR
 <table class="docutils"><tbody>
 <!-- START TABLE -->
