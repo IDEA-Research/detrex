@@ -1,6 +1,4 @@
-# H-Deformable-DETR
-
-This is the official implementation of the paper "[DETRs with Hybrid Matching](https://arxiv.org/abs/2207.13080)". 
+# DETRs with Hybrid Matching
 
 Ding Jia, Yuhui Yuan, Haodi He, Xiaopei Wu, Haojun Yu, Weihong Lin, Lei Sun, Chao Zhang, Han Hu
 
@@ -32,7 +30,7 @@ Here we provide the H-Deformable-DETR model pretrained weights based on detrex:
 </tr>
 </tbody></table>
 
-We prefer the users to use the modified [train_net.py](./train_net.py) to reproduce the results:
+- We prefer the users to use the modified [train_net.py](./train_net.py) to reproduce the results:
 ```python
 python projects/h_deformable_detr/train_net.py --config-file projects/h_deformable_detr/configs/path/to/config.py --num-gpus 8
 ```
