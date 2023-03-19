@@ -216,7 +216,7 @@ if __name__ == "__main__":
 
     setup(
         name="detrex",
-        version="0.2.1",
+        version="0.3.0",
         author="International Digital Economy Academy",
         url="https://github.com/rentainhe/detrex",
         description="IDEA open source toolbox for transformer-based instance recognition tasks",

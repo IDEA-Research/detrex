@@ -1,11 +1,41 @@
-# H-Deformable-DETR
+# DETRs with Hybrid Matching
 
-This is the official implementation of the paper "[DETRs with Hybrid Matching](https://arxiv.org/abs/2207.13080)". 
+Ding Jia, Yuhui Yuan, Haodi He, Xiaopei Wu, Haojun Yu, Weihong Lin, Lei Sun, Chao Zhang, Han Hu
 
-Authors: Ding Jia, Yuhui Yuan, Haodi He, Xiaopei Wu, Haojun Yu, Weihong Lin, Lei Sun, Chao Zhang, Han Hu
+[[`arXiv`](https://arxiv.org/abs/2207.13080)] [[`BibTeX`](#citing-h-deformable-detr)]
 
+<div align="center">
+  <img src="./assets/h_detr_arch.png"/>
+</div><br/>
 
 ## Pretrained Models
+Here we provide the H-Deformable-DETR model pretrained weights based on detrex:
+<table><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Query Num</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">AP</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+</tr>
+ <tr><td align="left"><a href="configs/h_deformable_detr_r50_two_stage_12ep.py">H-Deformable-DETR + tricks</a></td>
+<td align="center">R50</td>
+<td align="center">300</td>
+<td align="center">12</td>
+<td align="center">49.1</td>
+<td align="center"><a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/h_deformable_detr_r50_two_stage_12ep_modified_train_net.pth">model</a></td>
+</tr>
+</tbody></table>
+
+- We prefer the users to use the modified [train_net.py](./train_net.py) to reproduce the results:
+```python
+python projects/h_deformable_detr/train_net.py --config-file projects/h_deformable_detr/configs/path/to/config.py --num-gpus 8
+```
+
+## Converted Models
 
 We provide a set of baseline results and trained models available for download:
 
@@ -97,6 +127,7 @@ python tools/train_net.py --config-file projects/h_deformable_detr/configs/path/
 
 * By default, we use 8 GPUs with total batch size as 16 for training.
 * To train/eval a model with the swin transformer backbone, you need to download the backbone from the [offical repo](https://github.com/microsoft/Swin-Transformer#main-results-on-imagenet-with-pretrained-models) frist and specify argument `train.init_checkpoint` like [our configs](./configs/h_deformable_detr_swin_tiny_two_stage_12ep.py).
+* It's better to set `loss_class_weight=1.0` when using the default training engine.
 
 ### Evaluation
 Model evaluation can be done as follows:
