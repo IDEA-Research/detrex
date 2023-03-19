@@ -20,11 +20,8 @@ import torch.nn as nn
 
 class GroupConditionalSelfAttention(nn.Module):
     """Conditional Self-Attention Module used in Group-DETR
-
     `Conditional DETR for Fast Training Convergence.
     <https://arxiv.org/pdf/2108.06152.pdf>`_
-
-
     Args:
         embed_dim (int): The embedding dimension for attention.
         num_heads (int): The number of attention heads.
@@ -75,10 +72,8 @@ class GroupConditionalSelfAttention(nn.Module):
         **kwargs,
     ):
         """Forward function for `ConditionalSelfAttention`
-
         **kwargs allow passing a more general data flow when combining
         with other operations in `transformerlayer`.
-
         Args:
             query (torch.Tensor): Query embeddings with shape
                 `(num_query, bs, embed_dim)` if self.batch_first is False,
@@ -140,17 +135,17 @@ class GroupConditionalSelfAttention(nn.Module):
         value = self.value_proj(value)
 
         # attention calculation
-        N, B, C = query_content.shape
+        num_queries, bs, n_model = query_content.shape
         q = query_content + query_pos
         k = key_content + key_pos
         v = value
-
         # hack in attention layer to implement group-detr
         if self.training:
-            q = torch.cat(q.split(N // self.group_nums, dim=0), dim=1)
-            k = torch.cat(k.split(N // self.group_nums, dim=0), dim=1)
-            v = torch.cat(v.split(N // self.group_nums, dim=0), dim=1)
-
+            q = torch.cat(q.split(num_queries // self.group_nums, dim=0), dim=1)  # (num_queries, num_groups * batch_size, hidden_dim)
+            k = torch.cat(k.split(num_queries // self.group_nums, dim=0), dim=1)
+            v = torch.cat(v.split(num_queries // self.group_nums, dim=0), dim=1)
+        
+        N, B, C = q.shape
         q = q.reshape(N, B, self.num_heads, C // self.num_heads).permute(
             1, 2, 0, 3
         )  # (B, num_heads, N, head_dim)
@@ -159,7 +154,6 @@ class GroupConditionalSelfAttention(nn.Module):
 
         q = q * self.scale
         attn = q @ k.transpose(-2, -1)
-
         # add attention mask
         if attn_mask is not None:
             if attn_mask.dtype == torch.bool:
@@ -172,13 +166,13 @@ class GroupConditionalSelfAttention(nn.Module):
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
-        out = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        out = (attn @ v).transpose(1, 2).reshape(bs, num_queries, C)
         out = self.out_proj(out)
 
         if not self.batch_first:
             out = out.transpose(0, 1)
 
         if self.training:
-            out = torch.cat(out.split(B, dim=1), dim=0)
+            out = torch.cat(out.split(bs, dim=1), dim=0)
 
         return identity + self.proj_drop(out)

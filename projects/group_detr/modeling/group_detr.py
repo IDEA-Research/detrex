@@ -156,7 +156,7 @@ class GroupDETR(nn.Module):
             batch_size, _, H, W = images.tensor.shape
             img_masks = images.tensor.new_zeros(batch_size, H, W)
 
-        # only use last level feature in Conditional-DETR
+        # only use last level feature in Group-DETR, same as Conditional-DETR
         features = self.backbone(images.tensor)[self.in_features[-1]]
         features = self.input_proj(features)
         img_masks = F.interpolate(img_masks[None], size=features.shape[-2:]).to(torch.bool)[0]
