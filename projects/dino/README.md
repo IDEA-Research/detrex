@@ -8,6 +8,36 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
   <img src="./assets/dino_arch.png"/>
 </div><br/>
 
+## DINO with modified training engine
+We've provide a hacked [train_net.py](./train_net.py) which aligns the optimizer params with Deformable-DETR that can achieve a better result on DINO models.
+
+<table><tbody>
+<!-- START TABLE -->
+<!-- TABLE HEADER -->
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+<!-- TABLE BODY -->
+<!-- ROW: dino_r50_4scale_12ep -->
+ <tr><td align="left"><a href="configs/dino_r50_4cale_12ep.py">DINO-R50-4scale (hacked trainer)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">49.4</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_49_2AP.pth">model</a></td>
+</tr>
+</tbody></table>
+
+- Training model with hacked trainer
+```python
+python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
+```
+
 ## Main Results with Pretrained Models
 
 **Pretrained DINO with ResNet Backbone**
