@@ -298,6 +298,14 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">49.2</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_49_2AP.pth"> model </a></td>
 </tr>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_4scale_12ep.py">DINO-R50-4scale (hacked trainer)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">49.4</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
  <tr><td align="left">DINO-R50-4scale <b> with EMA</b></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
