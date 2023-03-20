@@ -23,8 +23,8 @@ model.backbone = L(InternImage)(
 
 # modify neck config
 model.neck.input_shapes = {
-    "p1": ShapeSpec(channels=64),
-    "p2": ShapeSpec(channels=128),
-    "p3": ShapeSpec(channels=256),
+    "p1": ShapeSpec(channels=128),
+    "p2": ShapeSpec(channels=256),
+    "p3": ShapeSpec(channels=512),
 }
 model.neck.in_features = ["p1", "p2", "p3"]
