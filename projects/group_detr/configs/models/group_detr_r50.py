@@ -10,8 +10,8 @@ from projects.group_detr.modeling import (
     GroupDetrTransformer,
     GroupDetrTransformerDecoder,
     GroupDetrTransformerEncoder,
-    GroupHungarianMatcher,
-    GroupSetCriterion,
+    HungarianMatcher,
+    SetCriterion,
 )
 
 
@@ -60,9 +60,9 @@ model = L(GroupDETR)(
     embed_dim=256,
     num_classes=80,
     num_queries=300,
-    criterion=L(GroupSetCriterion)(
+    criterion=L(SetCriterion)(
         num_classes=80,
-        matcher=L(GroupHungarianMatcher)(
+        matcher=L(HungarianMatcher)(
             cost_class=2.0,
             cost_bbox=5.0,
             cost_giou=2.0,
@@ -72,9 +72,9 @@ model = L(GroupDETR)(
             "loss_bbox": 5.0,
             "loss_giou": 2.0,
         },
-        group_nums="${..group_nums}",
-        alpha=0.25,
-        gamma=2.0,
+        group_detr="${..group_nums}",
+        losses=["classes", "boxes"],
+        focal_alpha=0.25,
     ),
     aux_loss=True,
     group_nums=11,

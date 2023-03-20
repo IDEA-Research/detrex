@@ -5,5 +5,5 @@ from .group_detr_transformer import (
     GroupDetrTransformer,
 )
 from .attention import GroupConditionalSelfAttention
-from .group_criterion import GroupSetCriterion
-from .group_matcher import GroupHungarianMatcher
+from .group_criterion import SetCriterion
+from .group_matcher import HungarianMatcher

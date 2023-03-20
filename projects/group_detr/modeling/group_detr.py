@@ -173,7 +173,6 @@ class GroupDETR(nn.Module):
         hidden_states, reference = self.transformer(
             features, img_masks, query_embed_weight, pos_embed
         )
-
         reference_before_sigmoid = inverse_sigmoid(reference)
         outputs_coords = []
         for lvl in range(hidden_states.shape[0]):
