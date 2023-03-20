@@ -17,6 +17,11 @@ from .multi_scale_deform_attn import (
     MultiScaleDeformableAttention,
     multi_scale_deformable_attn_pytorch,
 )
+from .dcn_v3 import (
+    DCNv3,
+    DCNv3Function,
+    dcnv3_core_pytorch,
+)
 from .layer_norm import LayerNorm
 from .box_ops import (
     box_cxcywh_to_xyxy,

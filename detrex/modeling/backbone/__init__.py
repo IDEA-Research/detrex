@@ -26,3 +26,4 @@ from .resnet import (
 )
 from .convnext import ConvNeXt
 from .focalnet import FocalNet
+from .internimage import InternImage
