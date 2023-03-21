@@ -304,7 +304,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">49.4</td>
-<td align="center"> <a href="">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_r50_4scale_12ep_hacked_trainer.pth">model</a></td>
 </tr>
  <tr><td align="left">DINO-R50-4scale <b> with EMA</b></td>
 <td align="center">R-50</td>
