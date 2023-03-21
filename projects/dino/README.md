@@ -29,7 +29,7 @@ We've provide a hacked [train_net.py](./train_net.py) which aligns the optimizer
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">49.4</td>
-<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_49_2AP.pth">model</a></td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_r50_4scale_12ep_hacked_trainer.pth">model</a></td>
 </tr>
 </tbody></table>
 
