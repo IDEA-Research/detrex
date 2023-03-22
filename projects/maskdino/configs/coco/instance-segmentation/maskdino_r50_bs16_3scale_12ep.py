@@ -1,6 +1,6 @@
 from detrex.config import get_config
-from models.maskdino_r50 import model
-from data.coco_instance_seg import dataloader
+from ...models.maskdino_r50 import model
+from ...data.coco_instance_seg import dataloader
 
 from fvcore.common.param_scheduler import MultiStepParamScheduler
 from detectron2.config import LazyCall as L

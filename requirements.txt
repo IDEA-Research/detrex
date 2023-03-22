@@ -13,3 +13,4 @@ psutil
 opencv-python
 wandb
 submitit
+shapely
