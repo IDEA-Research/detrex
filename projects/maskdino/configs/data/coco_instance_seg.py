@@ -9,9 +9,8 @@ from detectron2.data import (
 )
 from detectron2.evaluation import COCOEvaluator
 
-# from detrex.data import DetrDatasetMapper
-# from projects.maskDINO.data.dataset_mappers.coco_instance_lsj_aug_dataset_mapper import COCOInstanceLSJDatasetMapper, build_transform_gen
-from detrex.data.dataset_mappers import COCOInstanceNewBaselineDatasetMapper,coco_instance_transform_gen
+from detrex.data.dataset_mappers import COCOInstanceNewBaselineDatasetMapper, coco_instance_transform_gen
+
 dataloader = OmegaConf.create()
 
 dataloader.train = L(build_detection_train_loader)(

@@ -1,5 +1,3 @@
-import torch.nn as nn
-from detrex.layers import PositionEmbeddingSine
 from detrex.modeling.backbone import ResNet, BasicStem
 
 from detectron2.config import LazyCall as L
@@ -11,15 +9,24 @@ from projects.maskdino.modeling.criterion import SetCriterion
 from projects.maskdino.modeling.matcher import HungarianMatcher
 from projects.maskdino.maskdino import MaskDINO
 from detectron2.data import MetadataCatalog
-from detectron2.layers import Conv2d, ShapeSpec, get_norm
+from detectron2.layers import ShapeSpec
 
 
+
+# define hyper-parameters
 
 dim=256
 n_class=80
 dn="seg"
 dec_layers = 9
-input_shape={'res2': ShapeSpec(channels=256, height=None, width=None, stride=4), 'res3': ShapeSpec(channels=512, height=None, width=None, stride=8), 'res4': ShapeSpec(channels=1024, height=None, width=None, stride=16), 'res5': ShapeSpec(channels=2048, height=None, width=None, stride=32)}
+input_shape={
+    'res2': ShapeSpec(channels=256, height=None, width=None, stride=4), 
+    'res3': ShapeSpec(channels=512, height=None, width=None, stride=8), 
+    'res4': ShapeSpec(channels=1024, height=None, width=None, stride=16), 
+    'res5': ShapeSpec(channels=2048, height=None, width=None, stride=32)
+}
+
+# define model config
 model = L(MaskDINO)(
     backbone=L(ResNet)(
         stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
@@ -144,7 +151,7 @@ elif dn == "seg":
     dn_losses = ["labels", "masks", "boxes"]
 else:
     dn_losses = []
-# if deep_supervision:
+
 
 aux_weight_dict = {}
 for i in range(dec_layers):
