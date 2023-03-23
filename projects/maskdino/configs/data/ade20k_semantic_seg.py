@@ -10,9 +10,8 @@ from detectron2.data import (
 from detectron2.evaluation import SemSegEvaluator
 from detectron2.data import MetadataCatalog
 from detectron2.data.dataset_mapper import DatasetMapper
-# from detrex.data import DetrDatasetMapper
-# from projects.maskDINO.data.dataset_mappers.coco_instance_lsj_aug_dataset_mapper import COCOInstanceLSJDatasetMapper, build_transform_gen
-from detrex.data.dataset_mappers import MaskFormerSemanticDatasetMapper,maskformer_semantic_transform_gen
+
+from detrex.data.dataset_mappers import MaskFormerSemanticDatasetMapper, maskformer_semantic_transform_gen
 
 dataloader = OmegaConf.create()
 
