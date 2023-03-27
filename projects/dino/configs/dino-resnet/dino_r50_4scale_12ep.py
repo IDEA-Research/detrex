@@ -1,5 +1,5 @@
 from detrex.config import get_config
-from .models.dino_r50 import model
+from ..models.dino_r50 import model
 
 # get default config
 dataloader = get_config("common/data/coco_detr.py").dataloader
@@ -13,14 +13,8 @@ train.output_dir = "./output/dino_r50_4scale_12ep"
 
 # max training iterations
 train.max_iter = 90000
-
-# run evaluation every 5000 iters
 train.eval_period = 5000
-
-# log training infomation every 20 iters
 train.log_period = 20
-
-# save checkpoint every 5000 iters
 train.checkpointer.period = 5000
 
 # gradient clipping for training

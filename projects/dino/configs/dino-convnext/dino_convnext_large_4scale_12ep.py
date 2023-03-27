@@ -1,5 +1,5 @@
 from detrex.config import get_config
-from .models.dino_swin_large_384 import model
+from ..models.dino_convnext import model
 
 # get default config
 dataloader = get_config("common/data/coco_detr.py").dataloader
@@ -8,19 +8,13 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_12ep
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "/path/to/swin_large_patch4_window12_384_22kto1k.pth"
-train.output_dir = "./output/dino_swin_large_384_4scale_12ep"
+train.init_checkpoint = "/path/to/convnext_large_22k_1k_384.pth"
+train.output_dir = "./output/dino_convnext_large_4scale_12ep"
 
 # max training iterations
 train.max_iter = 90000
-
-# run evaluation every 5000 iters
 train.eval_period = 5000
-
-# log training infomation every 20 iters
 train.log_period = 20
-
-# save checkpoint every 5000 iters
 train.checkpointer.period = 5000
 
 # gradient clipping for training
@@ -45,6 +39,3 @@ dataloader.train.num_workers = 16
 # surpose you're using 4 gpus for training and the batch size for
 # each gpu is 16/4 = 4
 dataloader.train.total_batch_size = 16
-
-# dump the testing results into output_dir for visualization
-dataloader.evaluator.output_dir = train.output_dir
