@@ -8,8 +8,8 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_12ep
 train = get_config("common/train.py").train
 
 # modify training config
-train.init_checkpoint = "/path/to/internimage_t_1k_224.pth"
-train.output_dir = "./output/dino_internimage_t_4scale_12ep"
+train.init_checkpoint = "/path/to/internimage_l_22kto1k_384.pth"
+train.output_dir = "./output/dino_internimage_large_384_4scale_12ep"
 
 # max training iterations
 train.max_iter = 90000

@@ -8,6 +8,7 @@ lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_12ep
 train = get_config("common/train.py").train
 
 # modify training config
+# use convnext-large-384 as default
 train.init_checkpoint = "/path/to/convnext_large_22k_1k_384.pth"
 train.output_dir = "./output/dino_convnext_large_4scale_12ep"
 
