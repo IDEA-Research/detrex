@@ -9,7 +9,7 @@ from .dino_convnext_large_384_4scale_12ep import (
 )
 
 # modify model to convnext-small version
-model.backbone.depth = [3, 3, 27, 3]
+model.backbone.depths = [3, 3, 27, 3]
 model.backbone.dims = [96, 192, 384, 768]
 
 # modify neck config
