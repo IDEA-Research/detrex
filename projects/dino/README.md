@@ -217,7 +217,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <th valign="bottom">Denoising Queries</th>
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
- <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_4scale_12ep
+ <tr><td align="left"><a href="configs/dino-focal/dino_focalnet_large_lrf_384_4scale_12ep
  ep.py">DINO-Focal-Large-4scale</a></td>
 <td align="center">FocalNet-384-LRF-3Level</td>
 <td align="center">IN22k</td>
@@ -226,7 +226,16 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <td align="center">57.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focal_large_lrf_384_4scale_12ep.pth">model</a></td>
 </tr>
- <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_4scale_12ep
+ <tr><td align="left"><a href="configs/dino-focal/dino_focalnet_large_lrf_384_4scale_36ep
+ ep.py">DINO-Focal-Large-4scale</a></td>
+<td align="center">FocalNet-384-LRF-3Level</td>
+<td align="center">IN22k</td>
+<td align="center">36</td>
+<td align="center">100</td>
+<td align="center">58.3</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-focal/dino_focalnet_large_lrf_384_4scale_12ep
  ep.py">DINO-Focal-Large-4scale</a></td>
 <td align="center">FocalNet-384-LRF-4Level</td>
 <td align="center">IN22k</td>
@@ -235,7 +244,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <td align="center">58.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focal_large_lrf_384_fl4_4scale_12ep.pth">model</a></td>
 </tr>
- <tr><td align="left"><a href="configs/dino_focalnet_large_lrf_384_5scale_12ep
+ <tr><td align="left"><a href="configs/dino-focal/dino_focalnet_large_lrf_384_5scale_12ep
  ep.py">DINO-Focal-Large-5scale</a></td>
 <td align="center">FocalNet-384-LRF-4Level</td>
 <td align="center">IN22k</td>
@@ -255,7 +264,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <th valign="bottom">Denoising Queries</th>
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">download</th>
- <tr><td align="left"><a href="configs/dino_vitdet_base_4scale_12ep
+ <tr><td align="left"><a href="configs/dino-vitdet/dino_vitdet_base_4scale_12ep
  ep.py">DINO-ViTDet-Base-4scale</a></td>
 <td align="center">ViT</td>
 <td align="center">IN1k, MAE</td>
@@ -264,7 +273,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <td align="center">50.2</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_4scale_12ep.pth">model</a></td>
 </tr>
- <tr><td align="left"><a href="configs/dino_vitdet_base_4scale_50ep
+ <tr><td align="left"><a href="configs/dino-vitdet/dino_vitdet_base_4scale_50ep
  ep.py">DINO-ViTDet-Base-4scale</a></td>
 <td align="center">ViT</td>
 <td align="center">IN1k, MAE</td>
@@ -273,7 +282,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <td align="center">55.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_base_4scale_50ep.pth">model</a></td>
 </tr>
- <tr><td align="left"><a href="configs/dino_vitdet_large_4scale_12ep
+ <tr><td align="left"><a href="configs/dino-vitdet/dino_vitdet_large_4scale_12ep
  ep.py">DINO-ViTDet-Large-4scale</a></td>
 <td align="center">ViT</td>
 <td align="center">IN1k, MAE</td>
@@ -282,7 +291,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <td align="center">52.9</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_large_4scale_12ep.pth">model</a></td>
 </tr>
- <tr><td align="left"><a href="configs/dino_vitdet_large_4scale_50ep
+ <tr><td align="left"><a href="configs/dino-vitdet/dino_vitdet_large_4scale_50ep
  ep.py">DINO-ViTDet-Large-4scale</a></td>
 <td align="center">ViT</td>
 <td align="center">IN1k, MAE</td>
@@ -292,6 +301,95 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_vitdet_large_4scale_50ep.pth">model</a></td>
 </tr>
 </tbody></table>
+
+**Pretrained DINO with ConvNeXt Backbone**
+<table><tbody>
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+ <tr><td align="left"><a href="configs/dino-internimage/dino_convnext_tiny_384_4scale_12ep.py">DINO-ConvNeXt-Tiny-384-4scale</a></td>
+<td align="center">ConvNeXt-Tiny-384</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">52.4</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-internimage/dino_convnext_small_384_4scale_12ep.py">DINO-ConvNeXt-Small-384-4scale</a></td>
+<td align="center">ConvNeXt-Small-384</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">54.2</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-internimage/dino_convnext_base_384_4scale_12ep.py">DINO-ConvNeXt-Base-384-4scale</a></td>
+<td align="center">ConvNeXt-Base-384</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">55.1</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-convnext/dino_convnext_large_384_4scale_12ep.py">DINO-ConvNeXt-Large-384-4scale</a></td>
+<td align="center">ConvNeXt-Large-384</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">55.5</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+</tbody></table>
+
+
+**Pretrained DINO with InternImage Backbone**
+<table><tbody>
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+ <tr><td align="left"><a href="configs/dino-internimage/dino_internimage_tiny_4scale_12ep.py">DINO-InternImage-Tiny-4scale</a></td>
+<td align="center">InternImage-Tiny</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">52.3</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-internimage/dino_internimage_small_4scale_12ep.py">DINO-InternImage-Small-4scale</a></td>
+<td align="center">InternImage-Small</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">53.6</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-internimage/dino_internimage_base_4scale_12ep.py">DINO-InternImage-Base-4scale</a></td>
+<td align="center">InternImage-Base</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">54.7</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-internimage/dino_internimage_large_4scale_12ep.py">DINO-InternImage-Large-4scale</a></td>
+<td align="center">InternImage-Large</td>
+<td align="center">IN22k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">57.0</td>
+<td align="center"> <a href="">model</a></td>
+</tr>
+</tbody></table>
+
+
 
 **Note**: 
 - `Swin-X-384` means the backbone pretrained resolution is `384 x 384` and `IN22k to In1k` means the model is pretrained on `ImageNet-22k` and finetuned on `ImageNet-1k`.
