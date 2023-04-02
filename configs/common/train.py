@@ -23,6 +23,8 @@ train = dict(
             norm_type=2,
         ),
     ),
+    # training seed
+    seed=-1,
     # options for Fast Debugging
     fast_dev_run=dict(enabled=False),
     # options for PeriodicCheckpointer, which saves a model checkpoint
