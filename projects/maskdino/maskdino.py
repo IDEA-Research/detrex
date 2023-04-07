@@ -187,8 +187,8 @@ class MaskDINO(nn.Module):
             for mask_cls_result, mask_pred_result, mask_box_result, input_per_image, image_size in zip(
                 mask_cls_results, mask_pred_results, mask_box_results, batched_inputs, images.image_sizes
             ):  # image_size is augmented size, not divisible to 32
-                height = input_per_image.get("height", image_size[0])  # real size
-                width = input_per_image.get("width", image_size[1])
+                height = input_per_image["height"]#, image_size[0])  # real size
+                width = input_per_image["width"]#, image_size[1])
                 processed_results.append({})
                 new_size = mask_pred_result.shape[-2:]  # padded size (divisible to 32)
 
