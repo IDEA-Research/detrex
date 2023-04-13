@@ -357,7 +357,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <th valign="bottom">download</th>
  <tr><td align="left"><a href="configs/dino-internimage/dino_internimage_tiny_4scale_12ep.py">DINO-InternImage-Tiny-4scale</a></td>
 <td align="center">InternImage-Tiny</td>
-<td align="center">IN22k</td>
+<td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">52.3</td>
@@ -365,7 +365,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 </tr>
  <tr><td align="left"><a href="configs/dino-internimage/dino_internimage_small_4scale_12ep.py">DINO-InternImage-Small-4scale</a></td>
 <td align="center">InternImage-Small</td>
-<td align="center">IN22k</td>
+<td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">53.6</td>
@@ -373,7 +373,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 </tr>
  <tr><td align="left"><a href="configs/dino-internimage/dino_internimage_base_4scale_12ep.py">DINO-InternImage-Base-4scale</a></td>
 <td align="center">InternImage-Base</td>
-<td align="center">IN22k</td>
+<td align="center">IN1k</td>
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">54.7</td>
