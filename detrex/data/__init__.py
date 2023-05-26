@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from .detr_dataset_mapper import DetrDatasetMapper
+from .mot_dataset_mapper import MotDatasetMapper, MotDatasetInferenceMapper
 from .dataset_mappers import (
     COCOInstanceNewBaselineDatasetMapper,
     COCOPanopticNewBaselineDatasetMapper,
@@ -23,3 +24,5 @@ from .dataset_mappers import (
 )
 from . import datasets
 from .transforms import ColorAugSSDTransform
+
+from .mot_build import build_mot_train_loader, build_mot_test_loader, mot_collate_fn
