@@ -6,11 +6,11 @@ from detectron2.modeling.backbone import ResNet, BasicStem
 from detectron2.layers import ShapeSpec
 from detectron2.config import LazyCall as L
 
+from detrex.modeling.neck import ChannelMapper
+from detrex.layers import PositionEmbeddingSine
+
 from projects.co_mot.modeling import (
-    COMOT,
-    MOTJoiner,
-    MOTBackbone,
-    MOTPositionEmbeddingSine,
+    MOT,
     MOTDeformableTransformer,
     MOTHungarianMatcherGroup,
     MOTQueryInteractionModuleGroup,
@@ -45,18 +45,34 @@ if aux_loss:
                                 'frame_{}_ps{}_loss_giou'.format(i, j): giou_loss_coef,
                                 })
 
-model = L(COMOT)(
-    backbone=L(MOTJoiner)(
-        backbone = L(MOTBackbone)(
-            name = 'resnet50',
-            train_backbone = True,
-            return_interm_layers = True,
-            dilation = False,
+model = L(MOT)(
+    backbone=L(ResNet)(
+        stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
+        stages=L(ResNet.make_default_stages)(
+            depth=50,
+            stride_in_1x1=False,
+            norm="FrozenBN",
         ),
-        position_embedding = L(MOTPositionEmbeddingSine)(
-            num_pos_feats = 128, 
-            normalize=True
-        )
+        out_features=["res3", "res4", "res5"],
+        freeze_at=1,
+    ),
+    position_embedding=L(PositionEmbeddingSine)(
+        num_pos_feats=128,
+        temperature=10000,
+        normalize=True,
+        offset=-0.5,
+    ),
+    neck=L(ChannelMapper)(
+        input_shapes={
+            "res3": ShapeSpec(channels=512),
+            "res4": ShapeSpec(channels=1024),
+            "res5": ShapeSpec(channels=2048),
+        },
+        in_features=["res3", "res4", "res5"],
+        out_channels=256,
+        num_outs=4,
+        kernel_size=1,
+        norm_layer=L(nn.GroupNorm)(num_groups=32, num_channels=256),
     ),
     transformer=L(MOTDeformableTransformer)(
         d_model=256,
@@ -87,6 +103,10 @@ model = L(COMOT)(
         hidden_dim=1024, 
         dim_out=256*2,
     ),
+    embed_dim=256,
+    num_classes=1,
+    num_queries=60,
+    aux_loss=True,
     track_base=L(MOTRuntimeTrackerBase)(score_thresh=0.5, filter_score_thresh=0.5, miss_tolerance=20),
     post_process=L(MOTTrackerPostProcess)(g_size=g_size),
     criterion=L(MOTClipMatcher)(
@@ -100,17 +120,7 @@ model = L(COMOT)(
         losses=['labels', 'boxes'], 
         g_size=g_size
     ),
-    num_feature_levels=4,
-    num_classes=1,
-    num_queries=60,
-    aux_loss=True,
-    with_box_refine=True,
-    two_stage=False,
-    memory_bank=None,
-    use_checkpoint=True,
-    query_denoise=0.0,
     g_size = g_size,
-    args=EasyDict(),
 )
 
 model.device="cuda"

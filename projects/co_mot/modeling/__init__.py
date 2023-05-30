@@ -2,7 +2,7 @@
 Author: 颜峰 && bphengyan@163.com
 Date: 2023-05-26 10:06:20
 LastEditors: 颜峰 && bphengyan@163.com
-LastEditTime: 2023-05-26 14:57:36
+LastEditTime: 2023-05-30 16:03:02
 FilePath: /detrex/projects/co_mot/modeling/__init__.py
 Description: 
 
@@ -24,19 +24,14 @@ Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
 # limitations under the License.
 
 
-from .co_mot import COMOT
+from .mot import MOT
 from .mot import ClipMatcher as MOTClipMatcher
 from .mot import TrackerPostProcess as MOTTrackerPostProcess
 from .mot import RuntimeTrackerBase as MOTRuntimeTrackerBase
 
-from .backbone import Joiner as MOTJoiner
-from .backbone import Backbone as MOTBackbone
-from .position_encoding import PositionEmbeddingSine as MOTPositionEmbeddingSine
-
-from .deformable_transformer_plus import DeformableTransformer as MOTDeformableTransformer
+from .mot_transformer import DeformableTransformer as MOTDeformableTransformer
 
 from .qim import QueryInteractionModuleGroup as MOTQueryInteractionModuleGroup
 
 from .matcher import HungarianMatcherGroup as MOTHungarianMatcherGroup
-
 

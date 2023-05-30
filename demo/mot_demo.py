@@ -20,7 +20,7 @@ from detectron2.utils.logger import setup_logger
 
 
 # constants
-WINDOW_NAME = "COCO detections"
+WINDOW_NAME = "MOT"
 
 
 def setup(args):

@@ -2,7 +2,7 @@
 Author: 颜峰 && bphengyan@163.com
 Date: 2023-05-24 13:53:39
 LastEditors: 颜峰 && bphengyan@163.com
-LastEditTime: 2023-05-26 14:54:40
+LastEditTime: 2023-05-30 19:02:41
 FilePath: /detrex/projects/co_mot/modeling/mot.py
 Description: 
 
@@ -10,236 +10,138 @@ Copyright (c) 2023 by ${git_name_email}, All Rights Reserved.
 '''
 # coding=utf-8
 
-import copy
 import math
 import numpy as np
-from copy import deepcopy
 from typing import List, Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from copy import copy
+from copy import deepcopy
 from collections import defaultdict
 
-# from detrex.utils import inverse_sigmoid
+from detrex.layers import MLP, box_cxcywh_to_xyxy, box_xyxy_to_cxcywh, generalized_box_iou
+from detrex.utils import inverse_sigmoid
+from detrex.modeling import SetCriterion
+from detrex.modeling.criterion.criterion import sigmoid_focal_loss
 
-from projects.co_mot.util import box_ops, checkpoint
-from projects.co_mot.util.misc import (NestedTensor, nested_tensor_from_tensor_list,
-                       accuracy, get_world_size, interpolate, get_rank,
-                       is_dist_avail_and_initialized, inverse_sigmoid)
+from detectron2.structures import Boxes, ImageList, Instances
+from detectron2.structures.boxes import matched_pairwise_iou
+from detrex.utils import get_world_size, is_dist_avail_and_initialized
 
-from .structures import Instances, Boxes, pairwise_iou, matched_boxlist_iou
-
-from .backbone import build_backbone
-from .matcher import build_matcher
-from .memory_bank import build_memory_bank
-from .deformable_transformer_plus import build_deforamble_transformer, pos2posemb
-from .qim import build as build_query_interaction_layer
-from .deformable_detr import SetCriterion, MLP, sigmoid_focal_loss
-
-import os
-import cv2
-import torchvision.transforms.functional as TransF
-from torch.utils.data import Dataset, DataLoader
-class ListImgDataset(Dataset):
-    def __init__(self, mot_path, img_list, det_db) -> None:
-        super().__init__()
-        self.mot_path = mot_path
-        self.img_list = img_list
-        self.det_db = det_db
-
-        '''
-        common settings
-        '''
-        self.img_height = 800
-        self.img_width = 1536
-        self.mean = [0.485, 0.456, 0.406]
-        self.std = [0.229, 0.224, 0.225]
-
-    def load_img_from_file(self, f_path):
-        cur_img = cv2.imread(os.path.join(self.mot_path, f_path))
-        assert cur_img is not None, f_path
-        cur_img = cv2.cvtColor(cur_img, cv2.COLOR_BGR2RGB)
-        proposals = []
-        im_h, im_w = cur_img.shape[:2]
-        if len(self.det_db):
-            for line in self.det_db[f_path[:-4].replace('dancetrack/', 'DanceTrack/') + '.txt']:
-                l, t, w, h, s = list(map(float, line.split(',')))
-                proposals.append([(l + w / 2) / im_w,
-                                    (t + h / 2) / im_h,
-                                    w / im_w,
-                                    h / im_h,
-                                    s])
-        return cur_img, torch.as_tensor(proposals).reshape(-1, 5), f_path
-
-    def init_img(self, img, proposals):
-        ori_img = img.copy()
-        self.seq_h, self.seq_w = img.shape[:2]
-        scale = self.img_height / min(self.seq_h, self.seq_w)
-        if max(self.seq_h, self.seq_w) * scale > self.img_width:
-            scale = self.img_width / max(self.seq_h, self.seq_w)
-        target_h = int(self.seq_h * scale)
-        target_w = int(self.seq_w * scale)
-        img = cv2.resize(img, (target_w, target_h))
-        img = TransF.normalize(TransF.to_tensor(img), self.mean, self.std)
-        img = img.unsqueeze(0)
-        return img, ori_img, proposals
-
-    def __len__(self):
-        return len(self.img_list)
-    
-    def __getitem__(self, index):  # 加载图像和proposal。并对图像颜色通道转换+resize+normalize+to_tensor。
-        img, proposals, f_path = self.load_img_from_file(self.img_list[index])
-        img, ori_img, proposals = self.init_img(img, proposals)
-        return img, ori_img, proposals, f_path
-
-def filter_predictions_with_area(predictions, area_threshold=100):
-    if "track_instances" in predictions:
-        preds = predictions["track_instances"]
-        wh = preds.boxes[:, 2:4] - preds.boxes[:, 0:2]
-        areas = wh[:, 0] * wh[:, 1]
-        keep_idxs = areas > area_threshold
-        predictions = deepcopy(predictions) # don't modify the original
-        predictions["track_instances"] = preds[keep_idxs]
-    return predictions
-    
-def filter_predictions_with_confidence(predictions, confidence_threshold=0.5):
-    if "track_instances" in predictions:
-        preds = predictions["track_instances"]
-        keep_idxs = preds.scores > confidence_threshold
-        predictions = deepcopy(predictions) # don't modify the original
-        predictions["track_instances"] = preds[keep_idxs]
-    return predictions
-
+from projects.co_mot.util import checkpoint
+from projects.co_mot.util.misc import (NestedTensor, nested_tensor_from_tensor_list, accuracy)
 
 
 class MOT(nn.Module):
     """ Implement CO-MOT: Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking
     Args:
-        backbone: torch module of the backbone to be used. See backbone.py
-        transformer: torch module of the transformer architecture. See transformer.py
-        num_classes: number of object classes
-        num_queries: number of object queries, ie detection slot. This is the maximal number of objects
-                        DETR can detect in a single image. For COCO, we recommend 100 queries.
-        aux_loss: True if auxiliary decoding losses (loss at each decoder layer) are to be used.
-        with_box_refine: iterative bounding box refinement
-        two_stage: two-stage Deformable DETR
+        backbone (nn.Module): backbone module
+        position_embedding (nn.Module): position embedding module
+        neck (nn.Module): neck module to handle the intermediate outputs features
+        transformer (nn.Module): transformer module
+        embed_dim (int): dimension of embedding
+        num_classes (int): Number of total categories.
+        num_queries (int): Number of proposal dynamic anchor boxes in Transformer
+        criterion (nn.Module): Criterion for calculating the total losses.
+        pixel_mean (List[float]): Pixel mean value for image normalization.
+            Default: [123.675, 116.280, 103.530].
+        pixel_std (List[float]): Pixel std value for image normalization.
+            Default: [58.395, 57.120, 57.375].
+        aux_loss (bool): Whether to calculate auxiliary loss in criterion. Default: True.
+        select_box_nums_for_evaluation (int): the number of topk candidates
+            slected at postprocess for evaluation. Default: 300.
+        device (str): Training device. Default: "cuda".
     """
 
     def __init__(
         self,
-        backbone,
-        transformer,
-        num_classes,
-        num_queries,
-        num_feature_levels,
-        criterion,
-        track_embed,
-        track_base,
-        post_process,
-        aux_loss=True,
-        with_box_refine=False,
-        two_stage=False,
-        memory_bank=None,
-        use_checkpoint=False,
-        query_denoise=0,
+        backbone: nn.Module,
+        position_embedding: nn.Module,
+        neck: nn.Module,
+        transformer: nn.Module,
+        embed_dim: int,
+        num_classes: int,
+        num_queries: int,
+        criterion: nn.Module,
+        track_embed: nn.Module,
+        track_base: nn.Module,
+        post_process: nn.Module,
+        aux_loss: bool = True,
+        device="cuda",
         g_size=1,
-        args=None,
-        device='cuda',
     ):
         super().__init__()
-        # define backbone
+        # define backbone and position embedding module
         self.backbone = backbone
-        # number of dynamic anchor boxes
+        self.position_embedding = position_embedding
+
+        # define neck module
+        self.neck = neck
+
+        # number of dynamic anchor boxes and embedding dimension
         self.num_queries = num_queries
-        self.track_embed = track_embed
+        self.embed_dim = embed_dim
 
         # define transformer module
         self.transformer = transformer
-        hidden_dim = transformer.d_model
 
         # define classification head and box head
-        self.class_embed = nn.Linear(hidden_dim, num_classes)
-        self.bbox_embed = MLP(hidden_dim, hidden_dim, 4, 3)
+        self.class_embed = nn.Linear(embed_dim, num_classes)
+        self.bbox_embed = MLP(embed_dim, embed_dim, 4, 3)
         self.num_classes = num_classes
-        
-        self.num_feature_levels = num_feature_levels
-        self.use_checkpoint = use_checkpoint
-        self.query_denoise = query_denoise
-        self.position = nn.Embedding(num_queries, 4)
-        self.position_offset = nn.Embedding(num_queries*g_size, 4)
-        self.yolox_embed = nn.Embedding(1, hidden_dim)
-        self.query_embed = nn.Embedding(num_queries, hidden_dim)
-        self.query_embed_offset = nn.Embedding(num_queries*g_size, hidden_dim)
-        if query_denoise:
-            self.refine_embed = nn.Embedding(1, hidden_dim)
-        if num_feature_levels > 1:
-            num_backbone_outs = len(backbone.strides)
-            input_proj_list = []
-            for _ in range(num_backbone_outs):
-                in_channels = backbone.num_channels[_]
-                input_proj_list.append(nn.Sequential(
-                    nn.Conv2d(in_channels, hidden_dim, kernel_size=1),
-                    nn.GroupNorm(32, hidden_dim),
-                ))
-            for _ in range(num_feature_levels - num_backbone_outs):
-                input_proj_list.append(nn.Sequential(
-                    nn.Conv2d(in_channels, hidden_dim, kernel_size=3, stride=2, padding=1),
-                    nn.GroupNorm(32, hidden_dim),
-                ))
-                in_channels = hidden_dim
-            self.input_proj = nn.ModuleList(input_proj_list)
-        else:
-            self.input_proj = nn.ModuleList([
-                nn.Sequential(
-                    nn.Conv2d(backbone.num_channels[0], hidden_dim, kernel_size=1),
-                    nn.GroupNorm(32, hidden_dim),
-                )])
-        
-        self.aux_loss = aux_loss
-        self.with_box_refine = with_box_refine
-        self.two_stage = two_stage
 
+        # where to calculate auxiliary loss in criterion
+        self.aux_loss = aux_loss
+        self.criterion = criterion
+
+        self.device = device
+
+        # initialize weights
         prior_prob = 0.01
         bias_value = -math.log((1 - prior_prob) / prior_prob)
         self.class_embed.bias.data = torch.ones(num_classes) * bias_value
         nn.init.constant_(self.bbox_embed.layers[-1].weight.data, 0)
         nn.init.constant_(self.bbox_embed.layers[-1].bias.data, 0)
-        for proj in self.input_proj:
-            nn.init.xavier_uniform_(proj[0].weight, gain=1)
-            nn.init.constant_(proj[0].bias, 0)
-        nn.init.uniform_(self.position.weight.data, 0, 1)
-        nn.init.normal_(self.position_offset.weight.data, 0, 10e-6)  # 默认为10e-6
-        # nn.init.constant_(self.position_offset.weight.data, 0)
-        nn.init.normal_(self.query_embed_offset.weight.data, 0, 10e-6) # 默认为10e-6
+        for _, neck_layer in self.neck.named_modules():
+            if isinstance(neck_layer, nn.Conv2d):
+                nn.init.xavier_uniform_(neck_layer.weight, gain=1)
+                nn.init.constant_(neck_layer.bias, 0)
 
         # if two-stage, the last class_embed and bbox_embed is for region proposal generation
-        num_pred = (transformer.decoder.num_layers + 1) if two_stage else transformer.decoder.num_layers
-        if with_box_refine:
-            self.class_embed = _get_clones(self.class_embed, num_pred)
-            self.bbox_embed = _get_clones(self.bbox_embed, num_pred)
-            nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
-            # hack implementation for iterative bounding box refinement
-            self.transformer.decoder.bbox_embed = self.bbox_embed
-        else:
-            nn.init.constant_(self.bbox_embed.layers[-1].bias.data[2:], -2.0)
-            self.class_embed = nn.ModuleList([self.class_embed for _ in range(num_pred)])
-            self.bbox_embed = nn.ModuleList([self.bbox_embed for _ in range(num_pred)])
-            self.transformer.decoder.bbox_embed = None
-        if two_stage:
-            # hack implementation for two-stage
-            self.transformer.decoder.class_embed = self.class_embed
-            for box_embed in self.bbox_embed:
-                nn.init.constant_(box_embed.layers[-1].bias.data[2:], 0.0)
+        num_pred = transformer.decoder.num_layers
+        self.class_embed = nn.ModuleList([deepcopy(self.class_embed) for i in range(num_pred)])
+        self.bbox_embed = nn.ModuleList([deepcopy(self.bbox_embed) for i in range(num_pred)])
+        nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
+
+        # two-stage
+        self.transformer.decoder.class_embed = self.class_embed
+        self.transformer.decoder.bbox_embed = self.bbox_embed
+
+        # hack implementation for two-stage
+        for bbox_embed_layer in self.bbox_embed:
+            nn.init.constant_(bbox_embed_layer.layers[-1].bias.data[2:], 0.0)
+
+        
+        # for Track
+        self.track_embed = track_embed
         self.post_process = post_process  # TrackerPostProcess(g_size=g_size)
         self.track_base = track_base
-        self.criterion = criterion
-        self.memory_bank = memory_bank
-        self.mem_bank_len = 0 if memory_bank is None else memory_bank.max_his_length
         
+        # for shadow
         self.g_size = g_size
-        self.device = device
 
-    def _generate_empty_tracks(self, proposals=None, g_size=1, batch_size=1):
+        # for init of query
+        self.position = nn.Embedding(num_queries, 4)
+        self.position_offset = nn.Embedding(num_queries*g_size, 4)
+        self.query_embed = nn.Embedding(num_queries, embed_dim)
+        self.query_embed_offset = nn.Embedding(num_queries*g_size, embed_dim)
+
+        nn.init.uniform_(self.position.weight.data, 0, 1)
+        nn.init.normal_(self.position_offset.weight.data, 0, 10e-6)  # 默认为10e-6
+        nn.init.normal_(self.query_embed_offset.weight.data, 0, 10e-6) # 默认为10e-6
+
+    def _generate_empty_tracks(self, g_size=1, batch_size=1):
         track_instances = Instances((1, 1))
         num_queries, d_model = self.query_embed.weight.shape  # (300, 512)
         device = self.query_embed.weight.device
@@ -247,7 +149,7 @@ class MOT(nn.Module):
         track_instances.query_pos = self.query_embed.weight.view(-1, 1, d_model).repeat(1, g_size, 1).view(-1, d_model) +  self.query_embed_offset.weight
         track_instances.ref_pts = track_instances.ref_pts.view(-1, 1, 4).repeat(1, batch_size, 1)
         track_instances.query_pos = track_instances.query_pos.view(-1, 1, d_model).repeat(1, batch_size, 1)
-        
+
         track_instances.output_embedding = torch.zeros((len(track_instances), batch_size, d_model), device=device)  # motr decode输出的feature，把这个输入qim中可以获得track的query，某个目标跟踪过程中不再使用query_pos
         track_instances.obj_idxes = torch.full((len(track_instances), batch_size), -1, dtype=torch.long, device=device)  # ID
         track_instances.matched_gt_idxes = torch.full((len(track_instances), batch_size), -1, dtype=torch.long, device=device) # 与匹配到的gt在该图片中的索引
@@ -260,82 +162,62 @@ class MOT(nn.Module):
         track_instances.group_ids = torch.arange(g_size, dtype=torch.long, device=device).repeat(num_queries).view(-1, 1).repeat(1, batch_size)
         track_instances.labels = torch.full((len(track_instances), batch_size), -1, dtype=torch.long, device=device)
 
-        mem_bank_len = self.mem_bank_len  # 默认是不使用的
-        track_instances.mem_bank = torch.zeros((len(track_instances), batch_size, mem_bank_len, d_model), dtype=torch.float32, device=device)  # 存储历史的output_embedding（经过了一个linear）
-        track_instances.mem_padding_mask = torch.ones((len(track_instances), batch_size, mem_bank_len), dtype=torch.bool, device=device)  # 是否更新了，假如更新为0，不更新为1
-        track_instances.save_period = torch.zeros((len(track_instances), batch_size), dtype=torch.float32, device=device) # 
-
         return track_instances.to(self.query_embed.weight.device)
 
     def clear(self):
         self.track_base.clear()
 
-    @torch.jit.unused
-    def _set_aux_loss(self, outputs_class, outputs_coord):
-        # this is a workaround to make torchscript happy, as torchscript
-        # doesn't support dictionary with non-homogeneous values, such
-        # as a dict having both a Tensor and a list.
-        return [{'pred_logits': a, 'pred_boxes': b, }
-                for a, b in zip(outputs_class[:-1], outputs_coord[:-1])]
+    def _forward_single_image(self, samples, track_instances, gtboxes=None):
+        """Forward function of `MOT`.
+        """
+        
+        # original features
+        features = self.backbone(samples.tensors)  # output feature dict
+        img_masks = samples.mask
 
-    def _forward_single_image(self, samples, track_instances: Instances, gtboxes=None):
-        features, pos = self.backbone(samples)  # 通过backbone获取多次度feature+pad mask+position
-        src, mask = features[-1].decompose()
-        assert mask is not None
+        # project backbone features to the reuired dimension of transformer
+        # we use multi-scale features in DINO
+        multi_level_feats = self.neck(features)
+        multi_level_masks = []
+        multi_level_position_embeddings = []
+        for feat in multi_level_feats:
+            multi_level_masks.append(
+                F.interpolate(img_masks[None].float(), size=feat.shape[-2:]).to(torch.bool).squeeze(0)
+            )
+            multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
 
-        srcs = []
-        masks = []
-        for l, feat in enumerate(features):  # 把backbone输出的feature的通道整成一致，方便concat作为encode输入
-            src, mask = feat.decompose()
-            srcs.append(self.input_proj[l](src))
-            masks.append(mask)
-            assert mask is not None
+        # prepare label query embedding
+        input_query_label = track_instances.query_pos
+        input_query_bbox = track_instances.ref_pts
+        attn_mask = None
 
-        if self.num_feature_levels > len(srcs):  # 一般backbone仅输出8/16/32的特征，这个添加一个64的特征
-            _len_srcs = len(srcs)
-            for l in range(_len_srcs, self.num_feature_levels):
-                if l == _len_srcs:
-                    src = self.input_proj[l](features[-1].tensors)
-                else:
-                    src = self.input_proj[l](srcs[-1])
-                m = samples.mask
-                mask = F.interpolate(m[None].float(), size=src.shape[-2:]).to(torch.bool)[0]
-                pos_l = self.backbone[1](NestedTensor(src, mask)).to(src.dtype)
-                srcs.append(src)
-                masks.append(mask)
-                pos.append(pos_l)
-
-        if gtboxes is not None:  # dn-detr方式训练使用，制作一批噪声GT训练decode
-            n_dt = len(track_instances)
-            ps_tgt = self.refine_embed.weight.expand(gtboxes.size(0), -1)
-            query_embed = torch.cat([track_instances.query_pos, ps_tgt])
-            ref_pts = torch.cat([track_instances.ref_pts, gtboxes])
-            # attn_mask = torch.zeros((len(ref_pts), len(ref_pts)), dtype=bool, device=ref_pts.device)
-            # attn_mask[:n_dt, n_dt:] = True
-            # attn_mask[n_dt:, :n_dt] = True
-            attn_mask = torch.zeros((len(ref_pts), len(ref_pts)), dtype=torch.float32, device=ref_pts.device)
-            attn_mask[:n_dt, n_dt:] = float('-inf')
-            attn_mask[n_dt:, :n_dt] = float('-inf')
-        else:
-            query_embed = track_instances.query_pos
-            ref_pts = track_instances.ref_pts
-            attn_mask = None
-
-        # transformer 包括encode + decode
-        hs, init_reference, inter_references, enc_outputs_class, enc_outputs_coord_unact = \
-            self.transformer(srcs, masks, pos, query_embed, ref_pts=ref_pts,
-                             mem_bank=track_instances.mem_bank, mem_bank_pad_mask=track_instances.mem_padding_mask, attn_mask=attn_mask)
-
+        # feed into transformer 包括encode + decode
+        (
+            inter_states,
+            init_reference,
+            inter_references,
+            enc_state,
+            enc_reference,  # [0..1]
+        ) = self.transformer(
+            multi_level_feats,
+            multi_level_masks,
+            multi_level_position_embeddings,
+            input_query_label,
+            ref_pts=input_query_bbox,
+            attn_mask=attn_mask,
+        )
+        
+        # Calculate output coordinates and classes.
         outputs_classes = []
         outputs_coords = []
-        for lvl in range(hs.shape[0]):  # 检测头包括box（xc,yc,w,h并归一化1）和class分支
+        for lvl in range(inter_states.shape[0]):
             if lvl == 0:
-                reference = init_reference # 实际上就是上一帧跟踪框和decode输入框
+                reference = init_reference
             else:
-                reference = inter_references[lvl - 1]  # 由于内部是迭代优化的，参考点应为上一次迭代的输出
+                reference = inter_references[lvl - 1]
             reference = inverse_sigmoid(reference)
-            outputs_class = self.class_embed[lvl](hs[lvl])
-            tmp = self.bbox_embed[lvl](hs[lvl])
+            outputs_class = self.class_embed[lvl](inter_states[lvl])
+            tmp = self.bbox_embed[lvl](inter_states[lvl])
             if reference.shape[-1] == 4:
                 tmp += reference
             else:
@@ -345,32 +227,18 @@ class MOT(nn.Module):
             outputs_classes.append(outputs_class)
             outputs_coords.append(outputs_coord)
         outputs_class = torch.stack(outputs_classes)
+        # tensor shape: [num_decoder_layers, bs, num_query, num_classes]
         outputs_coord = torch.stack(outputs_coords)
+        # tensor shape: [num_decoder_layers, bs, num_query, 4]
 
-        out = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord[-1]}  # 最后一次迭代的输出
+        # prepare for loss computation
+        output = {"pred_logits": outputs_class[-1], "pred_boxes": outputs_coord[-1]}
         if self.aux_loss:
-            out['aux_outputs'] = self._set_aux_loss(outputs_class, outputs_coord) # 中间过程迭代的输出
-        out['hs'] = hs[-1]
-        return out
+            output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
+        output['hs'] = inter_states[-1]
+        return output
 
     def _post_process_single_image(self, frame_res, track_instances, is_last):
-        if self.query_denoise > 0:  # 由query内有部分噪声GT，因此需要单独拿出来，并放在了ps_outputs下
-            n_ins = len(track_instances)
-            ps_logits = frame_res['pred_logits'][:, n_ins:]
-            ps_boxes = frame_res['pred_boxes'][:, n_ins:]
-            frame_res['hs'] = frame_res['hs'][:, :n_ins]
-            frame_res['pred_logits'] = frame_res['pred_logits'][:, :n_ins]
-            frame_res['pred_boxes'] = frame_res['pred_boxes'][:, :n_ins]
-            ps_outputs = [{'pred_logits': ps_logits, 'pred_boxes': ps_boxes}]
-            for aux_outputs in frame_res['aux_outputs']:
-                ps_outputs.append({
-                    'pred_logits': aux_outputs['pred_logits'][:, n_ins:],
-                    'pred_boxes': aux_outputs['pred_boxes'][:, n_ins:],
-                })
-                aux_outputs['pred_logits'] = aux_outputs['pred_logits'][:, :n_ins]
-                aux_outputs['pred_boxes'] = aux_outputs['pred_boxes'][:, :n_ins]
-            frame_res['ps_outputs'] = ps_outputs
-
         with torch.no_grad():
             if self.training:
                 track_scores = frame_res['pred_logits'].sigmoid().max(dim=-1).values
@@ -390,8 +258,6 @@ class MOT(nn.Module):
             # each track will be assigned an unique global id by the track base.
             self.track_base.update(track_instances, g_size=self.g_size)  # 为存在的目标分配ID，并删除长时间消失的目标ID
 
-        if self.memory_bank is not None:
-            track_instances = self.memory_bank(track_instances)
         tmp = {}
         tmp['track_instances'] = track_instances
         if not is_last: # 经过这步后将仅保留有ID的目标，且更新了track的query和pos
@@ -405,18 +271,15 @@ class MOT(nn.Module):
 
     # 获取当前帧的跟踪框
     @torch.no_grad()
-    def inference_single_image(self, img, ori_img_size, track_instances=None, proposals=None): 
+    def inference_single_image(self, img, ori_img_size, track_instances=None): 
         if not isinstance(img, NestedTensor):
             img = nested_tensor_from_tensor_list(img)  # 补pad并或者pad的mask
         if track_instances is None:
-            track_instances = self._generate_empty_tracks(proposals, g_size=self.g_size) # 初始化decode的输入或者说目标query，包括（query+pose）
+            track_instances = self._generate_empty_tracks(g_size=self.g_size) # 初始化decode的输入或者说目标query，包括（query+pose）
         else:
-            track_instances = Instances.cat([
-                self._generate_empty_tracks(proposals, g_size=self.g_size),
-                track_instances])
-        # track_instances = self._generate_empty_tracks(proposals)
-        res = self._forward_single_image(img,
-                                         track_instances=track_instances)  # backbone+encode+decode，获得decode的输出和中间迭代过程输出的box和最后输出的feat(hs,作为经过QIM后可作为下一帧的query)
+            track_instances = Instances.cat([self._generate_empty_tracks(g_size=self.g_size), track_instances])
+
+        res = self._forward_single_image(img, track_instances=track_instances)  # backbone+encode+decode，获得decode的输出和中间迭代过程输出的box和最后输出的feat(hs,作为经过QIM后可作为下一帧的query)
         res = self._post_process_single_image(res, track_instances, False)  # train是算loss，test时过滤有效跟踪框+为下一帧更新query/pos
 
         track_instances = res['track_instances']
@@ -446,30 +309,20 @@ class MOT(nn.Module):
                 'pred_boxes': [],
             }
             for frame_index, (frame, gt) in enumerate(zip(frames, data['gt_instances'])):
-                proposals = None
                 for f in frame:
                     f.requires_grad = False
                 is_last = frame_index == len(frames) - 1
                 nbatch = len(frame)
-                
-                if self.query_denoise > 0:
-                    l_1 = l_2 = self.query_denoise
-                    gtboxes = gt.boxes.clone()
-                    _rs = torch.rand_like(gtboxes) * 2 - 1
-                    gtboxes[..., :2] += gtboxes[..., 2:] * _rs[..., :2] * l_1
-                    gtboxes[..., 2:] *= 1 + l_2 * _rs[..., 2:]
-                else:
-                    gtboxes = None
+                gtboxes = None
 
                 if track_instances is None:
-                    track_instances = self._generate_empty_tracks(proposals, g_size=self.g_size, batch_size=nbatch)
+                    track_instances = self._generate_empty_tracks(g_size=self.g_size, batch_size=nbatch)
                 else:
                     track_instances = Instances.cat([
-                        self._generate_empty_tracks(proposals, g_size=self.g_size, batch_size=nbatch),
+                        self._generate_empty_tracks(g_size=self.g_size, batch_size=nbatch),
                         track_instances])
-                # track_instances = self._generate_empty_tracks(proposals)
 
-                if self.use_checkpoint and frame_index < len(frames) - 1:
+                if frame_index < len(frames) - 1:
                     args = [frame, gtboxes, track_instances]
                     params = tuple((p for p in self.parameters() if p.requires_grad))
                     frame_res = checkpoint.CheckpointFunction.apply(fn, len(args), *args, *params)
@@ -497,9 +350,7 @@ class MOT(nn.Module):
             outputs = []
             for i, data_ in enumerate(data[0]['data_loader']):   # tqdm(loader)):
                 cur_img, ori_img, proposals, f_path = [d[0] for d in data_]
-                cur_img, proposals = cur_img.to(device), proposals.to(device)
-                
-                 # track_instances = None
+                cur_img = cur_img.to(device)
                 if track_instances is not None:
                     track_instances.remove('boxes')
                     # track_instances.remove('labels')
@@ -507,9 +358,9 @@ class MOT(nn.Module):
 
                 # 内部包含backboe+encode+decode+跟踪匹配关系+跟踪目标过滤（从query中过滤）
                 try: 
-                    res = self.inference_single_image(cur_img, (seq_h, seq_w), track_instances, proposals)
+                    res = self.inference_single_image(cur_img, (seq_h, seq_w), track_instances)
                 except:
-                    res = self.inference_single_image(cur_img, (seq_h, seq_w), track_instances, proposals)
+                    res = self.inference_single_image(cur_img, (seq_h, seq_w), track_instances)
                 track_instances = res['track_instances']
 
                 predictions = deepcopy(res)
@@ -518,30 +369,71 @@ class MOT(nn.Module):
                     keep_idxs = torch.arange(len(predictions['track_instances']), device=scores.device).reshape(-1, self.g_size)
                     keep_idxs = keep_idxs.gather(1, scores.max(-1)[1].reshape(-1, 1)).reshape(-1)
                     predictions['track_instances'] = predictions['track_instances'][keep_idxs]
-                predictions['track_instances'] = predictions['track_instances'].get_bn(0)
-                predictions = filter_predictions_with_confidence(predictions, 0.5)
-                predictions = filter_predictions_with_area(predictions)
+
+                predictions = _filter_predictions_with_confidence(predictions, 0.5)
+                predictions = _filter_predictions_with_area(predictions)
                 outputs.append(predictions['track_instances'].to('cpu'))
             
             return [outputs]
 
+    @torch.jit.unused
+    def _set_aux_loss(self, outputs_class, outputs_coord):
+        # this is a workaround to make torchscript happy, as torchscript
+        # doesn't support dictionary with non-homogeneous values, such
+        # as a dict having both a Tensor and a list.
+        return [
+            {"pred_logits": a, "pred_boxes": b}
+            for a, b in zip(outputs_class[:-1], outputs_coord[:-1])
+        ]
+
+def _filter_predictions_with_area(predictions, area_threshold=100):
+    if "track_instances" in predictions:
+        preds = predictions["track_instances"]
+        wh = preds.boxes[:, 2:4] - preds.boxes[:, 0:2]
+        areas = wh[:, 0] * wh[:, 1]
+        keep_idxs = areas > area_threshold
+        predictions = copy(predictions) # don't modify the original
+        predictions["track_instances"] = preds[keep_idxs]
+    return predictions
+    
+def _filter_predictions_with_confidence(predictions, confidence_threshold=0.5):
+    if "track_instances" in predictions:
+        preds = predictions["track_instances"]
+        keep_idxs = preds.scores > confidence_threshold
+        predictions = copy(predictions) # don't modify the original
+        predictions["track_instances"] = preds[keep_idxs]
+    return predictions
 
 
 class ClipMatcher(SetCriterion):
-    def __init__(self, num_classes,
-                        matcher,
-                        weight_dict,
-                        losses,
-                        g_size=1):
-        """ Create the criterion.
+    """This class computes the loss for Conditional DETR.
+    The process happens in two steps:
+        1) we compute hungarian assignment between ground truth boxes and the outputs of the model
+        2) we supervise each pair of matched ground-truth / prediction (supervise class and box)
+    """
+
+    def __init__(
+        self,
+        num_classes,
+        matcher,
+        weight_dict,
+        losses: List[str] = ["class", "boxes"],
+        eos_coef: float = 0.1,
+        loss_class_type: str = "focal_loss",
+        alpha: float = 0.25,
+        gamma: float = 2.0,
+        g_size=1
+    ):
+        """Create the criterion.
         Parameters:
             num_classes: number of object categories, omitting the special no-object category
             matcher: module able to compute a matching between targets and proposals
             weight_dict: dict containing as key the names of the losses and as values their relative weight.
             eos_coef: relative classification weight applied to the no-object category
             losses: list of all the losses to be applied. See get_loss for list of available losses.
+            focal_alpha: alpha in Focal Loss
         """
-        super().__init__(num_classes, matcher, weight_dict, losses)
+        super().__init__(num_classes, matcher, weight_dict, losses, eos_coef, loss_class_type, alpha, gamma)
         self.num_classes = num_classes
         self.matcher = matcher
         self.weight_dict = weight_dict
@@ -588,54 +480,20 @@ class ClipMatcher(SetCriterion):
         num_boxes = torch.clamp(num_boxes / get_world_size(), min=1).item()
         return num_boxes
 
-    def get_loss(self, loss, outputs, gt_instances, indices, num_boxes, **kwargs):
-        loss_map = {
-            'labels': self.loss_labels,
-            'cardinality': self.loss_cardinality,
-            'boxes': self.loss_boxes,
-        }
-        assert loss in loss_map, f'do you really want to compute {loss} loss?'
-        return loss_map[loss](outputs, gt_instances, indices, num_boxes, **kwargs)
-
-    def loss_boxes(self, outputs, gt_instances: List[Instances], indices: List[tuple], num_boxes):
-        """Compute the losses related to the bounding boxes, the L1 regression loss and the GIoU loss
-           targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
-           The target boxes are expected in format (center_x, center_y, h, w), normalized by the image size.
-        """
-        # We ignore the regression loss of the track-disappear slots.
-        #TODO: Make this filter process more elegant.
-        filtered_idx = []
-        for src_per_img, tgt_per_img in indices:
-            keep = tgt_per_img != -1
-            filtered_idx.append((src_per_img[keep], tgt_per_img[keep]))
-        indices = filtered_idx
-        idx = self._get_src_permutation_idx(indices)
-        src_boxes = outputs['pred_boxes'][idx]
-        target_boxes = torch.cat([gt_per_img.boxes[i] for gt_per_img, (_, i) in zip(gt_instances, indices)], dim=0)
-
-        # for pad target, don't calculate regression loss, judged by whether obj_id=-1
-        target_obj_ids = torch.cat([gt_per_img.obj_ids[i] for gt_per_img, (_, i) in zip(gt_instances, indices)], dim=0) # size(16)
-        mask = (target_obj_ids != -1)
-
-        loss_bbox = F.l1_loss(src_boxes[mask], target_boxes[mask], reduction='none')
-        loss_giou = 1 - torch.diag(box_ops.generalized_box_iou(
-            box_ops.box_cxcywh_to_xyxy(src_boxes[mask]),
-            box_ops.box_cxcywh_to_xyxy(target_boxes[mask])))
-
-        losses = {}
-        losses['loss_bbox'] = loss_bbox.sum() / num_boxes
-        losses['loss_giou'] = loss_giou.sum() / num_boxes
-
-        return losses
-
     def loss_labels(self, outputs, gt_instances: List[Instances], indices, num_boxes, log=False):
-        """Classification loss (NLL)
+        """Classification loss (Binary focal loss)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
-        src_logits = outputs['pred_logits']
+        assert "pred_logits" in outputs
+        src_logits = outputs["pred_logits"]
+
         idx = self._get_src_permutation_idx(indices)
-        target_classes = torch.full(src_logits.shape[:2], self.num_classes,
-                                    dtype=torch.int64, device=src_logits.device)
+        target_classes = torch.full(
+            src_logits.shape[:2],
+            self.num_classes,
+            dtype=torch.int64,
+            device=src_logits.device,
+        )
         # The matched gt for disappear track query is set -1.
         labels = []
         for gt_per_img, (_, J) in zip(gt_instances, indices):
@@ -646,18 +504,29 @@ class ClipMatcher(SetCriterion):
             labels.append(labels_per_img)
         target_classes_o = torch.cat(labels)
         target_classes[idx] = target_classes_o
-        if self.focal_loss:
+
+        # Computation classification loss
+        if self.loss_class_type == "ce_loss":
+            # loss_class = F.cross_entropy(
+            #     src_logits.transpose(1, 2), target_classes, self.empty_weight
+            # )
+            loss_class = F.cross_entropy(
+                src_logits.transpose(1, 2), target_classes, self.empty_weight
+            )
+        elif self.loss_class_type == "focal_loss":
+            # src_logits: (b, num_queries, num_classes) = (2, 300, 80)
+            # target_classes_one_hot = (2, 300, 80)
             gt_labels_target = F.one_hot(target_classes, num_classes=self.num_classes + 1)[:, :, :-1]  # no loss for the last (background) class
             gt_labels_target = gt_labels_target.to(src_logits)
-            loss_ce = sigmoid_focal_loss(src_logits.flatten(1),
-                                             gt_labels_target.flatten(1),
-                                             alpha=0.25,
-                                             gamma=2,
-                                             num_boxes=num_boxes, mean_in_dim1=False)
-            loss_ce = loss_ce.sum()
-        else:
-            loss_ce = F.cross_entropy(src_logits.transpose(1, 2), target_classes, self.empty_weight)
-        losses = {'loss_ce': loss_ce}
+            loss_class = sigmoid_focal_loss(
+                    src_logits.flatten(1),
+                    gt_labels_target.flatten(1),
+                    num_boxes=num_boxes,
+                    alpha=self.alpha,
+                    gamma=self.gamma
+                )
+
+        losses = {"loss_ce": loss_class}
 
         if log:
             # TODO this should probably be a separate loss, not hacked in this one here
@@ -665,8 +534,61 @@ class ClipMatcher(SetCriterion):
 
         return losses
 
+
+    def loss_boxes(self, outputs, gt_instances: List[Instances], indices: List[tuple], num_boxes):
+        """Compute the losses related to the bounding boxes, the L1 regression loss and the GIoU loss
+        targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
+        The target boxes are expected in format (center_x, center_y, w, h), normalized by the image size.
+        """
+        assert "pred_boxes" in outputs
+        # We ignore the regression loss of the track-disappear slots.
+        #TODO: Make this filter process more elegant.
+        filtered_idx = []
+        for src_per_img, tgt_per_img in indices:
+            keep = tgt_per_img != -1
+            filtered_idx.append((src_per_img[keep], tgt_per_img[keep]))
+        indices = filtered_idx
+        idx = self._get_src_permutation_idx(indices)
+        src_boxes = outputs["pred_boxes"][idx]
+        target_boxes = torch.cat([gt_per_img.boxes[i] for gt_per_img, (_, i) in zip(gt_instances, indices)], dim=0)
+
+        # for pad target, don't calculate regression loss, judged by whether obj_id=-1
+        target_obj_ids = torch.cat([gt_per_img.obj_ids[i] for gt_per_img, (_, i) in zip(gt_instances, indices)], dim=0) # size(16)
+        mask = (target_obj_ids != -1)
+
+        loss_bbox = F.l1_loss(src_boxes[mask], target_boxes[mask], reduction="none")
+
+        losses = {}
+        losses["loss_bbox"] = loss_bbox.sum() / num_boxes
+        loss_giou = 1 - torch.diag(
+            generalized_box_iou(
+                box_cxcywh_to_xyxy(src_boxes[mask]),
+                box_cxcywh_to_xyxy(target_boxes[mask])
+            )
+        )
+        losses["loss_giou"] = loss_giou.sum() / num_boxes
+
+        return losses
+
+    def get_loss(self, loss, outputs, targets, indices, num_boxes, **kwargs):
+        loss_map = {
+            'labels': self.loss_labels,
+            "boxes": self.loss_boxes,
+        }
+        assert loss in loss_map, f"do you really want to compute {loss} loss?"
+        return loss_map[loss](outputs, targets, indices, num_boxes, **kwargs)
+
     def match_for_single_frame(self, outputs: dict):
-        outputs_without_aux = {k: v for k, v in outputs.items() if k != 'aux_outputs'}
+        """This performs the loss computation.
+        Parameters:
+             outputs: dict of tensors, see the output specification of the model for the format
+             targets: list of dicts, such that len(targets) == batch_size.
+                      The expected keys in each dict depends on the losses applied, see each loss' doc
+
+             return_indices: used for vis. if True, the layer0-5 indices will be returned as well.
+
+        """
+        outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
 
         gt_instances_i = self.gt_instances[self._current_frame_idx]  # gt instances of i-th image.
         track_instances: Instances = outputs_without_aux['track_instances']
@@ -693,9 +615,9 @@ class ClipMatcher(SetCriterion):
                 active_track_boxes = track_instances.pred_boxes[active_idxes, i]
                 if len(active_track_boxes) > 0:
                     gt_boxes = gt_instances_i[i].boxes[track_instances.matched_gt_idxes[active_idxes, i]]
-                    active_track_boxes = box_ops.box_cxcywh_to_xyxy(active_track_boxes)
-                    gt_boxes = box_ops.box_cxcywh_to_xyxy(gt_boxes)
-                    track_instances.iou[active_idxes, i] =  matched_boxlist_iou(Boxes(active_track_boxes), Boxes(gt_boxes))
+                    active_track_boxes = box_cxcywh_to_xyxy(active_track_boxes)
+                    gt_boxes = box_cxcywh_to_xyxy(gt_boxes)
+                    track_instances.iou[active_idxes, i] = matched_pairwise_iou(Boxes(active_track_boxes), Boxes(gt_boxes))
 
             self.num_samples += sum(len(t.boxes) for t in gt_instances_i)*self.g_size
             self.sample_device = pred_logits_i.device
@@ -784,9 +706,9 @@ class ClipMatcher(SetCriterion):
                 active_track_boxes = track_instances.pred_boxes[active_idxes, ibn]
                 if len(active_track_boxes) > 0:
                     gt_boxes = gt_ins.boxes[track_instances.matched_gt_idxes[active_idxes, ibn]]
-                    active_track_boxes = box_ops.box_cxcywh_to_xyxy(active_track_boxes)
-                    gt_boxes = box_ops.box_cxcywh_to_xyxy(gt_boxes)
-                    track_instances.iou[active_idxes, ibn] = matched_boxlist_iou(Boxes(active_track_boxes), Boxes(gt_boxes))
+                    active_track_boxes = box_cxcywh_to_xyxy(active_track_boxes)
+                    gt_boxes = box_cxcywh_to_xyxy(gt_boxes)
+                    track_instances.iou[active_idxes, ibn] = matched_pairwise_iou(Boxes(active_track_boxes), Boxes(gt_boxes))
 
                 # step7. merge the unmatched pairs and the matched pairs.
                 matched_indices = torch.cat([new_matched_indices, prev_matched_indices], dim=0)
@@ -830,18 +752,6 @@ class ClipMatcher(SetCriterion):
                                                 num_boxes=1, )
                             for key, value in l_dict.items():
                                 self.losses_dict['frame_{}_aux{}_{}'.format(self._current_frame_idx, i, key)] += value
-                
-        # if 'ps_outputs' in outputs: # 噪声GT
-        #     for i, aux_outputs in enumerate(outputs['ps_outputs']):
-        #         ar = torch.arange(len(gt_instances_i), device=obj_idxes.device)
-        #         l_dict = self.get_loss('boxes',
-        #                                 aux_outputs,
-        #                                 gt_instances=[gt_instances_i],
-        #                                 indices=[(ar, ar)],
-        #                                 num_boxes=1, )
-        #         self.losses_dict.update(
-        #             {'frame_{}_ps{}_{}'.format(self._current_frame_idx, i, key): value for key, value in
-        #                 l_dict.items()})
 
         self._step()
         return track_instances
@@ -923,7 +833,7 @@ class TrackerPostProcess(nn.Module):
             labels = torch.full_like(scores, 0, dtype=torch.long)
 
         # convert to [x0, y0, x1, y1] format
-        boxes = box_ops.box_cxcywh_to_xyxy(out_bbox)
+        boxes = box_cxcywh_to_xyxy(out_bbox)
         # and from relative [0, 1] to absolute [0, height] coordinates
         img_h, img_w = target_size
         scale_fct = torch.Tensor([img_w, img_h, img_w, img_h]).to(boxes)
@@ -942,93 +852,7 @@ class TrackerPostProcess(nn.Module):
         return track_instances
 
 
-def _get_clones(module, N):
-    return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
-
-def build(args):
-    dataset_to_num_classes = {
-        'coco': 91,
-        'coco_panoptic': 250,
-        'e2e_mot': 1,
-        'e2e_bdd': 11,
-        'e2e_tao': 2000,
-        'e2e_bddcc': 100,
-        'e2e_dance': 1,
-        'e2e_joint': 1,
-        'e2e_static_mot': 1,
-        'e2e_all': 91,
-    }
-    assert args.dataset_file in dataset_to_num_classes
-    num_classes = dataset_to_num_classes[args.dataset_file]
-    device = torch.device(args.device)
-    
-    g_size = args.g_size
-
-    backbone = build_backbone(args)
-
-    transformer = build_deforamble_transformer(args)
-    d_model = transformer.d_model
-    hidden_dim = args.dim_feedforward
-    query_interaction_layer = build_query_interaction_layer(args, args.query_interaction_layer, d_model, hidden_dim, d_model*2)
-
-    img_matcher = build_matcher(args)
-    num_frames_per_batch = max(args.sampler_lengths)
-    weight_dict = {}
-    for i in range(num_frames_per_batch):
-        weight_dict.update({"frame_{}_loss_ce".format(i): args.cls_loss_coef,
-                            'frame_{}_loss_bbox'.format(i): args.bbox_loss_coef,
-                            'frame_{}_loss_giou'.format(i): args.giou_loss_coef,
-                            })
-
-    # TODO this is a hack
-    if args.aux_loss:
-        for i in range(num_frames_per_batch):
-            for j in range(args.dec_layers - 1):
-                weight_dict.update({"frame_{}_aux{}_loss_ce".format(i, j): args.cls_loss_coef,
-                                    'frame_{}_aux{}_loss_bbox'.format(i, j): args.bbox_loss_coef,
-                                    'frame_{}_aux{}_loss_giou'.format(i, j): args.giou_loss_coef,
-                                    })
-            for j in range(args.dec_layers):
-                weight_dict.update({"frame_{}_ps{}_loss_ce".format(i, j): args.cls_loss_coef,
-                                    'frame_{}_ps{}_loss_bbox'.format(i, j): args.bbox_loss_coef,
-                                    'frame_{}_ps{}_loss_giou'.format(i, j): args.giou_loss_coef,
-                                    })
-    if args.memory_bank_type is not None and len(args.memory_bank_type) > 0:
-        memory_bank = build_memory_bank(args, d_model, hidden_dim, d_model * 2)
-        for i in range(num_frames_per_batch):
-            weight_dict.update({"frame_{}_track_loss_ce".format(i): args.cls_loss_coef})
-    else:
-        memory_bank = None
-    losses = ['labels', 'boxes']
-    criterion = ClipMatcher(num_classes, matcher=img_matcher, weight_dict=weight_dict, losses=losses, g_size=g_size)
-    criterion.to(device)
-    postprocessors = {}
-    model = MOT(
-        backbone,
-        transformer,
-        track_embed=query_interaction_layer,
-        num_feature_levels=args.num_feature_levels,
-        num_classes=num_classes,
-        num_queries=args.num_queries,
-        aux_loss=args.aux_loss,
-        criterion=criterion,
-        with_box_refine=args.with_box_refine,
-        two_stage=args.two_stage,
-        memory_bank=memory_bank,
-        use_checkpoint=args.use_checkpoint,
-        query_denoise=args.query_denoise,
-        g_size = g_size,
-        args=args,
-    )
-    model.track_base = RuntimeTrackerBase(args.score_threshold, args.score_threshold, args.miss_tolerance)
-    return model, criterion, postprocessors
-
-
-
-
 def img():
-    mean = torch.tensor([0.485, 0.456, 0.406])
-    std = torch.tensor([0.229, 0.224, 0.225])
     image = np.ascontiguousarray(((img.tensors[0].permute(1,2,0).cpu()*torch.tensor([0.229, 0.224, 0.225])+torch.tensor([0.485, 0.456, 0.406]))*255).numpy().astype(np.uint8))
     img_h, img_w, _ = image.shape
     bboxes = track_instances.ref_pts.cpu().numpy().reshape(-1, 2, 2)

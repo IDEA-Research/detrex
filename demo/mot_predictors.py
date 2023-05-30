@@ -11,8 +11,102 @@ import torchvision.transforms.functional as F
 import detectron2.data.transforms as T
 from detectron2.data import MetadataCatalog
 from detectron2.structures import Instances
-from detectron2.utils.video_visualizer import VideoVisualizer
-from detectron2.utils.visualizer import ColorMode, Visualizer
+from detectron2.utils.visualizer import (
+    ColorMode, 
+    Visualizer,
+    _create_text_labels,
+    )
+from detectron2.utils.video_visualizer import (
+    _DetectedInstance,
+    VideoVisualizer,
+)
+
+class MOTVideoVisualizer(VideoVisualizer):
+    
+    def draw_instance_track(self, frame, predictions):
+        """
+        Draw instance-level prediction results on an image.
+
+        Args:
+            frame (ndarray): an RGB image of shape (H, W, C), in the range [0, 255].
+            predictions (Instances): the output of an instance detection/segmentation
+                model. Following fields will be used to draw:
+                "pred_boxes", "pred_classes", "scores", "pred_masks" (or "pred_masks_rle").
+
+        Returns:
+            output (VisImage): image object with visualizations.
+        """
+        frame_visualizer = Visualizer(frame, self.metadata)
+        num_instances = len(predictions)
+        if num_instances == 0:
+            return frame_visualizer.output
+
+        boxes = predictions.boxes.numpy() if predictions.has("boxes") else None
+        scores = predictions.scores if predictions.has("scores") else None
+        classes = predictions.labels.numpy() if predictions.has("labels") else None
+        keypoints = predictions.pred_keypoints if predictions.has("pred_keypoints") else None
+        colors = predictions.COLOR if predictions.has("COLOR") else [None] * len(predictions)
+        periods = predictions.obj_idxes if predictions.has("obj_idxes") else None
+        period_threshold = self.metadata.get("period_threshold", -1)
+        visibilities = (
+            [True] * len(predictions)
+            if periods is None
+            else [x > period_threshold for x in periods]
+        )
+
+        if predictions.has("pred_masks"):
+            masks = predictions.pred_masks
+            # mask IOU is not yet enabled
+            # masks_rles = mask_util.encode(np.asarray(masks.permute(1, 2, 0), order="F"))
+            # assert len(masks_rles) == num_instances
+        else:
+            masks = None
+
+        if not predictions.has("COLOR"):
+            if predictions.has("obj_idxes"):
+                predictions.ID = predictions.obj_idxes.numpy()
+                colors = self._assign_colors_by_id(predictions)
+            else:
+                # ToDo: clean old assign color method and use a default tracker to assign id
+                detected = [
+                    _DetectedInstance(classes[i], boxes[i], mask_rle=None, color=colors[i], ttl=8)
+                    for i in range(num_instances)
+                ]
+                colors = self._assign_colors(detected)
+
+        labels = _create_text_labels(classes, scores, self.metadata.get("thing_classes", None))
+
+        if self._instance_mode == ColorMode.IMAGE_BW:
+            # any() returns uint8 tensor
+            frame_visualizer.output.reset_image(
+                frame_visualizer._create_grayscale_image(
+                    (masks.any(dim=0) > 0).numpy() if masks is not None else None
+                )
+            )
+            alpha = 0.3
+        else:
+            alpha = 0.5
+
+        labels = (
+            None
+            if labels is None
+            else [y[0] for y in filter(lambda x: x[1], zip(labels, visibilities))]
+        )  # noqa
+        assigned_colors = (
+            None
+            if colors is None
+            else [y[0] for y in filter(lambda x: x[1], zip(colors, visibilities))]
+        )  # noqa
+        frame_visualizer.overlay_instances(
+            boxes=None if masks is not None else boxes[visibilities],  # boxes are a bit distracting
+            masks=None if masks is None else masks[visibilities],
+            labels=labels,
+            keypoints=None if keypoints is None else keypoints[visibilities],
+            assigned_colors=assigned_colors,
+            alpha=alpha,
+        )
+
+        return frame_visualizer.output
 
 
 def filter_predictions_with_area(predictions, area_threshold=100):
@@ -125,7 +219,7 @@ class VisualizationDemo(object):
         Yields:
             ndarray: BGR visualizations of each video frame.
         """
-        video_visualizer = VideoVisualizer(self.metadata, self.instance_mode)
+        video_visualizer = MOTVideoVisualizer(self.metadata, self.instance_mode)
 
         def process_predictions(frame, predictions, threshold):
             predictions = filter_predictions_with_confidence(predictions, threshold)

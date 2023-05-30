@@ -33,7 +33,7 @@ from detectron2.engine.defaults import create_ddp_model
 from detectron2.evaluation import inference_on_dataset, print_csv_format
 from detectron2.utils import comm
 
-from projects.co_mot.util.data_prefetcher import data_dict_to_cuda
+from projects.co_mot.util.misc import data_dict_to_cuda
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 

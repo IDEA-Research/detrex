@@ -36,7 +36,7 @@ Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking.
 
 | **HOTA** | **DetA** | **AssA** | **MOTA** | **IDF1** |                                           **URL**                                           |
 | :------: | :------: | :------: | :------: | :------: | :-----------------------------------------------------------------------------------------: |
-|   69.9   |   82.1   |   58.9   |   91.2   |   71.9   | [model](https://drive.google.com/file/d/1rwUpcyufIMdfSIes5esytMk_Phn3i-3b/view?usp=share_link) |
+|   69.9   |   82.1   |   58.9   |   91.2   |   71.9   | [model](https://drive.google.com/file/d/15HOnAUlYRjFBQVIsek1Qbgf18Pkffy-A/view?usp=share_link) |
 
 
 

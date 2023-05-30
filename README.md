@@ -116,9 +116,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [DINO (ICLR'2023)](./projects/dino/)
 - [x] [H-Deformable-DETR (CVPR'2023)](./projects/h_deformable_detr/)
 - [x] [MaskDINO (CVPR'2023)](./projects/maskdino/)
-
-## Track
-- [x] [CO-MOT (ArXiv'2023)](./projects/co-mot/)
+- [x] [CO-MOT (ArXiv'2023)](./projects/co_mot/)
 
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
