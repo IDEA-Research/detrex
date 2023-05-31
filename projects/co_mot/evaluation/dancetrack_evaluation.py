@@ -30,7 +30,16 @@ try:
 except ImportError:
     COCOeval_opt = COCOeval
     
-from thirdparty.TrackEval.scripts import run_mot_challenge 
+try:
+    from multiprocessing import freeze_support
+    import trackeval
+except ImportError:
+    # trackeval = None
+    raise ImportError(
+                    'Please run '
+                    'pip install git+https://github.com/JonathonLuiten/TrackEval.git'  # noqa
+                    ' to manually install trackeval')
+# from thirdparty.TrackEval.scripts import run_mot_challenge 
 
 
 class DancetrackEvaluator(DatasetEvaluator):
@@ -206,10 +215,10 @@ class DancetrackEvaluator(DatasetEvaluator):
             if not comm.is_main_process():
                 return {}
         
-        res_eval = run_mot_challenge.main(SPLIT_TO_EVAL="val",
+        res_eval = _run_mot_challenge(SPLIT_TO_EVAL="val",
                     METRICS=['HOTA', 'CLEAR', 'Identity'],
-                    GT_FOLDER="/mnt/dolphinfs/ssd_pool/docker/user/hadoop-vacv/yanfeng/data/dancetrack/val",
-                    SEQMAP_FILE="/mnt/dolphinfs/ssd_pool/docker/user/hadoop-vacv/yanfeng/data/dancetrack/val_seqmap.txt",
+                    GT_FOLDER=self._metadata.image_root,
+                    SEQMAP_FILE=self._metadata.seqmap_txt,
                     SKIP_SPLIT_FOL=True,
                     TRACKERS_TO_EVAL=[''],
                     TRACKER_SUB_FOLDER='',
@@ -219,6 +228,43 @@ class DancetrackEvaluator(DatasetEvaluator):
                     TRACKERS_FOLDER=os.path.join(self._output_dir, 'results')
                     )
         self._results = OrderedDict()
-        self._results['HOTA'] = float(res_eval[0]['MotChallenge2DBox']['']['COMBINED_SEQ']['pedestrian']['summaries'][0]['HOTA'])
-        return float(res_eval[0]['MotChallenge2DBox']['']['COMBINED_SEQ']['pedestrian']['summaries'][0]['HOTA'])
+        self._results = res_eval
+        return res_eval[0]['MotChallenge2DBox']['']['COMBINED_SEQ']['pedestrian']
 
+
+def _run_mot_challenge(**argc_dict):
+    freeze_support()
+
+    # Command line interface:
+    default_eval_config = trackeval.Evaluator.get_default_eval_config()
+    default_eval_config['DISPLAY_LESS_PROGRESS'] = False
+    default_dataset_config = trackeval.datasets.MotChallenge2DBox.get_default_dataset_config()
+    default_metrics_config = {'METRICS': ['HOTA', 'CLEAR', 'Identity'], 'THRESHOLD': 0.5}
+    config = {**default_eval_config, **default_dataset_config, **default_metrics_config}  # Merge default configs
+    for setting in config.keys():
+        if setting in argc_dict:
+            if type(config[setting]) == type(True):
+                x = argc_dict[setting]
+            elif type(config[setting]) == type(1):
+                x = int(argc_dict[setting])
+            elif type(argc_dict[setting]) == type(None):
+                x = None
+            elif setting == 'SEQ_INFO':
+                x = dict(zip(argc_dict[setting], [None]*len(argc_dict[setting])))
+            else:
+                x = argc_dict[setting]
+            config[setting] = x
+    eval_config = {k: v for k, v in config.items() if k in default_eval_config.keys()}
+    dataset_config = {k: v for k, v in config.items() if k in default_dataset_config.keys()}
+    metrics_config = {k: v for k, v in config.items() if k in default_metrics_config.keys()}
+
+    # Run code
+    evaluator = trackeval.Evaluator(eval_config)
+    dataset_list = [trackeval.datasets.MotChallenge2DBox(dataset_config)]
+    metrics_list = []
+    for metric in [trackeval.metrics.HOTA, trackeval.metrics.CLEAR, trackeval.metrics.Identity, trackeval.metrics.VACE]:
+        if metric.get_name() in metrics_config['METRICS']:
+            metrics_list.append(metric(metrics_config))
+    if len(metrics_list) == 0:
+        raise Exception('No metrics selected for evaluation')
+    return evaluator.evaluate(dataset_list, metrics_list)

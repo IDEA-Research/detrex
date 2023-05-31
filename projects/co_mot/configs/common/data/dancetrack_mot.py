@@ -15,9 +15,9 @@ from detectron2.config import LazyCall as L
 from detectron2.data import get_detection_dataset_dicts
 
 
-from detrex.data import MotDatasetMapper, MotDatasetInferenceMapper, build_mot_test_loader, build_mot_train_loader, mot_collate_fn
-from detrex.data.transforms import mot_transforms as TMOT
-from detrex.evaluation import DancetrackEvaluator
+from projects.co_mot.data import MotDatasetMapper, MotDatasetInferenceMapper, build_mot_test_loader, build_mot_train_loader, mot_collate_fn
+from projects.co_mot.data.transforms import mot_transforms as TMOT
+from projects.co_mot.evaluation import DancetrackEvaluator
 
 
 dataloader = OmegaConf.create()

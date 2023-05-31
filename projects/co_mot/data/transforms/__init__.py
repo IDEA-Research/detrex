@@ -1,3 +1,13 @@
+'''
+Author: 颜峰 && bphengyan@163.com
+Date: 2023-05-31 09:41:55
+LastEditors: 颜峰 && bphengyan@163.com
+LastEditTime: 2023-05-31 09:41:56
+FilePath: /detrex/projects/co_mot/data/transforms/__init__.py
+Description: 
+
+Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
+'''
 # coding=utf-8
 # Copyright 2022 The IDEA Authors. All rights reserved.
 #
@@ -13,13 +23,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .detr_dataset_mapper import DetrDatasetMapper
-from .dataset_mappers import (
-    COCOInstanceNewBaselineDatasetMapper,
-    COCOPanopticNewBaselineDatasetMapper,
-    MaskFormerSemanticDatasetMapper,
-    MaskFormerInstanceDatasetMapper,
-    MaskFormerPanopticDatasetMapper,
-)
-from . import datasets
-from .transforms import ColorAugSSDTransform
+from . import mot_transforms 

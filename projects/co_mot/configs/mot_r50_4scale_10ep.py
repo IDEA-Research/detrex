@@ -2,17 +2,18 @@
 Author: 颜峰 && bphengyan@163.com
 Date: 2023-05-25 09:54:44
 LastEditors: 颜峰 && bphengyan@163.com
-LastEditTime: 2023-05-30 15:13:37
+LastEditTime: 2023-05-31 09:38:52
 FilePath: /detrex/projects/co_mot/configs/mot_r50_4scale_10ep.py
 Description: 
 
 Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
 '''
+from detectron2.config import LazyConfig
 from detrex.config import get_config
 from .mot_r50 import model
 
 # get default config
-dataloader = get_config("common/data/dancetrack_mot.py").dataloader
+dataloader = LazyConfig.load("projects/co_mot/configs/common/data/dancetrack_mot.py").dataloader
 optimizer = get_config("common/optim.py").AdamW
 lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_12ep  # 这个需要改
 # lr_multiplier = 

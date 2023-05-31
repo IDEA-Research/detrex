@@ -1,3 +1,13 @@
+'''
+Author: 颜峰 && bphengyan@163.com
+Date: 2023-05-31 09:41:04
+LastEditors: 颜峰 && bphengyan@163.com
+LastEditTime: 2023-05-31 09:41:05
+FilePath: /detrex/projects/co_mot/data/datasets/__init__.py
+Description: 
+
+Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
+'''
 # coding=utf-8
 # Copyright 2022 The IDEA Authors. All rights reserved.
 #
@@ -12,14 +22,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ------------------------------------------------------------------------------------------------
+# Copyright (c) Facebook, Inc. and its affiliates.
+# ------------------------------------------------------------------------------------------------
 
-from .detr_dataset_mapper import DetrDatasetMapper
-from .dataset_mappers import (
-    COCOInstanceNewBaselineDatasetMapper,
-    COCOPanopticNewBaselineDatasetMapper,
-    MaskFormerSemanticDatasetMapper,
-    MaskFormerInstanceDatasetMapper,
-    MaskFormerPanopticDatasetMapper,
+from . import (
+    register_dancetrack_mot,
 )
-from . import datasets
-from .transforms import ColorAugSSDTransform

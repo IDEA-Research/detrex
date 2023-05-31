@@ -13,3 +13,4 @@ psutil
 opencv-python
 wandb
 submitit
+git+https://github.com/JonathonLuiten/TrackEval.git

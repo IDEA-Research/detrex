@@ -2,8 +2,8 @@
 Author: 颜峰 && bphengyan@163.com
 Date: 2023-05-25 11:00:08
 LastEditors: 颜峰 && bphengyan@163.com
-LastEditTime: 2023-05-25 16:57:09
-FilePath: /detrex/detrex/data/datasets/register_dancetrack_mot.py
+LastEditTime: 2023-05-31 10:19:30
+FilePath: /detrex/projects/co_mot/data/datasets/register_dancetrack_mot.py
 Description: 
 
 Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
@@ -44,9 +44,10 @@ logger = logging.getLogger(__name__)
 DANCETRACK_CATEGORIES = [
     {"color": [220, 20, 60], "isthing": 1, "id": 1, "name": "person"},
 ]
-def get_dancetrack_mot_instances_meta(dataset_name):
+def get_dancetrack_mot_instances_meta(dataset_name, seqmap):
     thing_classes = [k["name"][0] for k in DANCETRACK_CATEGORIES]
     meta = {"thing_classes": thing_classes}
+    meta['seqmap_txt'] = seqmap
     return meta
 
 
@@ -171,19 +172,19 @@ def register_dancetrack_mot_instances(name, metadata, image_root):
 
 _PREDEFINED_SPLITS_DANCETRACK_MOT = {
     "dancetrack": {
-        "dancetrack_train": ("train/"),
-        "dancetrack_val": ("val/"),
-        "dancetrack_test": ("test/"),
+        "dancetrack_train": ("train/", "train_seqmap.txt"),
+        "dancetrack_val": ("val/", 'val_seqmap.txt'),
+        "dancetrack_test": ("test/", "test_seqmap.txt"),
     },
 }
 
 
 def register_dancetrack_mot(root):
     for dataset_name, splits_per_dataset in _PREDEFINED_SPLITS_DANCETRACK_MOT.items():
-        for key, (image_root) in splits_per_dataset.items():
+        for key, (image_root, seqmap) in splits_per_dataset.items():
             register_dancetrack_mot_instances(
                 key,
-                get_dancetrack_mot_instances_meta(dataset_name),
+                get_dancetrack_mot_instances_meta(key, os.path.join(root, seqmap)),
                 os.path.join(root, image_root),
             )
 
