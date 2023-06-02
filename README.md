@@ -116,7 +116,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [DINO (ICLR'2023)](./projects/dino/)
 - [x] [H-Deformable-DETR (CVPR'2023)](./projects/h_deformable_detr/)
 - [x] [MaskDINO (CVPR'2023)](./projects/maskdino/)
-
+- [x] [CO-MOT (ArXiv'2023)](./projects/co_mot/)
 
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
@@ -222,7 +222,14 @@ relevant publications:
       archivePrefix={arXiv},
       primaryClass={cs.CV}
 }
+@article{yan2023bridging,
+ title={Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking},
+ author={Yan, Feng and Luo, Weixin and Zhong, Yujie and Gan, Yiyang and Ma, Lin},
+ journal={arXiv preprint arXiv:2305.12724},
+ year={2023}
+}
 ```
+
 
 </details>
 
