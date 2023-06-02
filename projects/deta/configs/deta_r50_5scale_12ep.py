@@ -4,6 +4,7 @@ from .scheduler.coco_scheduler import lr_multiplier_12ep_10drop as lr_multiplier
 
 # using the default optimizer and dataloader
 dataloader = get_config("common/data/coco_detr.py").dataloader
+optimizer = get_config("common/optim.py").AdamW
 train = get_config("common/train.py").train
 
 # modify training config
