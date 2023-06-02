@@ -8,6 +8,19 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
   <img src="./assets/dino_arch.png"/>
 </div><br/>
 
+## Table of Contents
+- [DINO with modified training engine](#dino-with-modified-training-engine)
+- [Main Results with Pretrained Models](#main-results-with-pretrained-models)
+  - [DINO with ResNet Backbone](#pretrained-dino-with-resnet-backbone)
+  - [DINO with Swin-Transformer Backbone](#pretrained-dino-with-swin-transformer-backbone)
+  - [DINO with ViT Backbone](#pretrained-dino-with-vit-backbone)
+  - [DINO with ConvNeXt Backbone](#pretrained-dino-with-convnext-backbone)
+  - [DINO with FocalNet Backbone](#pretrained-dino-with-focalnet-backbone)
+  - [DINO with InternImage Backbone](#pretrained-dino-with-internimage-backbone)
+- [Training DINO](#training)
+- [Evaluate DINO](#evaluation)
+- [Citation](#citing-dino)
+
 ## DINO with modified training engine
 We've provide a hacked [train_net.py](./train_net.py) which aligns the optimizer params with Deformable-DETR that can achieve a better result on DINO models.
 
@@ -31,6 +44,22 @@ We've provide a hacked [train_net.py](./train_net.py) which aligns the optimizer
 <td align="center">49.4</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_r50_4scale_12ep_hacked_trainer.pth">model</a></td>
 </tr>
+<tr><td align="left"><a href="configs/dino-resnet/dino_r50_4scale_12ep_better_hyper.py">DINO-R50-4scale (hacked trainer)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">49.8</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_r50_4scale_12ep_backbone_2e-5_class_weight_2.0.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-resnet/dino_r50_4scale_12ep_better_hyper.py">DINO-R50-4scale (hacked trainer)</a></td>
+<td align="center">R-50</td>
+<td align="center">IN1k</td>
+<td align="center">12</td>
+<td align="center">300</td>
+<td align="center">50.0</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_r50_4scale_12ep_backbone_2e-5_class_weight_2.0_300dn.pth">model</a></td>
+</tr>
 </tbody></table>
 
 - Training model with hacked trainer
@@ -40,7 +69,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 
 ## Main Results with Pretrained Models
 
-**Pretrained DINO with ResNet Backbone**
+##### Pretrained DINO with ResNet Backbone
 
 <table><tbody>
 <!-- START TABLE -->
@@ -116,7 +145,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 </tr>
 </tbody></table>
 
-**Pretrained DINO with Swin-Transformer Backbone**
+##### Pretrained DINO with Swin-Transformer Backbone
 <table><tbody>
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
@@ -151,6 +180,14 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <td align="center">100</td>
 <td align="center">53.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_swin_small_224_4scale_12ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-swin/dino_swin_small_224_4scale_12ep.py">DINO-Swin-S-224-4scale</a></td>
+<td align="center">Swin-Small-224</td>
+<td align="center">IN22K to IN1K</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">54.5</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_swin_small_22k_4scale_12ep.pth">model</a></td>
 </tr>
 <!-- ROW: dino_swin_base_4scale_12ep -->
  <tr><td align="left"><a href="configs/dino-swin/dino_swin_base_384_4scale_12ep.py">DINO-Swin-B-384-4scale</a></td>
@@ -206,7 +243,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 </tr>
 </tbody></table>
 
-**Pretrained DINO with FocalNet Backbone**
+##### Pretrained DINO with FocalNet Backbone
 <table><tbody>
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
@@ -250,7 +287,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 </tr>
 </tbody></table>
 
-**Pretrained DINO with ViT Backbone**
+##### Pretrained DINO with ViT Backbone
 <table><tbody>
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
@@ -293,7 +330,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 </tr>
 </tbody></table>
 
-**Pretrained DINO with ConvNeXt Backbone**
+##### Pretrained DINO with ConvNeXt Backbone
 <table><tbody>
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
@@ -304,11 +341,27 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <th valign="bottom">download</th>
  <tr><td align="left"><a href="configs/dino-convnext/dino_convnext_tiny_384_4scale_12ep.py">DINO-ConvNeXt-Tiny-384-4scale</a></td>
 <td align="center">ConvNeXt-Tiny-384</td>
+<td align="center">IN1K</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">51.4</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_convnext_tiny_1k_4scale_12ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-convnext/dino_convnext_tiny_384_4scale_12ep.py">DINO-ConvNeXt-Tiny-384-4scale</a></td>
+<td align="center">ConvNeXt-Tiny-384</td>
 <td align="center">IN22k</td>
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">52.4</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_convnext_tiny_384_4scale_12ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-convnext/dino_convnext_small_384_4scale_12ep.py">DINO-ConvNeXt-Small-384-4scale</a></td>
+<td align="center">ConvNeXt-Small-384</td>
+<td align="center">IN1K</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">52.0</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_convnext_small_1k_4scale_12ep.pth">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/dino-convnext/dino_convnext_small_384_4scale_12ep.py">DINO-ConvNeXt-Small-384-4scale</a></td>
 <td align="center">ConvNeXt-Small-384</td>
@@ -320,11 +373,27 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 </tr>
  <tr><td align="left"><a href="configs/dino-convnext/dino_convnext_base_384_4scale_12ep.py">DINO-ConvNeXt-Base-384-4scale</a></td>
 <td align="center">ConvNeXt-Base-384</td>
+<td align="center">IN1K</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">52.6</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_convnext_base_1k_4scale_12ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-convnext/dino_convnext_base_384_4scale_12ep.py">DINO-ConvNeXt-Base-384-4scale</a></td>
+<td align="center">ConvNeXt-Base-384</td>
 <td align="center">IN22k</td>
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">55.1</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_convnext_base_384_4scale_12ep.pth">model</a></td>
+</tr>
+ <tr><td align="left"><a href="configs/dino-convnext/dino_convnext_large_384_4scale_12ep.py">DINO-ConvNeXt-Large-384-4scale</a></td>
+<td align="center">ConvNeXt-Large-384</td>
+<td align="center">IN1K</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">53.4</td>
+<td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.4.0/dino_convnext_large_1k_4scale_12ep.pth">model</a></td>
 </tr>
  <tr><td align="left"><a href="configs/dino-convnext/dino_convnext_large_384_4scale_12ep.py">DINO-ConvNeXt-Large-384-4scale</a></td>
 <td align="center">ConvNeXt-Large-384</td>
@@ -337,7 +406,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 </tbody></table>
 
 
-**Pretrained DINO with InternImage Backbone**
+##### Pretrained DINO with InternImage Backbone
 <table><tbody>
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
