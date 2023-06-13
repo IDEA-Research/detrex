@@ -39,6 +39,8 @@
 
 
 
+<!-- [📚Read detrex Benchmarking Paper](https://arxiv.org/abs/2306.07265) | [🏠Project Page](https://rentainhe.github.io/projects/detrex/) | [🏷️Cite detrex](#citation) -->
+
 </div>
 
 ## Introduction
