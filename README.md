@@ -33,7 +33,11 @@
 
 <div align="center">
 
-[📚Read detrex Benchmarking Paper](https://arxiv.org/abs/2306.07265) | [🏠Project Page](https://rentainhe.github.io/projects/detrex/) | [🏷️Cite detrex](#citation)
+<a href="https://arxiv.org/abs/2306.07265">📚Read detrex Benchmarking Paper</a> <sup><i><font size="3" color="#FF0000">New</font></i></sup> |
+<a href="https://rentainhe.github.io/projects/detrex/">🏠Project Page</a> <sup><i><font size="3" color="#FF0000">New</font></i></sup> |
+<a href="https://arxiv.org/abs/2306.07265">📚Read detrex Benchmarking Paper</a> | [🏷️Cite detrex](#citation)
+
+
 
 </div>
 
