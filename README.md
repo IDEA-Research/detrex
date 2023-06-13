@@ -20,6 +20,7 @@
     </a>
 </p>
 
+<div align="center">
 
 [📘Documentation](https://detrex.readthedocs.io/en/latest/index.html) |
 [🛠️Installation](https://detrex.readthedocs.io/en/latest/tutorials/Installation.html) |
@@ -28,6 +29,7 @@
 [🆕News](#whats-new) |
 [🤔Reporting Issues](https://github.com/IDEA-Research/detrex/issues/new/choose)
 
+</div>
 
 <div align="center">
 
