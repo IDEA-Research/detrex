@@ -1,5 +1,5 @@
 <h2 align="left">detrex</h2>
-<p align="left">
+<p align="center">
     <a href="https://github.com/IDEA-Research/detrex/releases">
         <img alt="release" src="https://img.shields.io/github/v/release/IDEA-Research/detrex">
     </a>
