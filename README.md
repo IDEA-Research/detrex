@@ -20,6 +20,17 @@
     </a>
 </p>
 
+
+<div align="center">
+
+<!-- <a href="https://arxiv.org/abs/2306.07265">📚Read detrex Benchmarking Paper</a> <sup><i><font size="3" color="#FF0000">New</font></i></sup> |
+<a href="https://rentainhe.github.io/projects/detrex/">🏠Project Page</a> <sup><i><font size="3" color="#FF0000">New</font></i></sup> |  [🏷️Cite detrex](#citation) -->
+
+[📚Read detrex Benchmarking Paper](https://arxiv.org/abs/2306.07265) | [🏠Project Page](https://rentainhe.github.io/projects/detrex/) | [🏷️Cite detrex](#citation)
+
+</div>
+
+
 <div align="center">
 
 [📘Documentation](https://detrex.readthedocs.io/en/latest/index.html) |
@@ -31,17 +42,6 @@
 
 </div>
 
-<div align="center">
-
-<a href="https://arxiv.org/abs/2306.07265">📚Read detrex Benchmarking Paper</a> <sup><i><font size="3" color="#FF0000">New</font></i></sup> |
-<a href="https://rentainhe.github.io/projects/detrex/">🏠Project Page</a> <sup><i><font size="3" color="#FF0000">New</font></i></sup> |
-<a href="https://arxiv.org/abs/2306.07265">📚Read detrex Benchmarking Paper</a> | [🏷️Cite detrex](#citation)
-
-
-
-<!-- [📚Read detrex Benchmarking Paper](https://arxiv.org/abs/2306.07265) | [🏠Project Page](https://rentainhe.github.io/projects/detrex/) | [🏷️Cite detrex](#citation) -->
-
-</div>
 
 ## Introduction
 
