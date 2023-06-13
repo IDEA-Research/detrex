@@ -20,7 +20,7 @@
     </a>
 </p>
 
-[📚Read detrex Benchmarking Paper](https://arxiv.org/pdf/2306.07265.pdf) |
+[📚Read detrex Benchmarking Paper](https://arxiv.org/abs/2306.07265) |
 [📘Documentation](https://detrex.readthedocs.io/en/latest/index.html) |
 [🛠️Installation](https://detrex.readthedocs.io/en/latest/tutorials/Installation.html) |
 [👀Model Zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html) |
