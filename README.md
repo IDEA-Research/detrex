@@ -1,10 +1,4 @@
-
-
-
-<h2>
-  detrex: Benchmarking Detection Transformers <img src="./assets/detrex_logo.png" style="width: 30%;">
-</h2>
-
+<h2 align="center">🦖detrex: Benchmarking Detection Transformers</h2>
 <p align="center">
     <a href="https://github.com/IDEA-Research/detrex/releases">
         <img alt="release" src="https://img.shields.io/github/v/release/IDEA-Research/detrex">
