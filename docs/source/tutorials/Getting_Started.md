@@ -84,7 +84,7 @@ python tools/train_net.py \
     --config-file projects/dab_detr/configs/dab_detr_r50_50ep.py \
     --num-gpus 8 train.max_iter=30000
 ```
-which will directly overide the `train.max_iter` in config.
+which will directly override the `train.max_iter` in config.
 
 
 ### Resume Training
