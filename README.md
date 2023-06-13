@@ -1,5 +1,5 @@
-<h2 align="left">detrex</h2>
-<p align="left">
+<h2 align="center">🦖detrex: Benchmarking Detection Transformers</h2>
+<p align="center">
     <a href="https://github.com/IDEA-Research/detrex/releases">
         <img alt="release" src="https://img.shields.io/github/v/release/IDEA-Research/detrex">
     </a>
@@ -20,13 +20,27 @@
     </a>
 </p>
 
-[📚Read detrex Benchmarking Paper](https://arxiv.org/abs/2306.07265) |
+
+<div align="center">
+
+<!-- <a href="https://arxiv.org/abs/2306.07265">📚Read detrex Benchmarking Paper</a> <sup><i><font size="3" color="#FF0000">New</font></i></sup> |
+<a href="https://rentainhe.github.io/projects/detrex/">🏠Project Page</a> <sup><i><font size="3" color="#FF0000">New</font></i></sup> |  [🏷️Cite detrex](#citation) -->
+
+[📚Read detrex Benchmarking Paper](https://arxiv.org/abs/2306.07265) | [🏠Project Page](https://rentainhe.github.io/projects/detrex/) | [🏷️Cite detrex](#citation)
+
+</div>
+
+
+<div align="center">
+
 [📘Documentation](https://detrex.readthedocs.io/en/latest/index.html) |
 [🛠️Installation](https://detrex.readthedocs.io/en/latest/tutorials/Installation.html) |
 [👀Model Zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html) |
 [🚀Awesome DETR](https://github.com/IDEA-Research/awesome-detection-transformer) |
 [🆕News](#whats-new) |
 [🤔Reporting Issues](https://github.com/IDEA-Research/detrex/issues/new/choose)
+
+</div>
 
 
 ## Introduction
