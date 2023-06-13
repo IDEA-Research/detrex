@@ -1,11 +1,9 @@
 
 
-<div style="display: flex; align-items: center; justify-content: center;">
-  <h2>
-    detrex: Benchmarking Detection Transformers
-  </h2>
-  <img src="./assets/detrex_logo.png" style="width: 30%;">
-</div>
+
+<h2>
+  detrex: Benchmarking Detection Transformers <img src="./assets/detrex_logo.png" style="width: 30%;">
+</h2>
 
 <p align="center">
     <a href="https://github.com/IDEA-Research/detrex/releases">
