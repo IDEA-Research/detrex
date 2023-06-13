@@ -20,6 +20,7 @@
     </a>
 </p>
 
+[📚Read detrex Benchmarking Paper](https://arxiv.org/pdf/2306.07265.pdf) |
 [📘Documentation](https://detrex.readthedocs.io/en/latest/index.html) |
 [🛠️Installation](https://detrex.readthedocs.io/en/latest/tutorials/Installation.html) |
 [👀Model Zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html) |
@@ -134,20 +135,22 @@ This project is released under the [Apache 2.0 license](LICENSE).
 ## Citation
 If you use this toolbox in your research or wish to refer to the baseline results published here, please use the following BibTeX entries:
 
-<details>
-<summary> <b> Citation List </b> </summary>
+- Citing **detrex**:
 
-detrex project:
 ```BibTeX
-@misc{ideacvr2022detrex,
-  author =       {detrex contributors},
-  title =        {detrex: An Research Platform for Transformer-based Object Detection Algorithms},
-  howpublished = {\url{https://github.com/IDEA-Research/detrex}},
-  year =         {2022}
+@misc{ren2023detrex,
+      title={detrex: Benchmarking Detection Transformers}, 
+      author={Tianhe Ren and Shilong Liu and Feng Li and Hao Zhang and Ailing Zeng and Jie Yang and Xingyu Liao and Ding Jia and Hongyang Li and He Cao and Jianan Wang and Zhaoyang Zeng and Xianbiao Qi and Yuhui Yuan and Jianwei Yang and Lei Zhang},
+      year={2023},
+      eprint={2306.07265},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
 }
 ```
 
-relevant publications:
+<details>
+<summary> Citation Supported Algorithms </summary>
+
 ```BibTex
 @inproceedings{carion2020end,
   title={End-to-end object detection with transformers},
