@@ -20,8 +20,7 @@
     </a>
 </p>
 
-[📚Read detrex Benchmarking Paper](https://arxiv.org/abs/2306.07265) |
-[🏠Project Page](https://rentainhe.github.io/projects/detrex/) |
+
 [📘Documentation](https://detrex.readthedocs.io/en/latest/index.html) |
 [🛠️Installation](https://detrex.readthedocs.io/en/latest/tutorials/Installation.html) |
 [👀Model Zoo](https://detrex.readthedocs.io/en/latest/tutorials/Model_Zoo.html) |
@@ -29,6 +28,12 @@
 [🆕News](#whats-new) |
 [🤔Reporting Issues](https://github.com/IDEA-Research/detrex/issues/new/choose)
 
+
+<div align="center">
+
+[📚Read detrex Benchmarking Paper](https://arxiv.org/abs/2306.07265) | [🏠Project Page](https://rentainhe.github.io/projects/detrex/) | [🏷️Cite detrex](#citation)
+
+</div>
 
 ## Introduction
 
