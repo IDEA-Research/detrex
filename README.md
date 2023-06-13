@@ -6,6 +6,7 @@
   </h2>
   <img src="./assets/detrex_logo.png" style="width: 30%;">
 </div>
+
 <p align="center">
     <a href="https://github.com/IDEA-Research/detrex/releases">
         <img alt="release" src="https://img.shields.io/github/v/release/IDEA-Research/detrex">
