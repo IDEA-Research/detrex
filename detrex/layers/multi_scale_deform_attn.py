@@ -189,6 +189,7 @@ class MultiScaleDeformableAttention(nn.Module):
         self.num_heads = num_heads
         self.num_levels = num_levels
         self.num_points = num_points
+        # n_heads * n_points and n_levels for multi-level feature inputs
         self.sampling_offsets = nn.Linear(embed_dim, num_heads * num_levels * num_points * 2)
         self.attention_weights = nn.Linear(embed_dim, num_heads * num_levels * num_points)
         self.value_proj = nn.Linear(embed_dim, embed_dim)
@@ -284,13 +285,18 @@ class MultiScaleDeformableAttention(nn.Module):
 
         assert (spatial_shapes[:, 0] * spatial_shapes[:, 1]).sum() == num_value
 
+        # value projection
         value = self.value_proj(value)
+        # fill "0" for the padding part
         if key_padding_mask is not None:
             value = value.masked_fill(key_padding_mask[..., None], float(0))
+        # [bs, all hw, 256] -> [bs, all hw, 8, 32]
         value = value.view(bs, num_value, self.num_heads, -1)
+        # [bs, all hw, 8, 4, 4, 2]: 8 heads, 4 level features, 4 sampling points, 2 offsets
         sampling_offsets = self.sampling_offsets(query).view(
             bs, num_query, self.num_heads, self.num_levels, self.num_points, 2
         )
+        # [bs, all hw, 8, 16]: 4 level 4 sampling points: 16 features total
         attention_weights = self.attention_weights(query).view(
             bs, num_query, self.num_heads, self.num_levels * self.num_points
         )
@@ -305,6 +311,12 @@ class MultiScaleDeformableAttention(nn.Module):
 
         # bs, num_query, num_heads, num_levels, num_points, 2
         if reference_points.shape[-1] == 2:
+            
+            # reference_points   [bs, all hw, 4, 2] -> [bs, all hw, 1, 4, 1, 2]
+            # sampling_offsets   [bs, all hw, 8, 4, 4, 2]
+            # offset_normalizer  [4, 2] -> [1, 1, 1, 4, 1, 2]
+            # references_points + sampling_offsets
+            
             offset_normalizer = torch.stack([spatial_shapes[..., 1], spatial_shapes[..., 0]], -1)
             sampling_locations = (
                 reference_points[:, :, None, :, None, :]
