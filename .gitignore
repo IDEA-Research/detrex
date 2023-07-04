@@ -131,7 +131,3 @@ dmypy.json
 # vscode
 .vscode/
 
-# output and others
-output/
-detrex/config/configs
-detrex/version.py
