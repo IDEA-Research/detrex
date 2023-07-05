@@ -13,4 +13,5 @@ Here are projects that are built on detrex which show you use detrex as a librar
 - [DETRs with Hybrid Matching (CVPR'2023)](./h_deformable_detr/)
 - [Mask DINO: Towards A Unified Transformer-based Framework for Object Detection and Segmentation (CVPR'2023)](./maskdino/)
 - [NMS strikes back (ArXiv'2022)](./deta/)
+- [CO-MOT: Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking (ArXiv'2023)](./co_mot/)
 - [Enhanced Training of Query-Based Object Detection via Selective Query Recollection (CVPR'2023)](./sqr_detr/)

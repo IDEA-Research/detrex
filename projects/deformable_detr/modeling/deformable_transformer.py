@@ -260,10 +260,14 @@ class DeformableDetrTransformer(nn.Module):
         nn.init.normal_(self.level_embeds)
 
     def gen_encoder_output_proposals(self, memory, memory_padding_mask, spatial_shapes):
+        # S here is all the sum of h*w
         N, S, C = memory.shape
         proposals = []
         _cur = 0
         for lvl, (H, W) in enumerate(spatial_shapes):
+            # memory_padding_mask is the mask for all levels of features: [bs, all H*W]
+            # get the padding mask for each level of feature: [bs, H_, W_, 1] 
+            # and count the valid height and width for each level of feature
             mask_flatten_ = memory_padding_mask[:, _cur : (_cur + H * W)].view(N, H, W, 1)
             valid_H = torch.sum(~mask_flatten_[:, :, 0, 0], 1)
             valid_W = torch.sum(~mask_flatten_[:, 0, :, 0], 1)
@@ -282,18 +286,23 @@ class DeformableDetrTransformer(nn.Module):
             _cur += H * W
 
         output_proposals = torch.cat(proposals, 1)
+        # Ensure that the proposals are not positioned too closely to the boundaries.
         output_proposals_valid = ((output_proposals > 0.01) & (output_proposals < 0.99)).all(
             -1, keepdim=True
         )
+        # inverse sigmoid
         output_proposals = torch.log(output_proposals / (1 - output_proposals))
+        # fill "inf" to the masked region
         output_proposals = output_proposals.masked_fill(
             memory_padding_mask.unsqueeze(-1), float("inf")
         )
+        # fill "inf" to the proposals near the boundary
         output_proposals = output_proposals.masked_fill(~output_proposals_valid, float("inf"))
 
         output_memory = memory
         output_memory = output_memory.masked_fill(memory_padding_mask.unsqueeze(-1), float(0))
         output_memory = output_memory.masked_fill(~output_proposals_valid, float(0))
+        # fill "0" to the input memory features according to the proposals
         output_memory = self.enc_output_norm(self.enc_output(output_memory))
         return output_memory, output_proposals
 
@@ -316,16 +325,22 @@ class DeformableDetrTransformer(nn.Module):
         """
         reference_points_list = []
         for lvl, (H, W) in enumerate(spatial_shapes):
-            #  TODO  check this 0.5
+            # generate reference points
             ref_y, ref_x = torch.meshgrid(
                 torch.linspace(0.5, H - 0.5, H, dtype=torch.float32, device=device),
                 torch.linspace(0.5, W - 0.5, W, dtype=torch.float32, device=device),
             )
+            
+            # normalize reference points
             ref_y = ref_y.reshape(-1)[None] / (valid_ratios[:, None, lvl, 1] * H)
             ref_x = ref_x.reshape(-1)[None] / (valid_ratios[:, None, lvl, 0] * W)
             ref = torch.stack((ref_x, ref_y), -1)
             reference_points_list.append(ref)
+        
+        # concat all the reference points together: [bs, all hw, 2]
         reference_points = torch.cat(reference_points_list, 1)
+        # [bs, all h*w, 4, 2]
+        # 每个reference points都在每个level feature上有个初始的采样点
         reference_points = reference_points[:, :, None] * valid_ratios[:, None]
         return reference_points
 
