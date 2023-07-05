@@ -9,7 +9,10 @@ Chen, Fangyi and Zhang, Han and Hu, Kai and Huang, Yu-Kai and Zhu, Chenchen and 
 </div><br/>
 
 ## Pretrained Models
-Here we provide the pretrained `SQR-DAB-DETR` weights based on detrex. An MMDet implementation can be found [here](https://github.com/Fangyi-Chen/SQR).
+Here we provide the pretrained `SQR-DAB-DETR` weights based on detrex. 
+
+An MMDet implementation of SQR-Adamixer and SQR-Deformable-DETR can be found [here](https://github.com/Fangyi-Chen/SQR).
+
 <table><tbody>
 <!-- START TABLE -->
 <!-- TABLE HEADER -->
@@ -21,7 +24,7 @@ Here we provide the pretrained `SQR-DAB-DETR` weights based on detrex. An MMDet 
 <th valign="bottom">download</th>
 <!-- TABLE BODY -->
 <!-- ROW: dab_detr_r50_50ep -->
- <tr><td align="left"><a href="configs/dab_detr_r50_50ep_qr.py">SQR-DAB-DETR</a></td>
+ <tr><td align="left"><a href="configs/dab_detr_r50_50ep_sqr.py">SQR-DAB-DETR</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">50</td>
