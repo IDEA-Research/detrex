@@ -134,6 +134,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [MaskDINO (CVPR'2023)](./projects/maskdino/)
 - [x] [CO-MOT (ArXiv'2023)](./projects/co_mot/)
 - [x] [SQR-DETR (CVPR'2023)](./projects/sqr_detr/)
+
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
 </details>
