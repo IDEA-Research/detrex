@@ -133,7 +133,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [H-Deformable-DETR (CVPR'2023)](./projects/h_deformable_detr/)
 - [x] [MaskDINO (CVPR'2023)](./projects/maskdino/)
 - [x] [CO-MOT (ArXiv'2023)](./projects/co_mot/)
-
+- [x] [SQR-DETR (CVPR'2023)](./projects/sqr_detr/)
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
 </details>
@@ -245,6 +245,15 @@ If you use this toolbox in your research or wish to refer to the baseline result
  author={Yan, Feng and Luo, Weixin and Zhong, Yujie and Gan, Yiyang and Ma, Lin},
  journal={arXiv preprint arXiv:2305.12724},
  year={2023}
+}
+
+@InProceedings{Chen_2023_CVPR,
+    author    = {Chen, Fangyi and Zhang, Han and Hu, Kai and Huang, Yu-Kai and Zhu, Chenchen and Savvides, Marios},
+    title     = {Enhanced Training of Query-Based Object Detection via Selective Query Recollection},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2023},
+    pages     = {23756-23765}
 }
 ```
 
