@@ -22,12 +22,9 @@ from .eva_02_utils import (
 
 try:
     import xformers.ops as xops
+    HAS_XFORMER=True
 except:
-    pass
-
-try:
-    from apex.normalization import FusedLayerNorm
-except:
+    HAS_XFORMER=False
     pass
 
 
@@ -35,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 
-__all__ = ["ViT", "SimpleFeaturePyramid", "get_vit_lr_decay_rate"]
+__all__ = ["EVA02_ViT", "SimpleFeaturePyramid", "get_vit_lr_decay_rate"]
 
 
 
@@ -99,6 +96,9 @@ class Attention(nn.Module):
         self.rope = rope
         self.xattn = xattn
         self.proj = nn.Linear(all_head_dim, dim)
+
+        if not HAS_XFORMER:
+            self.xattn = False
 
     def forward(self, x):
         B, H, W, C = x.shape

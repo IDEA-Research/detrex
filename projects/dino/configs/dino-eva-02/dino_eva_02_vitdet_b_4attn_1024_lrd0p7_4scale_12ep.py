@@ -3,9 +3,9 @@ from detrex.config import get_config
 from detrex.modeling.backbone.eva import get_vit_lr_decay_rate
 
 from ..models.dino_eva_02 import model
+from ..common.coco_loader_lsj_1024 import model
 
 # get default config
-dataloader = get_config("common/data/coco_detr.py").dataloader
 optimizer = get_config("common/optim.py").AdamW
 lr_multiplier = get_config("common/coco_schedule.py").lr_multiplier_12ep
 train = get_config("common/train.py").train

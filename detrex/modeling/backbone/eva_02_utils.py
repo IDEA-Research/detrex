@@ -345,4 +345,5 @@ class VisionRotaryEmbeddingFast(nn.Module):
 
         print('======== shape of rope freq', self.freqs_cos.shape, '========')
 
-    def forward(self, t): return  t * self.freqs_cos + rotate_half(t) * self.freqs_sin
+    def forward(self, t): 
+        return  t * self.freqs_cos + rotate_half(t) * self.freqs_sin
