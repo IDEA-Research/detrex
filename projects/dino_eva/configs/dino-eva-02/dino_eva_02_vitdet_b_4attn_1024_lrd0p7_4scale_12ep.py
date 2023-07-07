@@ -2,8 +2,8 @@ from functools import partial
 from detrex.config import get_config
 from detrex.modeling.backbone.eva import get_vit_lr_decay_rate
 
-from ..models.dino_eva_02 import model
 from ..common.coco_loader_lsj_1024 import dataloader
+from ..models.dino_eva_02 import model
 
 # get default config
 optimizer = get_config("common/optim.py").AdamW

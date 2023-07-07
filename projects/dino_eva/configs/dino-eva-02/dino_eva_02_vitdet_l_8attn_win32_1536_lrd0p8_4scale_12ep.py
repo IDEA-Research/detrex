@@ -2,8 +2,8 @@ from functools import partial
 from detrex.config import get_config
 from detrex.modeling.backbone.eva import get_vit_lr_decay_rate
 
+from ..models.dino_eva_02 import model
 from ..common.coco_loader_lsj_1536 import dataloader
-from ..models.dino_eva_01 import model
 
 # get default config
 optimizer = get_config("common/optim.py").AdamW
@@ -12,29 +12,25 @@ train = get_config("common/train.py").train
 
 
 # modify model config
-model.backbone.net.beit_like_qkv_bias = True
-model.backbone.net.beit_like_gamma = False
-model.backbone.net.freeze_patch_embed = True
-model.backbone.square_pad = 1536
-model.backbone.net.img_size = 1280  # only for correct dim in pos embed
-model.backbone.net.interp_type = "beit"  # for eval, slightly AP improvement at a higher res, e.g., 1280 training --> 1536 eval 
-model.backbone.net.patch_size = 16
-model.backbone.net.window_size = 16
-model.backbone.net.embed_dim = 1408
-model.backbone.net.depth = 40
+model.backbone.net.img_size = 1536  
+model.backbone.square_pad = 1536  
+model.backbone.net.patch_size = 16  
+model.backbone.net.window_size = 32
+model.backbone.net.embed_dim = 1024
+model.backbone.net.depth = 24
 model.backbone.net.num_heads = 16
-model.backbone.net.mlp_ratio = 6144 / 1408
+model.backbone.net.mlp_ratio = 4*2/3
 model.backbone.net.use_act_checkpoint = True
-model.backbone.net.drop_path_rate = 0.6  # 0.5 --> 0.6
-# global attention for every 4 blocks
+model.backbone.net.drop_path_rate = 0.4  
+
+# 2, 5, 8, 11, 14, 17, 20, 23 for global attention
 model.backbone.net.window_block_indexes = (
-    list(range(0, 3)) + list(range(4, 7)) + list(range(8, 11)) + list(range(12, 15)) + list(range(16, 19)) +
-    list(range(20, 23)) + list(range(24, 27)) + list(range(28, 31)) + list(range(32, 35)) + list(range(36, 39))
+    list(range(0, 2)) + list(range(3, 5)) + list(range(6, 8)) + list(range(9, 11)) + list(range(12, 14)) + list(range(15, 17)) + list(range(18, 20)) + list(range(21, 23))
 )
 
 # modify training config
-train.init_checkpoint = "/path/to/eva_o365.pth"
-train.output_dir = "./output/dino_eva_01_4scale_12ep"
+train.init_checkpoint = "/path/to/eva02_L_pt_m38m_p14to16.pt"
+train.output_dir = "./output/dino_eva_02_vitdet_l_8attn_1536_lrd0p8_4scale_12ep"
 
 # max training iterations
 train.max_iter = 90000
@@ -53,7 +49,7 @@ model.device = train.device
 optimizer.lr = 1e-4
 optimizer.betas = (0.9, 0.999)
 optimizer.weight_decay = 1e-4
-optimizer.params.lr_factor_func = partial(get_vit_lr_decay_rate, lr_decay_rate=0.9, num_layers=40)
+optimizer.params.lr_factor_func = partial(get_vit_lr_decay_rate, lr_decay_rate=0.8, num_layers=24)
 optimizer.params.overrides = {}
 optimizer.params.weight_decay_norm = None
 
