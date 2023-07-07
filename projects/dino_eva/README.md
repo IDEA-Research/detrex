@@ -1,11 +1,19 @@
-## DINO + EVA
+## DINO + EVA Series
 
 We implement [DINO](https://arxiv.org/abs/2203.03605) with [EVA](https://github.com/baaivision/EVA) backbone in this project, the original DINO project can be found in [DINO Project](../dino/)
 
 [[`arXiv`](https://arxiv.org/abs/2203.03605)] [[`BibTeX`](#citing-dino)]
 
+- DINO structure
+
 <div align="center">
   <img src="./assets/dino_arch.png"/>
+</div><br/>
+
+- EVA structure
+
+<div align="center">
+  <img src="https://github.com/baaivision/EVA/raw/master/assets/eva_pipeline.png"/>
 </div><br/>
 
 ## Table of Contents
