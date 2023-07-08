@@ -17,6 +17,7 @@ Hao Zhang, Feng Li, Shilong Liu, Lei Zhang, Hang Su, Jun Zhu, Lionel M. Ni, Heun
   - [DINO with ConvNeXt Backbone](#pretrained-dino-with-convnext-backbone)
   - [DINO with FocalNet Backbone](#pretrained-dino-with-focalnet-backbone)
   - [DINO with InternImage Backbone](#pretrained-dino-with-internimage-backbone)
+  - [DINO with EVA Backbone](#pretrained-dino-with-eva-backbone)
 - [Training DINO](#training)
 - [Evaluate DINO](#evaluation)
 - [Citation](#citing-dino)
@@ -407,6 +408,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 
 
 ##### Pretrained DINO with InternImage Backbone
+
 <table><tbody>
 <th valign="bottom">Name</th>
 <th valign="bottom">Backbone</th>
@@ -449,6 +451,26 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 </tr>
 </tbody></table>
 
+
+##### Pretrained DINO with EVA Backbone
+
+<table><tbody>
+<th valign="bottom">Name</th>
+<th valign="bottom">Backbone</th>
+<th valign="bottom">Pretrain</th>
+<th valign="bottom">Epochs</th>
+<th valign="bottom">Denoising Queries</th>
+<th valign="bottom">box<br/>AP</th>
+<th valign="bottom">download</th>
+ <tr><td align="left"><a href="configs/dino-internimage/dino_internimage_tiny_4scale_12ep.py">DINO-EVA-01</a></td>
+<td align="center">EVA-01</td>
+<td align="center">o365</td>
+<td align="center">12</td>
+<td align="center">100</td>
+<td align="center">59.1</td>
+<td align="center"> <a href="https://huggingface.co/IDEA-CVR/detrex/resolve/main/dino_eva_01_o365_finetune_detr_like_augmentation_4scale_12ep.pth">huggingface</a></td>
+</tr>
+</tbody></table>
 
 
 **Note**: 
