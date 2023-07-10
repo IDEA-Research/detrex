@@ -167,7 +167,7 @@ If you use this toolbox in your research or wish to refer to the baseline result
 ```
 
 <details>
-<summary> Citation Supported Algorithms </summary>
+<summary> Citing Supported Algorithms </summary>
 
 ```BibTex
 @inproceedings{carion2020end,

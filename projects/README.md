@@ -15,3 +15,5 @@ Here are projects that are built on detrex which show you use detrex as a librar
 - [NMS strikes back (ArXiv'2022)](./deta/)
 - [CO-MOT: Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking (ArXiv'2023)](./co_mot/)
 - [Enhanced Training of Query-Based Object Detection via Selective Query Recollection (CVPR'2023)](./sqr_detr/)
+- [EVA-01: Exploring the Limits of Masked Visual Representation Learning at Scale (CVPR'2023 Highlight)](./dino_eva/)
+- [EVA-02: A Visual Representation for Neon Genesis (ArXiv'2023)](./dino_eva/)

@@ -13,19 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .timm_backbone import TimmBackbone
-from .torchvision_backbone import TorchvisionBackbone
-from .resnet import (
-    BasicStem,
-    ResNet,
-    ResNetBlockBase,
-    make_stage,
-    BottleneckBlock,
-    BasicBlock,
-    DeformBottleneckBlock,
+
+from .dino_transformer import (
+    DINOTransformerEncoder,
+    DINOTransformerDecoder,
+    DINOTransformer,
 )
-from .convnext import ConvNeXt
-from .focalnet import FocalNet
-from .internimage import InternImage
-from .eva import EVAViT, SimpleFeaturePyramid, get_vit_lr_decay_rate
-from .eva_02 import EVA02_ViT
+from .dino import DINO
+from .dn_criterion import DINOCriterion
