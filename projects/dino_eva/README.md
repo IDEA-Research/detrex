@@ -62,7 +62,9 @@ If you find our work helpful for your research, please consider citing the follo
       archivePrefix={arXiv},
       primaryClass={cs.CV}
 }
+```
 
+```BibTex
 @article{EVA,
   title={EVA: Exploring the Limits of Masked Visual Representation Learning at Scale},
   author={Fang, Yuxin and Wang, Wen and Xie, Binhui and Sun, Quan and Wu, Ledell and Wang, Xinggang and Huang, Tiejun and Wang, Xinlong and Cao, Yue},
