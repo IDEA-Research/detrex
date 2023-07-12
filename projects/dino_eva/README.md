@@ -7,6 +7,8 @@ We implement [DINO](https://arxiv.org/abs/2203.03605) with [EVA](https://github.
 
 ## Table of Contents
 - [Pretrained Models](#pretrained-models)
+  - [EVA-01](#eva-01)
+  - [EVA-02](#eva-02)
 - [Training](#training)
 - [Evaluation](#evaluation)
 - [Citation](#citing-dino-and-eva)
