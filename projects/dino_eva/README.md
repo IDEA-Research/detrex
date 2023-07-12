@@ -27,6 +27,7 @@ Here's the model card for `dino-eva` models, all the pretrained weights can be d
 </div>
 
 - All the `dino-eva-01` models were trained using the original [tools/train_net.py](https://github.com/IDEA-Research/detrex/blob/main/tools/train_net.py) which set `1e-4` learning rate for backbone.
+- We also release the pretrained `dino-eva-01` model using `DETR-like augmentation` in the original [DINO project](https://github.com/IDEA-Research/detrex/tree/main/projects/dino#pretrained-dino-with-eva-backbone)
 
 ### EVA-02
 <div align="center">
