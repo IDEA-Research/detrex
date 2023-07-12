@@ -22,7 +22,7 @@ Here's the model card for `dino-eva` models, all the pretrained weights can be d
 
 | Name | init. model weight | LSJ crop size | epoch | AP box | config | download |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `dino-eva-01` | `eva_o365` | `1280x1280` | 12 | - | [config](./configs/dino-eva-01/dino_eva_01_4scale_12ep.py) | [Huggingface]() |
+| `dino-eva-01` | `eva_o365` | `1280x1280` | 12 | - | [config](./configs/dino-eva-01/dino_eva_01_1280_4scale_12ep.py) | [Huggingface]() |
 | `dino-eva-01` | `eva_o365` | `1536x1536` | 12 | - | [config](./configs/dino-eva-01/dino_eva_01_1536_4scale_12ep.py) | [Huggingface]() |
 
 </div>
