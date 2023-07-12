@@ -15,11 +15,15 @@ We implement [DINO](https://arxiv.org/abs/2203.03605) with [EVA](https://github.
 Here's the model card for `dino-eva` models, all the pretrained weights can be downloaded in [Huggingface](https://huggingface.co/IDEA-CVR/detrex)
 
 ### EVA-01
+
+<div align="center">
+
 | Name | init. model weight | LSJ crop size | epoch | AP box | config | download |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | `dino-eva-01` | `eva_o365` | `1280x1280` | 12 | - | [config](./configs/dino-eva-01/dino_eva_01_4scale_12ep.py) | [Huggingface]() |
 | `dino-eva-01` | `eva_o365` | `1536x1536` | 12 | - | [config](./configs/dino-eva-01/dino_eva_01_1536_4scale_12ep.py) | [Huggingface]() |
 
+</div>
 
 ### EVA-02
 <div align="center">
