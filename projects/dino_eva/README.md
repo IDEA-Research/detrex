@@ -23,9 +23,10 @@ Here's the model card for `dino-eva` models, all the pretrained weights can be d
 | Name | init. model weight | LSJ crop size | epoch | AP box | config | download |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | `dino-eva-01` | `eva_o365` | `1280x1280` | 12 | - | [config](./configs/dino-eva-01/dino_eva_01_1280_4scale_12ep.py) | [Huggingface]() |
-| `dino-eva-01` | `eva_o365` | `1536x1536` | 12 | - | [config](./configs/dino-eva-01/dino_eva_01_1536_4scale_12ep.py) | [Huggingface]() |
 
 </div>
+
+- All the `dino-eva-01` models were trained using the original [tools/train_net.py](https://github.com/IDEA-Research/detrex/blob/main/tools/train_net.py) which set `1e-4` learning rate for backbone.
 
 ### EVA-02
 <div align="center">
