@@ -35,7 +35,7 @@ Here's the model card for `dino-eva` models, all the pretrained weights can be d
 | Name | init. model weight | LSJ crop size | epoch | AP box | config | download |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | `dino-eva-02-B` | `eva02_B_pt_in21k_p14to16` | `1024x1024` | 12 | 55.8 | [config](./configs/dino-eva-02/dino_eva_02_vitdet_b_4attn_1024_lrd0p7_4scale_12ep.py) | [Huggingface](https://huggingface.co/IDEA-CVR/detrex/resolve/main/dino_eva_02_in21k_pretrain_vitdet_b_4attn_1024_lrd0p7_4scale_12ep.pth) |
-| `dino-eva-02-B` | `eva02_B_pt_in21k_p14to16` | `1536x1536` | 12 | - | [config](./configs/dino-eva-02/dino_eva_02_vitdet_b_6attn_win32_1536_lrd0p7_4scale_12ep.py) | [Huggingface]() |
+| `dino-eva-02-B` | `eva02_B_pt_in21k_p14to16` | `1536x1536` | 12 | 58.1 | [config](./configs/dino-eva-02/dino_eva_02_vitdet_b_6attn_win32_1536_lrd0p7_4scale_12ep.py) | [Huggingface](https://huggingface.co/IDEA-CVR/detrex/resolve/main/dino_eva_02_in21k_pretrain_vitdet_b_6attn_win32_1536_lrd0p7_4scale_12ep.pth) |
 | `dino-eva-02-L` | `eva02_L_pt_m38m_p14to16` | `1024x1024` | 12 | 58.9 | [config](./configs/dino-eva-02/dino_eva_02_vitdet_l_4attn_1024_lrd0p8_4scale_12ep.py) | [Huggingface](https://huggingface.co/IDEA-CVR/detrex/resolve/main/dino_eva_02_m38m_pretrain_vitdet_l_4attn_1024_lrd0p8_4scale_12ep.pth) |
 | `dino-eva-02-L` | `eva02_L_m38m_to_o365` | `1536x1536` | 12 | 61.6 | [config](./configs/dino-eva-02/dino_eva_02_vitdet_l_8attn_1536_lrd0p8_4scale_12ep.py) | [Huggingface](https://huggingface.co/IDEA-CVR/detrex/resolve/main/dino_eva_02_o365_backbone_finetune_vitdet_l_8attn_lsj_1536_4scale_12ep.pth) |
 
