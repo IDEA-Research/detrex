@@ -79,6 +79,24 @@ python tools/train_net.py --config-file projects/dino_eva/configs/path/to/config
 If you find our work helpful for your research, please consider citing the following BibTeX entry.
 
 ```BibTex
+@article{EVA,
+  title={EVA: Exploring the Limits of Masked Visual Representation Learning at Scale},
+  author={Fang, Yuxin and Wang, Wen and Xie, Binhui and Sun, Quan and Wu, Ledell and Wang, Xinggang and Huang, Tiejun and Wang, Xinlong and Cao, Yue},
+  journal={arXiv preprint arXiv:2211.07636},
+  year={2022}
+}
+```
+
+```BibTex
+@article{EVA02,
+  title={EVA-02: A Visual Representation for Neon Genesis},
+  author={Fang, Yuxin and Sun, Quan and Wang, Xinggang and Huang, Tiejun and Wang, Xinlong and Cao, Yue},
+  journal={arXiv preprint arXiv:2303.11331},
+  year={2023}
+}
+```
+
+```BibTex
 @misc{zhang2022dino,
       title={DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection}, 
       author={Hao Zhang and Feng Li and Shilong Liu and Lei Zhang and Hang Su and Jun Zhu and Lionel M. Ni and Heung-Yeung Shum},
@@ -86,14 +104,5 @@ If you find our work helpful for your research, please consider citing the follo
       eprint={2203.03605},
       archivePrefix={arXiv},
       primaryClass={cs.CV}
-}
-```
-
-```BibTex
-@article{EVA,
-  title={EVA: Exploring the Limits of Masked Visual Representation Learning at Scale},
-  author={Fang, Yuxin and Wang, Wen and Xie, Binhui and Sun, Quan and Wu, Ledell and Wang, Xinggang and Huang, Tiejun and Wang, Xinlong and Cao, Yue},
-  journal={arXiv preprint arXiv:2211.07636},
-  year={2022}
 }
 ```
