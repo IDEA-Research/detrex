@@ -1,20 +1,27 @@
 # AlignDETR
-## Introduction
+
+Zhi Cai, Songtao Liu, Guodong Wang, Zheng Ge, Xiangyu Zhang, Di Huang
+
+[`[arXiv](https://arxiv.org/abs/2304.07527)`] [`[BibTex](#citation)`]
+
+<img src="https://github.com/FelixCaae/AlignDETR/blob/main/assets/aligndetr.png?raw=true" >
+
 AlignDETR is a variant of DETR(DEtection with Transformer), with a simple IoU-Aware BCE loss and better performance! It aims to solve the issue of misalignment problem spotted in DETR's output.
-For more details, please refer to our [paper on Arxiv](https://arxiv.org/abs/2304.07527). 
-<img src="assets/aligndetr.png" >
 
 ## Installation 
 See [installation instructions](INSTALL.md) 
+
 ## Usage
 Train Example
 ```bash
 python tools/train_net.py --config-file  aligndetr/aligndetr_k=2_r50_4scale_12ep.py --num-gpus 8
 ```
+
 Evaluation Example
 ```bash
 python tools/train_net.py --config-file  aligndetr/aligndetr_k=2_r50_4scale_12ep.py --num-gpus 8 --eval train.init_checkpoint=/path/to/checkpoint
 ```
+
 ## Model Zoo
 
 |Model|AP|AP50|AP75|APs|APm|APl|weights|
@@ -25,6 +32,7 @@ python tools/train_net.py --config-file  aligndetr/aligndetr_k=2_r50_4scale_12ep
 ## Acknowlegements
 
 Our code is based on [detrex](https://github.com/IDEA-Research/detrex) and [detectron2](https://github.com/facebookresearch/detectron2).
+
 ## Citation
 
 If you are interested in our work and use our method in your research, please cite
