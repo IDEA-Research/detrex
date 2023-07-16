@@ -129,8 +129,8 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [MaskDINO (CVPR'2023)](./projects/maskdino/)
 - [x] [CO-MOT (ArXiv'2023)](./projects/co_mot/)
 - [x] [SQR-DETR (CVPR'2023)](./projects/sqr_detr/)
-- [x] [EVA: Exploring the Limits of Masked Visual Representation Learning at Scale (CVPR'2023 Highlight)](./projects/dino_eva/)
-- [x] [EVA-02: A Visual Representation for Neon Genesis (ArXiv'2023)](./projects/dino_eva/)
+- [x] [EVA-01 (CVPR'2023 Highlight)](./projects/dino_eva/)
+- [x] [EVA-02 (ArXiv'2023)](./projects/dino_eva/)
 
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
