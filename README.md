@@ -82,8 +82,6 @@ v0.5.0 was released on 16/07/2023:
 - Support [SQR-DETR (CVPR 2023)](https://github.com/IDEA-Research/detrex/tree/main/projects/sqr_detr), credits to [Fangyi Chen](https://github.com/Fangyi-Chen)
 - Support [EVA-01](https://github.com/baaivision/EVA/tree/master/EVA-01) and [EVA-02](https://github.com/baaivision/EVA/tree/master/EVA-02) backbones, please check [DINO-EVA](./projects/dino_eva/) for more benchmarking results.
 
-
-
 Please see [changelog.md](./changlog.md) for details and release history.
 
 ## Installation

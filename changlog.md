@@ -1,5 +1,10 @@
 ## Change Log
 
+### v0.5.0 (16/07/2023):
+- Support [SQR-DETR (CVPR 2023)](https://github.com/IDEA-Research/detrex/tree/main/projects/sqr_detr), credits to [Fangyi Chen](https://github.com/Fangyi-Chen)
+- Support [EVA-01](https://github.com/baaivision/EVA/tree/master/EVA-01) and [EVA-02](https://github.com/baaivision/EVA/tree/master/EVA-02) backbones, please check [DINO-EVA](https://github.com/IDEA-Research/detrex/tree/main/projects/dino_eva) for more benchmarking results.
+
+
 ### v0.4.0 (02/06/2023):
 - Support [CO-MOT](./projects/co_mot/) aims for End-to-End Multi-Object Tracking by [Feng Yan](https://scholar.google.com/citations?user=gO4divAAAAAJ&hl=zh-CN&oi=sra).
 - Release `DINO` with optimized hyper-parameters which achieves `50.0 AP` under 1x settings.
