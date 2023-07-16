@@ -468,7 +468,7 @@ python projects/dino/train_net.py --config-file /path/to/config.py --num-gpus 8
 <td align="center">12</td>
 <td align="center">100</td>
 <td align="center">59.1</td>
-<td align="center"> <a href="https://huggingface.co/IDEA-CVR/detrex/resolve/main/dino_eva_01_o365_finetune_detr_like_augmentation_4scale_12ep.pth">huggingface</a></td>
+<td align="center"> <a href="https://huggingface.co/IDEA-CVR/DINO-EVA/resolve/main/dino_eva_01_o365_finetune_detr_like_augmentation_4scale_12ep.pth">huggingface</a></td>
 </tr>
 </tbody></table>
 

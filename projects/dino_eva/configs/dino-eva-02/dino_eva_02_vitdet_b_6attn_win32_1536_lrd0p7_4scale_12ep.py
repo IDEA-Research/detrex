@@ -20,7 +20,7 @@ model.backbone.net.embed_dim = 768
 model.backbone.net.depth = 12
 model.backbone.net.num_heads = 12
 model.backbone.net.mlp_ratio = 4*2/3
-model.backbone.net.use_act_checkpoint = False
+model.backbone.net.use_act_checkpoint = True
 model.backbone.net.drop_path_rate = 0.1  
 
 
