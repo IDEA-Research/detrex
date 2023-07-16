@@ -78,14 +78,9 @@ The repo name detrex has several interpretations:
 - <font color=#008000> <b> de-t.rex </b> </font>: de means 'the' in Dutch. T.rex, also called Tyrannosaurus Rex, means 'king of the tyrant lizards' and connects to our research work 'DINO', which is short for Dinosaur.
 
 ## What's New
-v0.4.0 was released on 02/06/2023:
-- Support [CO-MOT](./projects/co_mot/) aims for End-to-End Multi-Object Tracking by [Feng Yan](https://scholar.google.com/citations?user=gO4divAAAAAJ&hl=zh-CN&oi=sra).
-- Release `DINO` with optimized hyper-parameters which achieves `50.0 AP` under 1x settings.
-- Release pretrained DINO based on `InternImage`, `ConvNeXt-1K pretrained` backbones.
-- Release `Deformable-DETR-R50` pretrained weights.
-- Release `DETA` and better `H-DETR` pretrained weights: achieving `50.2 AP` and `49.1 AP` respectively.
-
-
+v0.5.0 was released on 16/07/2023:
+- Support [SQR-DETR (CVPR 2023)](https://github.com/IDEA-Research/detrex/tree/main/projects/sqr_detr), credits to [Fangyi Chen](https://github.com/Fangyi-Chen)
+- Support [EVA-01](https://github.com/baaivision/EVA/tree/master/EVA-01) and [EVA-02](https://github.com/baaivision/EVA/tree/master/EVA-02) backbones, please check [DINO-EVA](./projects/dino_eva/) for more benchmarking results.
 
 Please see [changelog.md](./changlog.md) for details and release history.
 
@@ -134,6 +129,8 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [MaskDINO (CVPR'2023)](./projects/maskdino/)
 - [x] [CO-MOT (ArXiv'2023)](./projects/co_mot/)
 - [x] [SQR-DETR (CVPR'2023)](./projects/sqr_detr/)
+- [x] [EVA-01 (CVPR'2023 Highlight)](./projects/dino_eva/)
+- [x] [EVA-02 (ArXiv'2023)](./projects/dino_eva/)
 
 Please see [projects](./projects/) for the details about projects that are built based on detrex.
 
