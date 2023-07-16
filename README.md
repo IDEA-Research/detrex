@@ -80,6 +80,7 @@ The repo name detrex has several interpretations:
 ## What's New
 v0.5.0 was released on 16/07/2023:
 - Support [SQR-DETR (CVPR 2023)](https://github.com/IDEA-Research/detrex/tree/main/projects/sqr_detr), credits to [Fangyi Chen](https://github.com/Fangyi-Chen)
+- Support [Align-DETR (ArXiv 2023)](./projects/align_detr/), credits to [Zhi Cai](https://github.com/FelixCaae)
 - Support [EVA-01](https://github.com/baaivision/EVA/tree/master/EVA-01) and [EVA-02](https://github.com/baaivision/EVA/tree/master/EVA-02) backbones, please check [DINO-EVA](./projects/dino_eva/) for more benchmarking results.
 
 Please see [changelog.md](./changlog.md) for details and release history.
@@ -129,6 +130,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [MaskDINO (CVPR'2023)](./projects/maskdino/)
 - [x] [CO-MOT (ArXiv'2023)](./projects/co_mot/)
 - [x] [SQR-DETR (CVPR'2023)](./projects/sqr_detr/)
+- [x] [Align-DETR (ArXiv'2023)](./projects/align_detr/)
 - [x] [EVA-01 (CVPR'2023 Highlight)](./projects/dino_eva/)
 - [x] [EVA-02 (ArXiv'2023)](./projects/dino_eva/)
 

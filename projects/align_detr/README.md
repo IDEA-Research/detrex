@@ -2,7 +2,7 @@
 
 Zhi Cai, Songtao Liu, Guodong Wang, Zheng Ge, Xiangyu Zhang, Di Huang
 
-[`[arXiv](https://arxiv.org/abs/2304.07527)`] [`[BibTex](#citation)`]
+[[`arXiv`](https://arxiv.org/abs/2304.07527)] [[`BibTex`](#citation)]
 
 <img src="https://github.com/FelixCaae/AlignDETR/blob/main/assets/aligndetr.png?raw=true" >
 
