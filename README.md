@@ -79,7 +79,7 @@ The repo name detrex has several interpretations:
 
 ## What's New
 v0.5.0 was released on 16/07/2023:
-- Support [Focus-DETR (ICCV'2023)](./projects/focus_detr/)
+- Support [Focus-DETR (ICCV'2023)](./projects/focus_detr/).
 - Support [SQR-DETR (CVPR'2023)](https://github.com/IDEA-Research/detrex/tree/main/projects/sqr_detr), credits to [Fangyi Chen](https://github.com/Fangyi-Chen)
 - Support [Align-DETR (ArXiv'2023)](./projects/align_detr/), credits to [Zhi Cai](https://github.com/FelixCaae)
 - Support [EVA-01 (CVPR'2023 Highlight)](https://github.com/baaivision/EVA/tree/master/EVA-01) and [EVA-02 (ArXiv'2023)](https://github.com/baaivision/EVA/tree/master/EVA-02) backbones, please check [DINO-EVA](./projects/dino_eva/) for more benchmarking results.
