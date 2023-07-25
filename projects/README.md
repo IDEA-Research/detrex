@@ -18,4 +18,4 @@ Here are projects that are built on detrex which show you use detrex as a librar
 - [Align-DETR: Improving DETR with Simple IoU-aware BCE loss (ArXiv'2023)](./align_detr/)
 - [EVA-01: Exploring the Limits of Masked Visual Representation Learning at Scale (CVPR'2023 Highlight)](./dino_eva/)
 - [EVA-02: A Visual Representation for Neon Genesis (ArXiv'2023)](./dino_eva/)
-- [Less is More: Focus Attention for Efficient DETR](./focus_detr/)
+- [Less is More: Focus Attention for Efficient DETR (ICCV'2023)](./focus_detr/)

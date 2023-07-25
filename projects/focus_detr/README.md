@@ -3,7 +3,7 @@ This is the official implementation of the ICCV 2023 paper "Less is More: Focus 
 
 Authors: Dehua Zheng, Wenhui Dong, Hailin Hu, Xinghao Chen, Yunhe Wang.
 
-[[`arXiv (coming soon)`]()] [[`Official Implementation`](https://github.com/huawei-noah/noah-research/tree/master/Focus-DETR)]
+[[`arXiv`](https://arxiv.org/abs/2307.12612)] [[`Official Implementation`](https://github.com/linxid/Focus-DETR)]
 
 <div align="center">
   <img src="https://github.com/huawei-noah/noah-research/raw/master/Focus-DETR/assets/model_arch.png"/>
@@ -180,3 +180,37 @@ cd detrex
 python tools/train_net.py --config-file projects/focus_detr/configs/path/to/config.py --eval-only train.init_checkpoint=/path/to/model_checkpoint
 ```
 - Note that you should download the pretrained model from [Pretrained Weights](#main-results-with-pretrained-models) and `unzip` it to the specific folder then update the `train.init_checkpoint` to the path of pretrained weights.
+
+
+### Result
+
+```bash
+Results of Focus-DETR with Resnet50 backbone:
+IoU metric: bbox
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.479
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.659
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.521
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.323
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.505
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.619
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.372
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.640
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.720
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.568
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.757
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.878
+```
+
+## Citing Focus-DETR
+If you find our work helpful for your research, please consider citing the following BibTeX entry.
+
+```BibTex
+@misc{zheng2023more,
+      title={Less is More: Focus Attention for Efficient DETR}, 
+      author={Dehua Zheng and Wenhui Dong and Hailin Hu and Xinghao Chen and Yunhe Wang},
+      year={2023},
+      eprint={2307.12612},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
