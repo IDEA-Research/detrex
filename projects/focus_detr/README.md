@@ -3,14 +3,25 @@ This is the official implementation of the ICCV 2023 paper "Less is More: Focus 
 
 Authors: Dehua Zheng, Wenhui Dong, Hailin Hu, Xinghao Chen, Yunhe Wang.
 
-[[`arXiv`](https://arxiv.org/abs/2307.12612)] [[`Official Implementation`](https://github.com/linxid/Focus-DETR)]
+[[`arXiv`](https://arxiv.org/abs/2307.12612)] [[`Official Implementation`](https://github.com/linxid/Focus-DETR)] [[`BibTeX`](#citing-focus-detr)]
+
+
+Focus-DETR is a model that focuses attention on more informative tokens for a better trade-off between computation efficiency and model accuracy. Compared with the state-of-the-art sparse transformed-based detector under the same setting, our Focus-DETR gets comparable complexity while achieving 50.4AP (+2.2) on COCO.
+
+
+## Model Architecture
+
+Our Focus-DETR comprises a backbone network, a Transformer encoder, and a Transformer decoder. We design a foreground token selector (FTS) based on top-down score modulations across multi-scale features. And the selected tokens by a multi-category score predictor and foreground tokens go through the Pyramid Encoder to remedy the limitation of deformable attention in distant information mixing.
+
 
 <div align="center">
   <img src="https://github.com/huawei-noah/noah-research/raw/master/Focus-DETR/assets/model_arch.png"/>
 </div><br/>
 
+
 ## Table of Contents
 - [Focus-DETR](#focus-detr)
+- [Model Architecture](#model-architecture)
 - [Table of Contents](#table-of-contents)
 - [Main Results with Pretrained Models](#main-results-with-pretrained-models)
     - [Pretrained focus\_detr with ResNet Backbone](#pretrained-focus_detr-with-resnet-backbone)
@@ -18,6 +29,7 @@ Authors: Dehua Zheng, Wenhui Dong, Hailin Hu, Xinghao Chen, Yunhe Wang.
 - [Installation](#installation)
 - [Training](#training)
 - [Evaluation](#evaluation)
+- [Citation](#citing-focus-detr)
 
 ## Main Results with Pretrained Models
 
