@@ -61,7 +61,7 @@ You can check the `demo_output.jpg` and see the detected objects on chair, plant
 
 To verify if the customized CUDA operator is correctly installed, you can inference the demo image with DINO pretrained weights as:
 ```bash
-python demo/demo.py --config-file projects/dino/configs/dino_r50_4scale_12ep.py \
+python demo/demo.py --config-file projects/dino/configs/dino-resnet/dino_r50_4scale_12ep.py \
                     --input "./idea.jpg" \
                     --output "./demo_output.jpg" \
                     --opts train.init_checkpoint="./dino_r50_4scale_12ep.pth"
