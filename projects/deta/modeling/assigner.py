@@ -141,7 +141,7 @@ class Stage1Assigner(nn.Module):
             matched_idxs, matched_labels = self.anchor_matcher(iou)  # proposal_id -> highest_iou_gt_id, proposal_id -> [1 if iou > 0.7, 0 if iou < 0.3, -1 ow]
             matched_labels = self._subsample_labels(matched_labels)
 
-            all_pr_inds = torch.arange(len(anchors))
+            all_pr_inds = torch.arange(len(anchors), device=anchors.device)
             pos_pr_inds = all_pr_inds[matched_labels == 1]
             pos_gt_inds = matched_idxs[pos_pr_inds]
             pos_ious = iou[pos_gt_inds, pos_pr_inds]
