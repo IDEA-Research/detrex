@@ -649,7 +649,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">50.1</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/converted_deta_r50_5scale_12ep.pth">model</a></td>
 </tr>
- <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/deta/configs/deta_r50_5scale_12ep.py">DETA-Swin-Large-finetune (converted)</a></td>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/deta/configs/deta_swin_large_finetune_24ep.py">DETA-Swin-Large-finetune (converted)</a></td>
 <td align="center">Swin-Large-384</td>
 <td align="center">Object 365</td>
 <td align="center">24</td>
