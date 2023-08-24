@@ -15,6 +15,7 @@
 
 import wandb
 from PIL import Image
+from omegaconf import OmegaConf
 
 from detectron2.utils.events import EventWriter, get_event_storage
 
@@ -35,7 +36,7 @@ class WandbWriter(EventWriter):
         self._window_size = window_size
 
         self._writer = wandb.init(
-            config=cfg,
+            config=OmegaConf.to_container(cfg, resolve=True),
             **cfg.train.wandb.params,
         )
         self._last_write = -1
