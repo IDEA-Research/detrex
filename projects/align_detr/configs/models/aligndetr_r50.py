@@ -8,7 +8,7 @@ from detectron2.config import LazyCall as L
 # from detrex.modeling.matcher import HungarianMatcher
 from detrex.modeling.neck import ChannelMapper
 from detrex.layers import PositionEmbeddingSine
-from projects.aligndetr.modeling import (
+from projects.align_detr.modeling import (
     AlignDETR,
     TransformerEncoder,
     TransformerDecoder,
