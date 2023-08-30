@@ -86,8 +86,7 @@ class BackboneBase(nn.Module):
     def forward(self, x):
         xs = self.body(x)
         out = {}
-        for name, x in xs.items():
-            out[name] = x
+        out.update(xs)
         return out
 
 
