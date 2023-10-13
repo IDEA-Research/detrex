@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - name: "detrex Contributors"
+title: "IDEA-CVR Detection-Transformer Toolbox and Benchmark"
+date-released: 2022-09-21
+url: "https://github.com/IDEA-Research/detrex"
+license: Apache-2.0
