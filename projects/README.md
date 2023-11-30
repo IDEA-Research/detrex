@@ -9,7 +9,7 @@ Here are projects that are built on detrex which show you use detrex as a librar
 - [DAB-DETR: Dynamic Anchor Boxes are Better Queries for DETR (ICLR'2022)](./dab_detr/)
 - [DN-DETR: Accelerate DETR Training by Introducing Query DeNoising (CVPR'2022 Oral)](./dn_detr/)
 - [DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection (ICLR'2023)](./dino)
-- [Group DETR: Fast DETR Training with Group-Wise One-to-Many Assignment (ArXiv'2022)](./group_detr/)
+- [Group DETR: Fast DETR Training with Group-Wise One-to-Many Assignment (ICCV'2023)](./group_detr/)
 - [DETRs with Hybrid Matching (CVPR'2023)](./h_deformable_detr/)
 - [Mask DINO: Towards A Unified Transformer-based Framework for Object Detection and Segmentation (CVPR'2023)](./maskdino/)
 - [NMS strikes back (ArXiv'2022)](./deta/)
