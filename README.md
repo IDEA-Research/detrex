@@ -124,7 +124,7 @@ Results and models are available in [model zoo](https://detrex.readthedocs.io/en
 - [x] [DAB-Deformable-DETR (ICLR'2022)](./projects/dab_deformable_detr/)
 - [x] [DN-DETR (CVPR'2022 Oral)](./projects/dn_detr/)
 - [x] [DN-Deformable-DETR (CVPR'2022 Oral)](./projects/dn_deformable_detr/)
-- [x] [Group-DETR (ArXiv'2022)](./projects/group_detr/)
+- [x] [Group-DETR (ICCV'2023)](./projects/group_detr/)
 - [x] [DETA (ArXiv'2022)](./projects/deta/)
 - [x] [DINO (ICLR'2023)](./projects/dino/)
 - [x] [H-Deformable-DETR (CVPR'2023)](./projects/h_deformable_detr/)
@@ -180,11 +180,13 @@ If you use this toolbox in your research or wish to refer to the baseline result
   organization={Springer}
 }
 
-@article{zhu2020deformable,
-  title={Deformable DETR: Deformable Transformers for End-to-End Object Detection},
-  author={Zhu, Xizhou and Su, Weijie and Lu, Lewei and Li, Bin and Wang, Xiaogang and Dai, Jifeng},
-  journal={arXiv preprint arXiv:2010.04159},
-  year={2020}
+@inproceedings{
+  zhu2021deformable,
+  title={Deformable {\{}DETR{\}}: Deformable Transformers for End-to-End Object Detection},
+  author={Xizhou Zhu and Weijie Su and Lewei Lu and Bin Li and Xiaogang Wang and Jifeng Dai},
+  booktitle={International Conference on Learning Representations},
+  year={2021},
+  url={https://openreview.net/forum?id=gZ9hCDWe6ke}
 }
 
 @inproceedings{meng2021-CondDETR,
@@ -195,67 +197,72 @@ If you use this toolbox in your research or wish to refer to the baseline result
 }
 
 @inproceedings{
-      liu2022dabdetr,
-      title={{DAB}-{DETR}: Dynamic Anchor Boxes are Better Queries for {DETR}},
-      author={Shilong Liu and Feng Li and Hao Zhang and Xiao Yang and Xianbiao Qi and Hang Su and Jun Zhu and Lei Zhang},
-      booktitle={International Conference on Learning Representations},
-      year={2022},
-      url={https://openreview.net/forum?id=oMI9PjOb9Jl}
+  liu2022dabdetr,
+  title={{DAB}-{DETR}: Dynamic Anchor Boxes are Better Queries for {DETR}},
+  author={Shilong Liu and Feng Li and Hao Zhang and Xiao Yang and Xianbiao Qi and Hang Su and Jun Zhu and Lei Zhang},
+  booktitle={International Conference on Learning Representations},
+  year={2022},
+  url={https://openreview.net/forum?id=oMI9PjOb9Jl}
 }
 
 @inproceedings{li2022dn,
-      title={Dn-detr: Accelerate detr training by introducing query denoising},
-      author={Li, Feng and Zhang, Hao and Liu, Shilong and Guo, Jian and Ni, Lionel M and Zhang, Lei},
-      booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-      pages={13619--13627},
-      year={2022}
-}
-
-@misc{zhang2022dino,
-      title={DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection}, 
-      author={Hao Zhang and Feng Li and Shilong Liu and Lei Zhang and Hang Su and Jun Zhu and Lionel M. Ni and Heung-Yeung Shum},
-      year={2022},
-      eprint={2203.03605},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
-}
-
-@article{chen2022group,
-  title={Group DETR: Fast DETR Training with Group-Wise One-to-Many Assignment},
-  author={Chen, Qiang and Chen, Xiaokang and Wang, Jian and Feng, Haocheng and Han, Junyu and Ding, Errui and Zeng, Gang and Wang, Jingdong},
-  journal={arXiv preprint arXiv:2207.13085},
+  title={Dn-detr: Accelerate detr training by introducing query denoising},
+  author={Li, Feng and Zhang, Hao and Liu, Shilong and Guo, Jian and Ni, Lionel M and Zhang, Lei},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={13619--13627},
   year={2022}
 }
 
-@article{jia2022detrs,
-  title={DETRs with Hybrid Matching},
-  author={Jia, Ding and Yuan, Yuhui and He, Haodi and Wu, Xiaopei and Yu, Haojun and Lin, Weihong and Sun, Lei and Zhang, Chao and Hu, Han},
-  journal={arXiv preprint arXiv:2207.13080},
-  year={2022}
+@inproceedings{
+  zhang2023dino,
+  title={{DINO}: {DETR} with Improved DeNoising Anchor Boxes for End-to-End Object Detection},
+  author={Hao Zhang and Feng Li and Shilong Liu and Lei Zhang and Hang Su and Jun Zhu and Lionel Ni and Heung-Yeung Shum},
+  booktitle={The Eleventh International Conference on Learning Representations },
+  year={2023},
+  url={https://openreview.net/forum?id=3mRwyG5one}
 }
 
-@misc{li2022mask,
-      title={Mask DINO: Towards A Unified Transformer-based Framework for Object Detection and Segmentation}, 
-      author={Feng Li and Hao Zhang and Huaizhe xu and Shilong Liu and Lei Zhang and Lionel M. Ni and Heung-Yeung Shum},
-      year={2022},
-      eprint={2206.02777},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+@InProceedings{Chen_2023_ICCV,
+  author    = {Chen, Qiang and Chen, Xiaokang and Wang, Jian and Zhang, Shan and Yao, Kun and Feng, Haocheng and Han, Junyu and Ding, Errui and Zeng, Gang and Wang, Jingdong},
+  title     = {Group DETR: Fast DETR Training with Group-Wise One-to-Many Assignment},
+  booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+  month     = {October},
+  year      = {2023},
+  pages     = {6633-6642}
 }
+
+@InProceedings{Jia_2023_CVPR,
+  author    = {Jia, Ding and Yuan, Yuhui and He, Haodi and Wu, Xiaopei and Yu, Haojun and Lin, Weihong and Sun, Lei and Zhang, Chao and Hu, Han},
+  title     = {DETRs With Hybrid Matching},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  month     = {June},
+  year      = {2023},
+  pages     = {19702-19712}
+}
+
+@InProceedings{Li_2023_CVPR,
+  author    = {Li, Feng and Zhang, Hao and Xu, Huaizhe and Liu, Shilong and Zhang, Lei and Ni, Lionel M. and Shum, Heung-Yeung},
+  title     = {Mask DINO: Towards a Unified Transformer-Based Framework for Object Detection and Segmentation},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  month     = {June},
+  year      = {2023},
+  pages     = {3041-3050}
+}
+
 @article{yan2023bridging,
- title={Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking},
- author={Yan, Feng and Luo, Weixin and Zhong, Yujie and Gan, Yiyang and Ma, Lin},
- journal={arXiv preprint arXiv:2305.12724},
- year={2023}
+  title={Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking},
+  author={Yan, Feng and Luo, Weixin and Zhong, Yujie and Gan, Yiyang and Ma, Lin},
+  journal={arXiv preprint arXiv:2305.12724},
+  year={2023}
 }
 
 @InProceedings{Chen_2023_CVPR,
-    author    = {Chen, Fangyi and Zhang, Han and Hu, Kai and Huang, Yu-Kai and Zhu, Chenchen and Savvides, Marios},
-    title     = {Enhanced Training of Query-Based Object Detection via Selective Query Recollection},
-    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-    month     = {June},
-    year      = {2023},
-    pages     = {23756-23765}
+  author    = {Chen, Fangyi and Zhang, Han and Hu, Kai and Huang, Yu-Kai and Zhu, Chenchen and Savvides, Marios},
+  title     = {Enhanced Training of Query-Based Object Detection via Selective Query Recollection},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  month     = {June},
+  year      = {2023},
+  pages     = {23756-23765}
 }
 ```
 
