@@ -24,6 +24,10 @@ from typing import Dict, List
 import torch.nn as nn
 
 from detrex.layers import ConvNormAct, ShapeSpec
+from detrex.utils.profiler import timing_val
+
+import time
+import torch
 
 
 class ChannelMapper(nn.Module):
@@ -102,7 +106,8 @@ class ChannelMapper(nn.Module):
         super(ChannelMapper, self).__init__()
         self.extra_convs = None
 
-        in_channels_per_feature = [input_shapes[f].channels for f in in_features]
+        in_channels_per_feature = [
+            input_shapes[f].channels for f in in_features]
 
         if num_outs is None:
             num_outs = len(input_shapes)
@@ -159,12 +164,29 @@ class ChannelMapper(nn.Module):
         Return:
             tuple(torch.Tensor): A tuple of the processed features.
         """
+
         assert len(inputs) == len(self.convs)
-        outs = [self.convs[i](inputs[self.in_features[i]]) for i in range(len(inputs))]
+
+        # outs = [None for i in range(len(inputs))]
+
+        print("in_features : ", self.in_features)
+
+        def apply_convs():
+            outs = [None for i in range(len(inputs))]
+            for i in range(len(inputs)):
+                outs[i] = self.convs[i](inputs[self.in_features[i]])
+            return outs
+
+        outs = apply_convs()
+
         if self.extra_convs:
-            for i in range(len(self.extra_convs)):
-                if i == 0:
-                    outs.append(self.extra_convs[0](inputs[self.in_features[-1]]))
-                else:
-                    outs.append(self.extra_convs[i](outs[-1]))
+            def apply_extra_convs():
+                for i in range(len(self.extra_convs)):
+                    if i == 0:
+                        outs.append(self.extra_convs[0](
+                            inputs[self.in_features[-1]]))
+                    else:
+                        outs.append(self.extra_convs[i](outs[-1]))
+
+            apply_extra_convs()
         return tuple(outs)

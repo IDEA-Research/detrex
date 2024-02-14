@@ -16,6 +16,20 @@ from projects.deta.modeling import (
     DETACriterion,
 )
 
+from detrex.utils.profiler import timing_val
+
+DeformableDETR.forward = timing_val(DeformableDETR.forward)
+DeformableDetrTransformer.forward = timing_val(
+    DeformableDetrTransformer.forward)
+DeformableDetrTransformerEncoder.forward = timing_val(
+    DeformableDetrTransformerEncoder.forward)
+DeformableDetrTransformerDecoder.forward = timing_val(
+    DeformableDetrTransformerDecoder.forward)
+DETACriterion.forward = timing_val(DETACriterion.forward)
+ChannelMapper.forward = timing_val(ChannelMapper.forward)
+PositionEmbeddingSine.forward = timing_val(PositionEmbeddingSine.forward)
+
+
 model = L(DeformableDETR)(
     backbone=L(ResNet)(
         stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
@@ -111,7 +125,8 @@ if model.aux_loss:
     weight_dict = model.criterion.weight_dict
     aux_weight_dict = {}
     for i in range(model.transformer.decoder.num_layers - 1):
-        aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
+        aux_weight_dict.update(
+            {k + f"_{i}": v for k, v in weight_dict.items()})
     aux_weight_dict.update({k + "_enc": v for k, v in weight_dict.items()})
     weight_dict.update(aux_weight_dict)
     model.criterion.weight_dict = weight_dict

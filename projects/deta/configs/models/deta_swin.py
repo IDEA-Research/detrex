@@ -4,6 +4,10 @@ from detectron2.modeling.backbone import SwinTransformer
 
 from .deta_r50 import model
 
+from detrex.utils.profiler import timing_val
+
+
+SwinTransformer.forward = timing_val(SwinTransformer.forward)
 
 # modify backbone config
 model.backbone = L(SwinTransformer)(

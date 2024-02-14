@@ -119,7 +119,8 @@ class DeformableDETR(nn.Module):
         # Decoder layers share the same heads without box refinement, while use the different
         # heads when box refinement is used.
         num_pred = (
-            (transformer.decoder.num_layers + 1) if as_two_stage else transformer.decoder.num_layers
+            (transformer.decoder.num_layers +
+             1) if as_two_stage else transformer.decoder.num_layers
         )
         if with_box_refine:
             self.class_embed = nn.ModuleList(
@@ -128,12 +129,15 @@ class DeformableDETR(nn.Module):
             self.bbox_embed = nn.ModuleList(
                 [copy.deepcopy(self.bbox_embed) for i in range(num_pred)]
             )
-            nn.init.constant_(self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
+            nn.init.constant_(
+                self.bbox_embed[0].layers[-1].bias.data[2:], -2.0)
             self.transformer.decoder.bbox_embed = self.bbox_embed
         else:
             nn.init.constant_(self.bbox_embed.layers[-1].bias.data[2:], -2.0)
-            self.class_embed = nn.ModuleList([self.class_embed for _ in range(num_pred)])
-            self.bbox_embed = nn.ModuleList([self.bbox_embed for _ in range(num_pred)])
+            self.class_embed = nn.ModuleList(
+                [self.class_embed for _ in range(num_pred)])
+            self.bbox_embed = nn.ModuleList(
+                [self.bbox_embed for _ in range(num_pred)])
             self.transformer.decoder.bbox_embed = None
 
         # hack implementation for two-stage. The last class_embed and bbox_embed is for region proposal generation
@@ -175,9 +179,11 @@ class DeformableDETR(nn.Module):
         multi_level_position_embeddings = []
         for feat in multi_level_feats:
             multi_level_masks.append(
-                F.interpolate(img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0)
+                F.interpolate(
+                    img_masks[None], size=feat.shape[-2:]).to(torch.bool).squeeze(0)
             )
-            multi_level_position_embeddings.append(self.position_embedding(multi_level_masks[-1]))
+            multi_level_position_embeddings.append(
+                self.position_embedding(multi_level_masks[-1]))
 
         # initialize object query embeddings
         query_embeds = None
@@ -221,9 +227,10 @@ class DeformableDETR(nn.Module):
 
         # prepare for loss computation
         output = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord[-1],
-               'init_reference': init_reference}
+                  'init_reference': init_reference}
         if self.aux_loss:
-            output["aux_outputs"] = self._set_aux_loss(outputs_class, outputs_coord)
+            output["aux_outputs"] = self._set_aux_loss(
+                outputs_class, outputs_coord)
 
         if self.as_two_stage:
             enc_outputs_coord = enc_outputs_coord_unact.sigmoid()
@@ -234,7 +241,8 @@ class DeformableDETR(nn.Module):
             }
 
         if self.training:
-            gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
+            gt_instances = [x["instances"].to(
+                self.device) for x in batched_inputs]
             targets = self.prepare_targets(gt_instances)
             loss_dict = self.criterion(output, targets)
             weight_dict = self.criterion.weight_dict
@@ -246,10 +254,11 @@ class DeformableDETR(nn.Module):
             box_cls = output["pred_logits"]
             box_pred = output["pred_boxes"]
             if self.criterion.assign_second_stage:
-                results = self.nms_inference(box_cls, box_pred, images.image_sizes)
+                results = self.nms_inference(
+                    box_cls, box_pred, images.image_sizes)
             else:
                 results = self.inference(box_cls, box_pred, images.image_sizes)
-            
+
             processed_results = []
             for results_per_image, input_per_image, image_size in zip(
                 results, batched_inputs, images.image_sizes
@@ -292,17 +301,20 @@ class DeformableDETR(nn.Module):
             prob.view(box_cls.shape[0], -1), self.select_box_nums_for_evaluation, dim=1
         )
         scores = topk_values
-        topk_boxes = torch.div(topk_indexes, box_cls.shape[2], rounding_mode="floor")
+        topk_boxes = torch.div(
+            topk_indexes, box_cls.shape[2], rounding_mode="floor")
         labels = topk_indexes % box_cls.shape[2]
 
-        boxes = torch.gather(box_pred, 1, topk_boxes.unsqueeze(-1).repeat(1, 1, 4))
+        boxes = torch.gather(
+            box_pred, 1, topk_boxes.unsqueeze(-1).repeat(1, 1, 4))
 
         for i, (scores_per_image, labels_per_image, box_pred_per_image, image_size) in enumerate(
             zip(scores, labels, boxes, image_sizes)
         ):
             result = Instances(image_size)
             result.pred_boxes = Boxes(box_cxcywh_to_xyxy(box_pred_per_image))
-            result.pred_boxes.scale(scale_x=image_size[1], scale_y=image_size[0])
+            result.pred_boxes.scale(
+                scale_x=image_size[1], scale_y=image_size[0])
             result.scores = scores_per_image
             result.pred_classes = labels_per_image
             results.append(result)
@@ -331,8 +343,10 @@ class DeformableDETR(nn.Module):
         prob = box_cls.sigmoid()
 
         all_scores = prob.view(bs, n_queries * n_cls).to(box_cls.device)
-        all_indexes = torch.arange(n_queries * n_cls)[None].repeat(bs, 1).to(box_cls.device)
-        all_boxes = torch.div(all_indexes, box_cls.shape[2], rounding_mode="floor")
+        all_indexes = torch.arange(
+            n_queries * n_cls)[None].repeat(bs, 1).to(box_cls.device)
+        all_boxes = torch.div(
+            all_indexes, box_cls.shape[2], rounding_mode="floor")
         all_labels = all_indexes % box_cls.shape[2]
 
         # convert to xyxy for nms post-process
@@ -353,7 +367,8 @@ class DeformableDETR(nn.Module):
 
             result = Instances(image_size)
             result.pred_boxes = Boxes(box[keep_index])
-            result.pred_boxes.scale(scale_x=image_size[1], scale_y=image_size[0])
+            result.pred_boxes.scale(
+                scale_x=image_size[1], scale_y=image_size[0])
             result.scores = score[keep_index]
             result.pred_classes = label[keep_index]
             results.append(result)
@@ -363,7 +378,8 @@ class DeformableDETR(nn.Module):
         new_targets = []
         for targets_per_image in targets:
             h, w = targets_per_image.image_size
-            image_size_xyxy = torch.as_tensor([w, h, w, h], dtype=torch.float, device=self.device)
+            image_size_xyxy = torch.as_tensor(
+                [w, h, w, h], dtype=torch.float, device=self.device)
             gt_classes = targets_per_image.gt_classes
             gt_boxes = targets_per_image.gt_boxes.tensor / image_size_xyxy
             gt_boxes = box_xyxy_to_cxcywh(gt_boxes)
@@ -371,6 +387,7 @@ class DeformableDETR(nn.Module):
         return new_targets
 
     def preprocess_image(self, batched_inputs):
-        images = [self.normalizer(x["image"].to(self.device)) for x in batched_inputs]
+        images = [self.normalizer(x["image"].to(self.device))
+                  for x in batched_inputs]
         images = ImageList.from_tensors(images)
         return images

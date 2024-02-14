@@ -18,6 +18,7 @@ from detectron2.config import LazyConfig, instantiate
 from detectron2.data.detection_utils import read_image
 from detectron2.utils.logger import setup_logger
 
+from detrex.utils.profiler import Timer, timing_val
 
 # constants
 WINDOW_NAME = "COCO detections"
@@ -30,14 +31,16 @@ def setup(args):
 
 
 def get_parser():
-    parser = argparse.ArgumentParser(description="detrex demo for visualizing customized inputs")
+    parser = argparse.ArgumentParser(
+        description="detrex demo for visualizing customized inputs")
     parser.add_argument(
         "--config-file",
         default="projects/dino/configs/dino_r50_4scale_12ep.py",
         metavar="FILE",
         help="path to config file",
     )
-    parser.add_argument("--webcam", action="store_true", help="Take inputs from webcam.")
+    parser.add_argument("--webcam", action="store_true",
+                        help="Take inputs from webcam.")
     parser.add_argument("--video-input", help="Path to video file.")
     parser.add_argument(
         "--input",
@@ -53,13 +56,13 @@ def get_parser():
     parser.add_argument(
         "--min_size_test",
         type=int,
-        default=800,
+        default=1920/2,  # 800,
         help="Size of the smallest side of the image during testing. Set to zero to disable resize in testing.",
     )
     parser.add_argument(
         "--max_size_test",
         type=float,
-        default=1333,
+        default=3840/2,  # 1333,
         help="Maximum size of the side of the image during testing.",
     )
     parser.add_argument(
@@ -130,6 +133,8 @@ if __name__ == "__main__":
         metadata_dataset=args.metadata_dataset,
     )
 
+    demo.run_on_image = timing_val(demo.run_on_image)
+
     if args.input:
         if len(args.input) == 1:
             args.input = glob.glob(os.path.expanduser(args.input[0]))
@@ -138,11 +143,13 @@ if __name__ == "__main__":
             # use PIL, to be consistent with evaluation
             img = read_image(path, format="BGR")
             start_time = time.time()
-            predictions, visualized_output = demo.run_on_image(img, args.confidence_threshold)
+            predictions, visualized_output = demo.run_on_image(
+                img, args.confidence_threshold)
             logger.info(
                 "{}: {} in {:.2f}s".format(
                     path,
-                    "detected {} instances".format(len(predictions["instances"]))
+                    "detected {} instances".format(
+                        len(predictions["instances"]))
                     if "instances" in predictions
                     else "finished",
                     time.time() - start_time,
@@ -152,14 +159,17 @@ if __name__ == "__main__":
             if args.output:
                 if os.path.isdir(args.output):
                     assert os.path.isdir(args.output), args.output
-                    out_filename = os.path.join(args.output, os.path.basename(path))
+                    out_filename = os.path.join(
+                        args.output, os.path.basename(path))
                 else:
-                    assert len(args.input) == 1, "Please specify a directory with args.output"
+                    assert len(
+                        args.input) == 1, "Please specify a directory with args.output"
                     out_filename = args.output
                 visualized_output.save(out_filename)
             else:
                 cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
-                cv2.imshow(WINDOW_NAME, visualized_output.get_image()[:, :, ::-1])
+                cv2.imshow(
+                    WINDOW_NAME, visualized_output.get_image()[:, :, ::-1])
                 if cv2.waitKey(0) == 27:
                     break  # esc to quit
     elif args.webcam:
@@ -181,7 +191,8 @@ if __name__ == "__main__":
         num_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
         basename = os.path.basename(args.video_input)
         codec, file_ext = (
-            ("x264", ".mkv") if test_opencv_video_format("x264", ".mkv") else ("mp4v", ".mp4")
+            ("x264", ".mkv") if test_opencv_video_format(
+                "x264", ".mkv") else ("mp4v", ".mp4")
         )
         if codec == ".mp4v":
             warnings.warn("x264 codec not available, switching to mp4v")
@@ -215,3 +226,5 @@ if __name__ == "__main__":
             output_file.release()
         else:
             cv2.destroyAllWindows()
+
+    Timer.echo()
