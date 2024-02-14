@@ -20,7 +20,7 @@ register_coco_instances("ab_4_cls_test",  {
 
 # hyper-param for large resolution training and testing
 train_scales = [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
-train_scales = [int(scale * 1.5) for scale in train_scales]
+train_scales = [int(scale * 1.0) for scale in train_scales]  # 1.5
 eval_scale = 1200
 max_size = 2000
 
@@ -28,7 +28,7 @@ max_size = 2000
 dataloader = OmegaConf.create()
 
 dataloader.train = L(build_detection_train_loader)(
-    dataset=L(get_detection_dataset_dicts)(names="ab_4_cls_train"),
+    dataset=L(get_detection_dataset_dicts)(names="ab_4_cls_test"),
     mapper=L(DetrDatasetMapper)(
         augmentation=[
             L(T.RandomFlip)(),
@@ -58,7 +58,7 @@ dataloader.train = L(build_detection_train_loader)(
         mask_on=False,
         img_format="RGB",
     ),
-    total_batch_size=16,
+    total_batch_size=1,  # 16
     num_workers=4,
 )
 

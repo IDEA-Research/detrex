@@ -1,4 +1,5 @@
-
+output
+wandb_output
 
 # auto generated file at installation
 detrex/config/configs
