@@ -169,8 +169,6 @@ class ChannelMapper(nn.Module):
 
         # outs = [None for i in range(len(inputs))]
 
-        print("in_features : ", self.in_features)
-
         def apply_convs():
             outs = [None for i in range(len(inputs))]
             for i in range(len(inputs)):
