@@ -20,9 +20,13 @@ register_coco_instances("ab_4_cls_test",  {
 
 # hyper-param for large resolution training and testing
 train_scales = [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
-train_scales = [int(scale * 1.0) for scale in train_scales]  # 1.5
-eval_scale = 1200
+
+scale_factor = 1.0
+train_scales = [int(scale * scale_factor) for scale in train_scales]  # 1.5
+eval_scale = max(train_scales)
+
 max_size = 2000
+central_crop_height = 300
 
 # create coco dataset
 dataloader = OmegaConf.create()
@@ -40,19 +44,8 @@ dataloader.train = L(build_detection_train_loader)(
         ],
         augmentation_with_crop=[
             L(T.RandomFlip)(),
-            L(T.ResizeShortestEdge)(
-                short_edge_length=(400, 500, 600),
-                sample_style="choice",
-            ),
-            L(T.RandomCrop)(
-                crop_type="absolute_range",
-                crop_size=(384, 600),
-            ),
-            L(T.ResizeShortestEdge)(
-                short_edge_length=train_scales,
-                max_size=2000,
-                sample_style="choice",
-            ),
+            T.CropTransform(0, int(960 - central_crop_height/2),
+                            3840, central_crop_height),
         ],
         is_train=True,
         mask_on=False,

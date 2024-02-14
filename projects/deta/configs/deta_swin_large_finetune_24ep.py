@@ -24,8 +24,8 @@ train.wandb = dict(
         dir="./wandb_output",
         project="deta",
         name="deta_experiment",
-        config={
-            "learning_rate": optimizer.lr,
-        }
+        # config={
+        #    "learning_rate": optimizer.lr,
+        # }
     )
 )

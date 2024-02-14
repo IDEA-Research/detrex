@@ -32,17 +32,19 @@ from detectron2.evaluation import inference_on_dataset, print_csv_format
 from detectron2.utils import comm
 from detectron2.utils.file_io import PathManager
 from detectron2.utils.events import (
-    CommonMetricPrinter, 
-    JSONWriter, 
+    CommonMetricPrinter,
+    JSONWriter,
     TensorboardXWriter
 )
+
 from detectron2.checkpoint import DetectionCheckpointer
 # from detrex.checkpoint import DetectionCheckpointer
 
 from detrex.utils import WandbWriter
 from detrex.modeling import ema
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+sys.path.append(os.path.abspath(os.path.join(
+    os.path.dirname(__file__), os.path.pardir)))
 
 
 class Trainer(SimpleTrainer):
@@ -63,7 +65,8 @@ class Trainer(SimpleTrainer):
 
         unsupported = "AMPTrainer does not support single-process multi-device training!"
         if isinstance(model, DistributedDataParallel):
-            assert not (model.device_ids and len(model.device_ids) > 1), unsupported
+            assert not (model.device_ids and len(
+                model.device_ids) > 1), unsupported
         assert not isinstance(model, DataParallel), unsupported
 
         if amp:
@@ -72,7 +75,7 @@ class Trainer(SimpleTrainer):
 
                 grad_scaler = GradScaler()
         self.grad_scaler = grad_scaler
-        
+
         # set True to use amp training
         self.amp = amp
 
@@ -84,7 +87,8 @@ class Trainer(SimpleTrainer):
         Implement the standard training logic described above.
         """
         assert self.model.training, "[Trainer] model was changed to eval mode!"
-        assert torch.cuda.is_available(), "[Trainer] CUDA is required for AMP training!"
+        assert torch.cuda.is_available(
+        ), "[Trainer] CUDA is required for AMP training!"
         from torch.cuda.amp import autocast
 
         start = time.perf_counter()
@@ -127,7 +131,8 @@ class Trainer(SimpleTrainer):
         self._write_metrics(loss_dict, data_time)
 
     def clip_grads(self, params):
-        params = list(filter(lambda p: p.requires_grad and p.grad is not None, params))
+        params = list(
+            filter(lambda p: p.requires_grad and p.grad is not None, params))
         if len(params) > 0:
             return torch.nn.utils.clip_grad_norm_(
                 parameters=params,
@@ -157,15 +162,17 @@ def do_test(cfg, model, eval_only=False):
             logger.info("Run evaluation without EMA.")
         if "evaluator" in cfg.dataloader:
             ret = inference_on_dataset(
-                model, instantiate(cfg.dataloader.test), instantiate(cfg.dataloader.evaluator)
+                model, instantiate(cfg.dataloader.test), instantiate(
+                    cfg.dataloader.evaluator)
             )
             print_csv_format(ret)
         return ret
-    
+
     logger.info("Run evaluation without EMA.")
     if "evaluator" in cfg.dataloader:
         ret = inference_on_dataset(
-            model, instantiate(cfg.dataloader.test), instantiate(cfg.dataloader.evaluator)
+            model, instantiate(cfg.dataloader.test), instantiate(
+                cfg.dataloader.evaluator)
         )
         print_csv_format(ret)
 
@@ -174,7 +181,8 @@ def do_test(cfg, model, eval_only=False):
             with ema.apply_model_ema_and_restore(model):
                 if "evaluator" in cfg.dataloader:
                     ema_ret = inference_on_dataset(
-                        model, instantiate(cfg.dataloader.test), instantiate(cfg.dataloader.evaluator)
+                        model, instantiate(cfg.dataloader.test), instantiate(
+                            cfg.dataloader.evaluator)
                     )
                     print_csv_format(ema_ret)
                     ret.update(ema_ret)
@@ -204,14 +212,14 @@ def do_train(args, cfg):
     logger = logging.getLogger("detectron2")
     logger.info("Model:\n{}".format(model))
     model.to(cfg.train.device)
-    
+
     # instantiate optimizer
     cfg.optimizer.params.model = model
     optim = instantiate(cfg.optimizer)
 
     # build training loader
     train_loader = instantiate(cfg.dataloader.train)
-    
+
     # create ddp model
     model = create_ddp_model(model, **cfg.train.ddp)
 
@@ -225,7 +233,7 @@ def do_train(args, cfg):
         amp=cfg.train.amp.enabled,
         clip_grad_params=cfg.train.clip_grad.params if cfg.train.clip_grad.enabled else None,
     )
-    
+
     checkpointer = DetectionCheckpointer(
         model,
         cfg.train.output_dir,
@@ -279,7 +287,7 @@ def main(args):
     cfg = LazyConfig.load(args.config_file)
     cfg = LazyConfig.apply_overrides(cfg, args.opts)
     default_setup(cfg, args)
-    
+
     # Enable fast debugging by running several iterations to check for any bugs.
     if cfg.train.fast_dev_run.enabled:
         cfg.train.max_iter = 20
@@ -290,10 +298,11 @@ def main(args):
         model = instantiate(cfg.model)
         model.to(cfg.train.device)
         model = create_ddp_model(model)
-        
+
         # using ema for evaluation
         ema.may_build_model_ema(cfg, model)
-        DetectionCheckpointer(model, **ema.may_get_ema_checkpointer(cfg, model)).load(cfg.train.init_checkpoint)
+        DetectionCheckpointer(
+            model, **ema.may_get_ema_checkpointer(cfg, model)).load(cfg.train.init_checkpoint)
         # Apply ema state for evaluation
         if cfg.train.model_ema.enabled and cfg.train.model_ema.use_ema_weights_for_eval_only:
             ema.apply_model_ema(model)
