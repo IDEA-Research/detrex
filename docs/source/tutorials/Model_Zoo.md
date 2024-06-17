@@ -290,7 +290,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">Download</th>
 <!-- TABLE BODY -->
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_4scale_12ep.py"> DINO-R50-4scale </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-swin/dino_r50_4scale_12ep.py"> DINO-R50-4scale </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
@@ -298,7 +298,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">49.2</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_49_2AP.pth"> model </a></td>
 </tr>
- <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_4scale_12ep.py">DINO-R50-4scale (hacked trainer)</a></td>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-swin/dino_r50_4scale_12ep.py">DINO-R50-4scale (hacked trainer)</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
