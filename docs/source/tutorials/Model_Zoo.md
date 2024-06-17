@@ -290,7 +290,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">Download</th>
 <!-- TABLE BODY -->
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-swin/dino_r50_4scale_12ep.py"> DINO-R50-4scale </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-resnet/dino_r50_4scale_12ep.py"> DINO-R50-4scale </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
@@ -298,7 +298,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">49.2</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_49_2AP.pth"> model </a></td>
 </tr>
- <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-swin/dino_r50_4scale_12ep.py">DINO-R50-4scale (hacked trainer)</a></td>
+ <tr><td align="left"><a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-resnet/dino_r50_4scale_12ep.py">DINO-R50-4scale (hacked trainer)</a></td>
 <td align="center">R-50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
@@ -314,7 +314,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">49.4</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.3.0/dino_r50_4scale_12ep_with_ema.pth">model</a> </td>
 </tr>
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_5scale_12ep.py"> DINO-R50-5scale </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-resnet/dino_r50_5scale_12ep.py"> DINO-R50-5scale </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
@@ -322,7 +322,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">49.6</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_r50_5scale_12ep.pth"> model </a></td>
 </tr>
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_4scale_12ep_300dn.py"> DINO-R50-4scale </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-resnet/dino_r50_4scale_12ep_300dn.py"> DINO-R50-4scale </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
@@ -330,7 +330,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">49.5</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.0/dino_r50_4scale_12ep_300dn.pth"> model </a></td>
 </tr>
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r50_4scale_24ep.py"> DINO-R50-4scale </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-resnet/dino_r50_4scale_24ep.py"> DINO-R50-4scale </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">24</td>
@@ -338,7 +338,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">50.6</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.1.1/dino_r50_4scale_24ep.pth"> model </a></td>
 </tr>
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino_r101_4scale_12ep.py"> DINO-R101-4scale </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-resnet/dino_r101_4scale_12ep.py"> DINO-R101-4scale </a> </td>
 <td align="center">R101</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
