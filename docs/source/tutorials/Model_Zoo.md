@@ -459,7 +459,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <td align="center">58.0</td>
 <td align="center"> <a href="https://github.com/IDEA-Research/detrex-storage/releases/download/v0.2.1/dino_focal_large_lrf_384_fl4_4scale_12ep.pth"> model </a></td>
 </tr>
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-focal/dino_focalnet_large_lrf_384_fl4_5scale_36ep.py"> DINO-FocalNet-Large-5scale </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino-focal/dino_focalnet_large_lrf_384_fl4_5scale_12ep.py"> DINO-FocalNet-Large-5scale </a> </td>
 <td align="center">FocalNet-384-LRF-4Level</td>
 <td align="center">IN22k</td>
 <td align="center">12</td>
