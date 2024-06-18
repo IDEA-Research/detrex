@@ -290,7 +290,7 @@ Here we provides our pretrained baselines with **detrex**. And more pretrained w
 <th valign="bottom">box<br/>AP</th>
 <th valign="bottom">Download</th>
 <!-- TABLE BODY -->
- <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/tree/main/projects/dino/configs/dino-resnet/dino_r50_4scale_12ep.py"> DINO-R50-4scale </a> </td>
+ <tr><td align="left"> <a href="https://github.com/IDEA-Research/detrex/blob/main/projects/dino/configs/dino-resnet/dino_r50_4scale_12ep.py"> DINO-R50-4scale </a> </td>
 <td align="center">R50</td>
 <td align="center">IN1k</td>
 <td align="center">12</td>
