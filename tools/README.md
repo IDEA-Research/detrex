@@ -15,7 +15,7 @@ A script to launch training, it surpports:
 
 Usage:
 
-* STER 1: modify slurm config
+* STEP 1: modify slurm config
 ```bash
 $ cp configs/hydra/slurm/research.yaml configs/hydra/slurm/${CLUSTER_ID}.yaml && \
     vim configs/hydra/slurm/${CLUSTER_ID}.yaml 
