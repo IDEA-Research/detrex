@@ -37,8 +37,7 @@ from torch.nn.init import constant_
 from torch.nn.modules.module import Module
 
 if (
-    float(torch.__version__.split(".")[0]) == 0
-    or (float(torch.__version__.split(".")[0]) == 1 and float(torch.__version__.split(".")[1])) < 7
+    float(torch.__version__.split(".")[0]) == 0 or (float(torch.__version__.split(".")[0]) == 1 and float(torch.__version__.split(".")[1]) < 7)
 ):
     from torch._overrides import has_torch_function, handle_torch_function
 else:
@@ -47,7 +46,7 @@ Tensor = torch.Tensor  # noqa
 
 if (
     float(torch.__version__.split(".")[0]) == 0
-    or (float(torch.__version__.split(".")[0]) == 1 and float(torch.__version__.split(".")[1])) < 9
+    or (float(torch.__version__.split(".")[0]) == 1 and float(torch.__version__.split(".")[1]) < 9) 
 ):
     from torch.nn.modules.linear import _LinearWithBias
 else:
