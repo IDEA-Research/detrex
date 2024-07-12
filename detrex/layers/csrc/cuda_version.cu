@@ -2,6 +2,8 @@
 
 namespace detrex {
 int get_cudart_version() {
-  return CUDART_VERSION;
+  int runtimeVersion;
+  cudaRuntimeGetVersion(&runtimeVersion);
+  return runtimeVersion;
 }
 } // namespace detrex
