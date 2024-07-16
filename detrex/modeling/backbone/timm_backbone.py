@@ -88,6 +88,8 @@ class TimmBackbone(Backbone):
         in_channels: int = 3,
         out_indices: Tuple[int] = (0, 1, 2, 3),
         norm_layer: nn.Module = None,
+        freeze: bool = False,
+        **kwargs,
     ):
         super().__init__()
         logger = setup_logger(name="timm backbone")
@@ -111,7 +113,12 @@ class TimmBackbone(Backbone):
                 out_indices=out_indices,
                 checkpoint_path=checkpoint_path,
                 norm_layer=norm_layer,
+                **kwargs,
             )
+            if freeze:
+                self.timm_model = self.timm_model.eval()
+                for param in self.timm_model.parameters():
+                    param.requires_grad = False
         except Exception as error:
             if "feature_info" in str(error):
                 raise AttributeError(
