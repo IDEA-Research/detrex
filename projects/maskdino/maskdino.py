@@ -108,8 +108,9 @@ class MaskDINO(nn.Module):
 
         if not self.semantic_on:
             assert self.sem_seg_postprocess_before_inference
-
-        print('criterion.weight_dict ', self.criterion.weight_dict)
+        
+        if isinstance(params, dict) and getattr(params, 'show_weights', False):
+            print('criterion.weight_dict ', self.criterion.weight_dict)
 
     @property
     def device(self):

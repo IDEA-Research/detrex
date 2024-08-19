@@ -34,7 +34,8 @@ model = L(MaskDINO)(
         n_heads=8,
         num_queries=300,
         dn_num=100,
-        dn_mode="seg"
+        dn_mode="seg",
+        show_weights=True
     )),
     backbone=L(ResNet)(
         stem=L(BasicStem)(in_channels=3, out_channels=64, norm="FrozenBN"),
