@@ -12,7 +12,7 @@ from torch import nn
 from torch.cuda.amp import autocast
 
 from detectron2.projects.point_rend.point_features import point_sample
-from projects.maskdino.utils.box_ops import generalized_box_iou,box_cxcywh_to_xyxy
+from ..utils.box_ops import generalized_box_iou,box_cxcywh_to_xyxy
 import random
 def batch_dice_loss(inputs: torch.Tensor, targets: torch.Tensor):
     """

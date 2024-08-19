@@ -50,6 +50,7 @@ class MaskDINO(nn.Module):
         focus_on_box: bool = False,
         transform_eval: bool = False,
         semantic_ce_loss: bool = False,
+        params: dict = None  # Add params option for omegaconf dict node of info.
     ):
         """
         Args:
