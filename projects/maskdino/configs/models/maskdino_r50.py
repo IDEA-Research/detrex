@@ -3,6 +3,8 @@ from detrex.layers import PositionEmbeddingSine
 from detrex.modeling.backbone import ResNet, BasicStem
 
 from detectron2.config import LazyCall as L
+from detectron2.data import MetadataCatalog
+from detectron2.layers import Conv2d, ShapeSpec, get_norm
 
 from omegaconf import OmegaConf
 
@@ -13,17 +15,16 @@ from ...modeling.weighted_criterion import WeightedCriterion
 from ...modeling.matcher import HungarianMatcher
 from ...maskdino import MaskDINO
 
-from detectron2.data import MetadataCatalog
-from detectron2.layers import Conv2d, ShapeSpec, get_norm
+
 
 model = L(MaskDINO)(
     # parameters in one place.
     params=OmegaConf.create(dict(
         input_shape={
-            'res2': ShapeSpec(channels=256, height=None, width=None, stride=4), 
-            'res3': ShapeSpec(channels=512, height=None, width=None, stride=8), 
-            'res4': ShapeSpec(channels=1024, height=None, width=None, stride=16), 
-            'res5': ShapeSpec(channels=2048, height=None, width=None, stride=32)
+            'res2': L(ShapeSpec)(channels=256, height=None, width=None, stride=4), 
+            'res3': L(ShapeSpec)(channels=512, height=None, width=None, stride=8), 
+            'res4': L(ShapeSpec)(channels=1024, height=None, width=None, stride=16), 
+            'res5': L(ShapeSpec)(channels=2048, height=None, width=None, stride=32)
         },
         dim=256,
         query_dim=4,
