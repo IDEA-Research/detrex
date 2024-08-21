@@ -27,6 +27,7 @@ model = L(MaskDINO)(
             'res5': L(ShapeSpec)(channels=2048, height=None, width=None, stride=32)
         },
         dim=256,
+        hidden_dim=256,
         query_dim=4,
         num_classes=80,
         dec_layers=9,
@@ -72,7 +73,7 @@ model = L(MaskDINO)(
             in_channels="${...params.dim}",
             mask_classification=True,
             num_classes="${...params.num_classes}",
-            hidden_dim="${...params.dim}",
+            hidden_dim="${...params.hidden_dim}",
             num_queries="${...params.num_queries}",
             nheads="${...params.n_heads}",
             dim_feedforward="${...params.feed_forward}",
