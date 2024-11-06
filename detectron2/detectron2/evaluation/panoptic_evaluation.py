@@ -96,7 +96,7 @@ class COCOPanopticEvaluator(DatasetEvaluator):
                     )
                 # Official evaluation script uses 0 for VOID label.
                 panoptic_img += 1
-
+            
             file_name = os.path.basename(input["file_name"])
             file_name_png = os.path.splitext(file_name)[0] + ".png"
             with io.BytesIO() as out:
@@ -123,30 +123,30 @@ class COCOPanopticEvaluator(DatasetEvaluator):
         gt_json = PathManager.get_local_path(self._metadata.panoptic_json)
         gt_folder = PathManager.get_local_path(self._metadata.panoptic_root)
 
-        with tempfile.TemporaryDirectory(prefix="panoptic_eval") as pred_dir:
-            logger.info("Writing all panoptic predictions to {} ...".format(pred_dir))
-            for p in self._predictions:
-                with open(os.path.join(pred_dir, p["file_name"]), "wb") as f:
-                    f.write(p.pop("png_string"))
+        # with tempfile.TemporaryDirectory(prefix="panoptic_eval") as pred_dir:
+        logger.info("Writing all panoptic predictions to {} ...".format(self._output_dir))
+        for p in self._predictions:
+            with open(os.path.join(self._output_dir, p["file_name"]), "wb") as f:
+                f.write(p.pop("png_string"))
 
-            with open(gt_json, "r") as f:
-                json_data = json.load(f)
-            json_data["annotations"] = self._predictions
+        with open(gt_json, "r") as f:
+            json_data = json.load(f)
+        json_data["annotations"] = self._predictions
 
-            output_dir = self._output_dir or pred_dir
-            predictions_json = os.path.join(output_dir, "predictions.json")
-            with PathManager.open(predictions_json, "w") as f:
-                f.write(json.dumps(json_data))
+        output_dir = self._output_dir # or pred_dir
+        predictions_json = os.path.join(output_dir, "predictions.json")
+        with PathManager.open(predictions_json, "w") as f:
+            f.write(json.dumps(json_data))
 
-            from panopticapi.evaluation import pq_compute
+        from panopticapi.evaluation import pq_compute
 
-            with contextlib.redirect_stdout(io.StringIO()):
-                pq_res = pq_compute(
-                    gt_json,
-                    PathManager.get_local_path(predictions_json),
-                    gt_folder=gt_folder,
-                    pred_folder=pred_dir,
-                )
+        with contextlib.redirect_stdout(io.StringIO()):
+            pq_res = pq_compute(
+                gt_json,
+                PathManager.get_local_path(predictions_json),
+                gt_folder=gt_folder,
+                pred_folder=self._output_dir,
+            )
 
         res = {}
         res["PQ"] = 100 * pq_res["All"]["pq"]

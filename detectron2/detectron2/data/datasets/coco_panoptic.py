@@ -46,7 +46,7 @@ def load_coco_panoptic_json(json_file, image_dir, gt_dir, meta):
         # different extension, and images have extension ".jpg" for COCO. Need
         # to make image extension a user-provided argument if we extend this
         # function to support other COCO-like datasets.
-        image_file = os.path.join(image_dir, os.path.splitext(ann["file_name"])[0] + ".jpg")
+        image_file = os.path.join(image_dir, ann["file_name"])
         label_file = os.path.join(gt_dir, ann["file_name"])
         segments_info = [_convert_category_id(x, meta) for x in ann["segments_info"]]
         ret.append(
