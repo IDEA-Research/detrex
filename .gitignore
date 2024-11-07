@@ -1,4 +1,6 @@
 output/
+# config files are stored in projects/.../configs/icon/ directories. we save them in vitruvius
+**/icon/
 
 # auto generated file at installation
 detrex/config/configs
