@@ -1,6 +1,7 @@
+
 output/
-# config files are stored in projects/.../configs/icon/ directories. we save them in vitruvius
-**/icon/
+# config files are saved in vitruvius repo
+projects/**/configs/*.py
 
 # auto generated file at installation
 detrex/config/configs
