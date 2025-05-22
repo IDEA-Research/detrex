@@ -145,36 +145,3 @@ model = L(MaskDINO)(
     focus_on_box = False,
     transform_eval = True,
 )
-
-# set aux loss weight dict
-# class_weight=4.0
-# mask_weight=5.0
-# dice_weight=5.0
-# box_weight=5.0
-# giou_weight=2.0
-# weight_dict = {"loss_ce": class_weight}
-# weight_dict.update({"loss_mask": mask_weight, "loss_dice": dice_weight})
-# weight_dict.update({"loss_bbox": box_weight, "loss_giou": giou_weight})
-# # two stage is the query selection scheme
-
-# interm_weight_dict = {}
-# interm_weight_dict.update({k + f'_interm': v for k, v in weight_dict.items()})
-# weight_dict.update(interm_weight_dict)
-# # denoising training
-
-# if dn == "standard":
-#     weight_dict.update({k + f"_dn": v for k, v in weight_dict.items() if k != "loss_mask" and k != "loss_dice"})
-#     dn_losses = ["labels", "boxes"]
-# elif dn == "seg":
-#     weight_dict.update({k + f"_dn": v for k, v in weight_dict.items()})
-#     dn_losses = ["labels", "masks", "boxes"]
-# else:
-#     dn_losses = []
-# # if deep_supervision:
-
-# aux_weight_dict = {}
-# for i in range(dec_layers):
-#     aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
-# weight_dict.update(aux_weight_dict)
-# Old way to do it.
-# model.criterion.weight_dict=weight_dict
