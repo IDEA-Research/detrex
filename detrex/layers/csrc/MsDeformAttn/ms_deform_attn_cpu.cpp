@@ -11,7 +11,10 @@
 #include <vector>
 
 #include <ATen/ATen.h>
+
+#ifdef WITH_CUDA
 #include <ATen/cuda/CUDAContext.h>
+#endif
 
 namespace detrex {
 

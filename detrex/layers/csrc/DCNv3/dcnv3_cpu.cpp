@@ -12,7 +12,10 @@
 #include <vector>
 
 #include <ATen/ATen.h>
+
+#ifdef WITH_CUDA
 #include <ATen/cuda/CUDAContext.h>
+#endif
 
 at::Tensor dcnv3_cpu_forward(const at::Tensor &input, const at::Tensor &offset,
                              const at::Tensor &mask, const int kernel_h,
