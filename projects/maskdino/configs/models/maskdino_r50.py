@@ -144,4 +144,5 @@ model = L(MaskDINO)(
     pano_temp=0.06,
     focus_on_box = False,
     transform_eval = True,
+    vis_period=0
 )

@@ -9,7 +9,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from torch.nn.init import xavier_uniform_, constant_, uniform_, normal_
-from torch.cuda.amp import autocast
+from torch.amp import autocast
 
 from detectron2.config import configurable
 from detectron2.layers import Conv2d, ShapeSpec, get_norm
@@ -335,7 +335,7 @@ class MaskDINOEncoder(nn.Module):
         self.lateral_convs = lateral_convs[::-1]
         self.output_convs = output_convs[::-1]
 
-    @autocast(enabled=False)
+    @autocast('cuda', enabled=False)
     def forward_features(self, features, masks):
         srcsl = []
         srcs = []

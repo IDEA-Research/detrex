@@ -2,17 +2,20 @@
 # Modified from Mask2Former https://github.com/facebookresearch/Mask2Former by Feng Li and Hao Zhang.
 from typing import Tuple
 
+import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
 
 from detectron2.config import configurable
 from detectron2.data import MetadataCatalog
+from detectron2.data.detection_utils import convert_image_to_rgb
 from detectron2.modeling import META_ARCH_REGISTRY, build_backbone, build_sem_seg_head
 from detectron2.modeling.backbone import Backbone
 from detectron2.modeling.postprocessing import sem_seg_postprocess
 from detectron2.structures import Boxes, ImageList, Instances, BitMasks
 from detectron2.utils.memory import retry_if_cuda_oom
+from detectron2.utils.events import get_event_storage
 
 from .modeling.criterion import SetCriterion
 from .modeling.matcher import HungarianMatcher
@@ -50,7 +53,9 @@ class MaskDINO(nn.Module):
         focus_on_box: bool = False,
         transform_eval: bool = False,
         semantic_ce_loss: bool = False,
-        params: dict = None  # Add params option for omegaconf dict node of info.
+        params: dict = None,  # Add params option for omegaconf dict node of info.
+        # Visualisation period. (every n iter)
+        vis_period: int = 0
     ):
         """
         Args:
@@ -112,6 +117,9 @@ class MaskDINO(nn.Module):
         if isinstance(params, dict) and getattr(params, 'show_weights', False):
             print('criterion.weight_dict ', self.criterion.weight_dict)
 
+        self.vis_period = vis_period
+        self._vis_iter = 0
+
     @property
     def device(self):
         return self.pixel_mean.device
@@ -160,6 +168,24 @@ class MaskDINO(nn.Module):
             else:
                 targets = None
             outputs,mask_dict = self.sem_seg_head(features,targets=targets)
+            if self.vis_period > 0:
+                self._vis_iter = 0
+                storage = get_event_storage()
+                if storage.iter % self.vis_period == 0:
+                    # Visualise output to wandb.
+                    mask_cls_results = outputs["pred_logits"]
+                    mask_box_results = outputs["pred_boxes"]
+                    # upsample masks
+                    mask_pred_results = F.interpolate(
+                        outputs["pred_masks"],
+                        size=(images.tensor.shape[-2], images.tensor.shape[-1]),
+                        mode="bilinear",
+                        align_corners=False,
+                    )
+
+                    results = self.inference(mask_cls_results, mask_pred_results, mask_box_results, batched_inputs, images.image_sizes)
+                    self.visualise_training(batched_inputs, results, train=True)
+
             # bipartite matching-based loss
             losses = self.criterion(outputs, targets,mask_dict)
 
@@ -173,60 +199,23 @@ class MaskDINO(nn.Module):
         else:
             outputs, _ = self.sem_seg_head(features)
             mask_cls_results = outputs["pred_logits"]
-            mask_pred_results = outputs["pred_masks"]
             mask_box_results = outputs["pred_boxes"]
             # upsample masks
             mask_pred_results = F.interpolate(
-                mask_pred_results,
+                outputs["pred_masks"],
                 size=(images.tensor.shape[-2], images.tensor.shape[-1]),
                 mode="bilinear",
                 align_corners=False,
             )
 
             del outputs
-            # import ipdb; ipdb.set_trace()
-            processed_results = []
-            for mask_cls_result, mask_pred_result, mask_box_result, input_per_image, image_size in zip(
-                mask_cls_results, mask_pred_results, mask_box_results, batched_inputs, images.image_sizes
-            ):  # image_size is augmented size, not divisible to 32
-                height = input_per_image["height"]#, image_size[0])  # real size
-                width = input_per_image["width"]#, image_size[1])
-                processed_results.append({})
-                new_size = mask_pred_result.shape[-2:]  # padded size (divisible to 32)
+            results = self.inference(mask_cls_results, mask_pred_results, mask_box_results, batched_inputs, images.image_sizes)
+            if self.vis_period > 0:
+                if self._vis_iter % self.vis_period == 0:
+                    self.visualise_training(batched_inputs, results, train=False)
+                self._vis_iter += 1
 
-                # import ipdb; ipdb.set_trace()
-                if self.sem_seg_postprocess_before_inference:
-                    mask_pred_result = retry_if_cuda_oom(sem_seg_postprocess)(
-                        mask_pred_result, image_size, height, width
-                    )
-                    mask_cls_result = mask_cls_result.to(mask_pred_result)
-                    # mask_box_result = mask_box_result.to(mask_pred_result)
-                    # mask_box_result = self.box_postprocess(mask_box_result, height, width)
-
-                # semantic segmentation inference
-                if self.semantic_on:
-                    r = retry_if_cuda_oom(self.semantic_inference)(mask_cls_result, mask_pred_result)
-                    if not self.sem_seg_postprocess_before_inference:
-                        r = retry_if_cuda_oom(sem_seg_postprocess)(r, image_size, height, width)
-                    processed_results[-1]["sem_seg"] = r
-
-                # panoptic segmentation inference
-                if self.panoptic_on:
-                    panoptic_r = retry_if_cuda_oom(self.panoptic_inference)(mask_cls_result, mask_pred_result)
-                    processed_results[-1]["panoptic_seg"] = panoptic_r
-                # import ipdb; ipdb.set_trace()
-                # instance segmentation inference
-                # import ipdb; ipdb.set_trace()
-                if self.instance_on:
-                    mask_box_result = mask_box_result.to(mask_pred_result)
-                    height = new_size[0]/image_size[0]*height
-                    width = new_size[1]/image_size[1]*width
-                    mask_box_result = self.box_postprocess(mask_box_result, height, width)
-
-                    instance_r = retry_if_cuda_oom(self.instance_inference)(mask_cls_result, mask_pred_result, mask_box_result)
-                    processed_results[-1]["instances"] = instance_r
-
-            return processed_results
+            return results
 
     def prepare_targets(self, targets, images):
         h_pad, w_pad = images.tensor.shape[-2:]
@@ -388,6 +377,52 @@ class MaskDINO(nn.Module):
         result.scores = scores_per_image * mask_scores_per_image
         result.pred_classes = labels_per_image
         return result
+    
+    def inference(self, mask_cls_results, mask_pred_results, mask_box_results, batched_inputs, image_sizes):
+        """ Taken from the forward function and put into re usable inference function like DINO forward to use this for visualisation. """
+        # import ipdb; ipdb.set_trace()
+        processed_results = []
+        for mask_cls_result, mask_pred_result, mask_box_result, input_per_image, image_size in zip(
+            mask_cls_results, mask_pred_results, mask_box_results, batched_inputs, image_sizes
+        ):  # image_size is augmented size, not divisible to 32
+            height = input_per_image["height"]#, image_size[0])  # real size
+            width = input_per_image["width"]#, image_size[1])
+            processed_results.append({})
+            new_size = mask_pred_result.shape[-2:]  # padded size (divisible to 32)
+
+            # import ipdb; ipdb.set_trace()
+            if self.sem_seg_postprocess_before_inference:
+                mask_pred_result = retry_if_cuda_oom(sem_seg_postprocess)(
+                    mask_pred_result, image_size, height, width
+                )
+                mask_cls_result = mask_cls_result.to(mask_pred_result)
+                # mask_box_result = mask_box_result.to(mask_pred_result)
+                # mask_box_result = self.box_postprocess(mask_box_result, height, width)
+
+            # semantic segmentation inference
+            if self.semantic_on:
+                r = retry_if_cuda_oom(self.semantic_inference)(mask_cls_result, mask_pred_result)
+                if not self.sem_seg_postprocess_before_inference:
+                    r = retry_if_cuda_oom(sem_seg_postprocess)(r, image_size, height, width)
+                processed_results[-1]["sem_seg"] = r
+
+            # panoptic segmentation inference
+            if self.panoptic_on:
+                panoptic_r = retry_if_cuda_oom(self.panoptic_inference)(mask_cls_result, mask_pred_result)
+                processed_results[-1]["panoptic_seg"] = panoptic_r
+            # import ipdb; ipdb.set_trace()
+            # instance segmentation inference
+            # import ipdb; ipdb.set_trace()
+            if self.instance_on:
+                mask_box_result = mask_box_result.to(mask_pred_result)
+                height = new_size[0]/image_size[0]*height
+                width = new_size[1]/image_size[1]*width
+                mask_box_result = self.box_postprocess(mask_box_result, height, width)
+
+                instance_r = retry_if_cuda_oom(self.instance_inference)(mask_cls_result, mask_pred_result, mask_box_result)
+                processed_results[-1]["instances"] = instance_r
+
+        return processed_results
 
     def box_postprocess(self, out_bbox, img_h, img_w):
         # postprocess box height and width
@@ -398,3 +433,26 @@ class MaskDINO(nn.Module):
         return boxes
 
 
+    def visualise_training(self, batched_inputs, results, train: bool = True):
+        """ Visualise input to wandb. Based on DINO at https://github.com/IDEA-Research/detrex/blob/main/projects/dino/modeling/dino.py"""
+        from detectron2.utils.visualizer import Visualizer
+
+        storage = get_event_storage()
+        max_vis_box = 20
+
+        for batch_input, results_per_image in zip(batched_inputs, results):
+            img = batch_input['image']
+            img = convert_image_to_rgb(img.permute(1, 2, 0), 'RGB')
+            v_gt = Visualizer(img, None)
+            v_gt = v_gt.overlay_instances(boxes=batch_input['instances'].gt_boxes, masks=batch_input['instances'].gt_masks)
+            anno_img = v_gt.get_image()            
+            v_pred = Visualizer(img, None)
+            # Sort results to show top 20 best.
+            results = results_per_image['instances'][torch.argsort(results_per_image['instances'].scores, descending=True)[:max_vis_box]]
+            v_pred = v_pred.overlay_instances(boxes=results.pred_boxes.tensor.detach().cpu().numpy(), masks=results.pred_masks.detach().cpu().numpy())
+            pred_img = v_pred.get_image()
+            vis_img1 = np.concatenate((anno_img, pred_img), axis=1)
+            vis_img = vis_img1.transpose(2, 0, 1)
+            vis_name = f'{"(Train)" if train else "(Eval)"} Left: GT bounding boxes;  Right: predicted boxes'
+            storage.put_image(vis_name, vis_img)
+            break  # Only visualise one image per batch.
