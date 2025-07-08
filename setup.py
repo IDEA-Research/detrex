@@ -224,7 +224,7 @@ if __name__ == "__main__":
 
     setup(
         name="detrex",
-        version="0.3.0",
+        version="0.3.1",
         author="International Digital Economy Academy",
         url="https://github.com/rentainhe/detrex",
         description="IDEA open source toolbox for transformer-based instance recognition tasks",
@@ -239,4 +239,5 @@ if __name__ == "__main__":
         package_data={"detrex.config": get_detrex_configs()},
         ext_modules=get_extensions(),
         cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
+
     )
