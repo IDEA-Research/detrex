@@ -342,7 +342,7 @@ __global__ void ms_deformable_col2im_gpu_kernel_shm_blocksize_aware_reduce_v1(co
     const int grad_weight_stride = 1;
     const int grad_loc_stride = 2;
     const int qid_stride = num_heads * channels;
-    const int data_value_ptr_init_offset = b_col * spatial_size * qid_stridee;
+    const int data_value_ptr_init_offset = b_col * spatial_size * qid_stride;
 
     for (int l_col=0; l_col < num_levels; ++l_col)
     {
