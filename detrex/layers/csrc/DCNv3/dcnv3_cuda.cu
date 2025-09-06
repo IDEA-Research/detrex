@@ -67,7 +67,7 @@ at::Tensor dcnv3_cuda_forward(const at::Tensor &input, const at::Tensor &offset,
         auto columns = output_n.select(0, n);
         // AT_DISPATCH_FLOATING_TYPES(
         AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-            input.type(), "ms_deform_attn_forward_cuda", ([&] {
+            input.scalar_type(), "ms_deform_attn_forward_cuda", ([&] {
                 dcnv3_im2col_cuda(
                     at::cuda::getCurrentCUDAStream(),
                     input.data<scalar_t>() + n * im2col_step_ * per_input_size,
@@ -145,7 +145,7 @@ dcnv3_cuda_backward(const at::Tensor &input, const at::Tensor &offset,
         auto grad_output_g = grad_output_n.select(0, n);
         // AT_DISPATCH_FLOATING_TYPES(
         AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-            input.type(), "ms_deform_attn_backward_cuda", ([&] {
+            input.scalar_type(), "ms_deform_attn_backward_cuda", ([&] {
                 dcnv3_col2im_cuda(
                     at::cuda::getCurrentCUDAStream(),
                     grad_output_g.data<scalar_t>(),
