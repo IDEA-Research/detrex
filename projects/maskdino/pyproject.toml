@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=60"]
+
+[project]
+name = "maskdino_project"
+version = "1.0.6"
+dynamic = ["dependencies"]
+requires-python = ">=3.6"
+description = "Installable project for MaskDINO"
+readme = "README.md"
+license = {file = "LICENSE"}
+
+[tool.setuptools.package-dir]
+maskdino_project = "."

@@ -50,6 +50,7 @@ class MaskDINO(nn.Module):
         focus_on_box: bool = False,
         transform_eval: bool = False,
         semantic_ce_loss: bool = False,
+        params: dict = None  # Add params option for omegaconf dict node of info.
     ):
         """
         Args:
@@ -107,8 +108,9 @@ class MaskDINO(nn.Module):
 
         if not self.semantic_on:
             assert self.sem_seg_postprocess_before_inference
-
-        print('criterion.weight_dict ', self.criterion.weight_dict)
+        
+        if isinstance(params, dict) and getattr(params, 'show_weights', False):
+            print('criterion.weight_dict ', self.criterion.weight_dict)
 
     @property
     def device(self):
