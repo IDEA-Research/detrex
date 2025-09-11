@@ -1,14 +1,3 @@
-### Forked Detrex branch
-
-This is a forked branch from detrex to make the maskdino project installable for python using `pip install .` 
-from projects/maskdino folder
-This maskdino-project is also uploaded to devpi.
-
-Originally using the maskdino git repository but with different versions of config using omegaconf the maskdino repo
-and maskdino repo inside detrex are quite different and ran into training problems.
-
-Organised the maskdino param properties to be able to change them and make them more consistent.
-
 <div align="center">
   <img src="./assets/logo_2.png" width="30%">
 </div>
